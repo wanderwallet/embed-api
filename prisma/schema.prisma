@@ -8,78 +8,296 @@ datasource db {
   directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
-model DbUser {
-  id        String       @id @default(uuid())
-  name      String
-  developer DBDeveloper? @relation
+enum AuthProviderType {
+  PASSKEYS
+  EMAIL_N_PASSWORD
+  GOOGLE
+  FACEBOOK
+  X
+  APPLE
 }
 
-model DBDeveloper {
+enum NotificationSetting {
+  NONE
+  SECURITY
+  ALL
+}
+
+enum ExportType {
+  SEEDPHRASE
+  KEYFILE
+}
+
+enum WalletStatus {
+  ENABLED
+  DISABLED
+  WATCH_ONLY
+  LOST
+}
+
+enum Chain {
+  ARWEAVE
+  ETHEREUM
+}
+
+enum WalletPrivacySetting {
+  SECRET
+  PRIVATE
+  PUBLIC
+}
+
+enum ChallengeType {
+  HASH
+  SIGNATURE
+}
+
+enum ChallengePurpose {
+  WORK_AUTH_SHARE_RETRIEVAL
+  RECOVERY_AUTH_SHARE_RETRIEVAL
+  SHARE_ROTATION
+  ACCOUNT_RECOVERY
+  ACCOUNT_RECOVERY_CONFIRMATION
+}
+
+// TODO: Indexes need to be added manually.
+
+// TODO: Should we add triggers somewhere for cascade updates/deletions?
+
+model AuthMethod {
+  id            String           @id @default(uuid())
+  // Not sure we need this separate ID. This would come from Auth0. Maybe it can just be the main id on this table.
+  providerId    String
+  providerType  AuthProviderType
+  /// This can be an email for EMAIL, a profile handler for social networks or some kind of device ID for passkeys.
+  providerLabel String
+  linkedAt      DateTime         @default(now())
+  lastUsedAt    DateTime         @updatedAt
+  unlinkedAt    DateTime?
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  @@unique([userId, providerId], name: "userAuthentication")
+  @@map("AuthMethods")
+}
+
+model User {
+  id                   String              @id @default(uuid())
+  name                 String?
+  email                String?
+  developer            Developer?
+  notificationsSetting NotificationSetting @default(SECURITY)
+  authMethods          AuthMethod[]
+  wallets              Wallet[]
+  challenges           Challenge[]
+
+  // TODO: Add ip and country filters?
+  // TODO: Add ip and country filter privacy setting?
+
+  @@map("Users")
+}
+
+model Developer {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   apiKey    String   @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-  dbUserId  String   @unique
-  dbUser    DbUser   @relation(fields: [dbUserId], references: [id])
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String @unique
+
+  @@map("Developers")
 }
 
-model DbWallet {
-  id                        String  @id @default(uuid())
-  userId                    String
-  chain                     String
-  address                   String
-  publicKey                 String
-  walletType                String
-  canBeUsedToRecoverAccount Boolean
-  canRecover                Boolean
-  info                      Json
-  source                    Json
-  lastUsed                  Int
-  status                    String
+model Wallet {
+  id                       String               @id @default(uuid())
+  /// This must be set to WATCH_ONLY if publicKey is not set.
+  status                   WalletStatus         @default(ENABLED)
+  createdAt                DateTime             @default(now())
+  updatedAt                DateTime             @updatedAt
+  chain                    Chain
+  address                  String
+  /// Can (not must) be empty for watch-only wallets.
+  publicKey                String?
+  walletPrivacySetting     WalletPrivacySetting @default(PUBLIC)
+  /// Users will be able to disable wallets as recovery options. This must be set to false if publicKey is not set.
+  canRecoverAccountSetting Boolean              @default(true)
+  /// Set to true after the user has exported a seedphrase, private key or recovery file.
+  canBeRecovered           Boolean              @default(false)
 
-  DbWalletExports DbWalletExports[]
+  // TODO: Add doNotAsk setting...
+
+  /// TODO: Document shape
+  info Json
+
+  /// TODO: Document shape
+  source Json
+
+  // TODO: Think about this. We can link to to another model using the deviceNonce, but in that case,
+  // when (if) the device nonce is rotated, all these entities must be updated. This might not be a big
+  // issue if the deviceNonce is not rotated (only the shares).
+  location String
+
+  // TODO: Do we add them or derive them from the related tables?
+  // lastActivatedAt                 DateTime? // From WalletActivation
+  // lastRecoveredAt                 DateTime? // From WalletRecovery
+  // lastExportedAt                 DateTime? // From WalletExport
+  // lastBackedUpAt                 DateTime? // From RecoveryKeyShare
+
+  walletActivations WalletActivation[]
+  walletRecoveries  WalletRecovery[]
+  walletExports     WalletExport[]
+  workKeyShares     WorkKeyShare[]
+  recoveryKeyShares RecoveryKeyShare[]
+  challenges        Challenge[]
+
+  user   User   @relation(fields: [userId], references: [id])
+  userId String
+
+  @@unique([userId, address, chain], name: "userWallet")
+  @@map("Wallets")
 }
 
-model DbWalletExports {
-  id         String   @id @default(uuid())
-  walletId   String
-  exportedAt DateTime @default(now())
+model WalletActivation {
+  id          String   @id @default(uuid())
+  activatedAt DateTime @default(now())
+  location    String
+
+  wallet   Wallet @relation(fields: [walletId], references: [id])
+  walletId String
+
+  workKeyShare   WorkKeyShare @relation(fields: [workKeyShareId], references: [id])
+  workKeyShareId String
+
+  @@map("WalletActivations")
+}
+
+model WalletRecovery {
+  id          String   @id @default(uuid())
+  recoveredAt DateTime @default(now())
+  location    String
+
+  wallet   Wallet @relation(fields: [walletId], references: [id])
+  walletId String
+
+  recoveryKeyShare   RecoveryKeyShare @relation(fields: [recoveryKeyShareId], references: [id])
+  recoveryKeyShareId String
+
+  @@map("WalletRecoveries")
+}
+
+model WalletExport {
+  id         String     @id @default(uuid())
+  type       ExportType
+  exportedAt DateTime   @default(now())
   location   String
 
-  wallet DbWallet @relation(fields: [walletId], references: [id])
+  wallet   Wallet @relation(fields: [walletId], references: [id])
+  walletId String
+
+  @@map("WalletExports")
 }
 
-model DbKeyShare {
-  id                      String @id @default(uuid())
-  status                  String
-  userId                  String
-  walletId                String
-  walletAddress           String
-  createdAt               Int
-  deviceNonceRotatedAt    Int
-  sharesRotatedAt         Int
-  lastRequestedAt         Int
-  usagesAfterExpiration   Int
-  deviceNonce             String
-  authShare               String
-  deviceShareHash         String
-  recoveryAuthShare       String
-  recoveryBackupShareHash String
-  recoveryDeviceShareHash String
+/// TODO: Document this
+model WorkKeyShare {
+  id                   String   @id @default(uuid())
+  status               String
+  // userId                  String // Do we want/need this?
+  createdAt            DateTime @default(now())
+  deviceNonceRotatedAt DateTime @default(now())
+  sharesRotatedAt      DateTime @default(now())
+  rotationWarnings     Int      @default(0)
+
+  deviceNonce          String
+  authShare            String
+  deviceShareHash      String
+  deviceSharePublicKey String
+
+  walletActivations WalletActivation[]
+
+  wallet   Wallet @relation(fields: [walletId], references: [id])
+  walletId String
+
+  /// This unique constraint means that if the users loses the deviceShare but, for whatever reason, not the
+  /// device nonce, after requesting the recoveryAuthShare and sending the new authShare and deviceShareHash, this will
+  /// replace the previous one (as deviceNonce is the same):
+  @@unique([deviceNonce, walletId], name: "deviceWorkShares")
+  @@map("WorkKeyShare")
 }
 
+/// TODO: Document this
+model RecoveryKeyShare {
+  id        String   @id @default(uuid())
+  status    String
+  // userId                  String // Do we want/need this?
+  createdAt DateTime @default(now())
+
+  recoveryAuthShare            String
+  recoveryBackupShareHash      String
+  recoveryBackupSharePublicKey String
+
+  walletRecoveries WalletRecovery[]
+
+  wallet   Wallet @relation(fields: [walletId], references: [id])
+  walletId String
+
+  @@map("RecoveryKeyShare")
+}
+
+/// TODO: Document this
+/// WORK_AUTH_SHARE_RETRIEVAL =
+/// RECOVERY_AUTH_SHARE_RETRIEVAL =
+/// SHARE_ROTATION =
+/// ACCOUNT_RECOVERY =
+/// ACCOUNT_RECOVERY_CONFIRMATION =
 model Challenge {
-  id       String   @id @default(uuid())
-  userId   String
-  issuedAt DateTime @default(now())
+  id       String           @id @default(uuid())
+  type     ChallengeType
+  purpose  ChallengePurpose
+  value    String
   version  String
+  issuedAt DateTime         @default(now())
+
+  user   User?   @relation(fields: [userId], references: [id])
+  userId String?
+
+  wallet   Wallet? @relation(fields: [walletId], references: [id])
+  walletId String?
+
+  /// Each user would have up to 5 challenges active at a time (one of each type). Those of the same type will be
+  /// overridden.
+  @@unique([type, userId], name: "userChallenges")
+  @@map("Challenges")
 }
 
+/// TODO: Think whether it make sense to have this as an entity and how does affects deviceNonce rotation. If we don't
+/// rotate too aggressively, then it makes sense to have it separate, as probably the location entries in Wallet,
+/// WorkKeyShare, RecoveryKeyShare and WalletExport might all point to the same row.
+///
+/// If we rotate too quickly, then each of those steps would already be using a different deviceNonce, creating
+/// additional DeviceAndLocation entries.
+model DeviceAndLocation {
+  deviceNonce       String           @id
+  ip String
+  userAgent String
+  // TODO: domain?
+
+  /// Note there's no unique constraint on deviceNonce+ip or deviceNonce+userAgent, as the browser might update or the
+  /// user might move or use a VPN, and, in that case, we probably want to keep both the old and new info.
+  @@map("DevicesAndLocations")
+}
+
+/// TODO: It seems that the models above already cover all the events we want to log (wallet creation, wallet export...).
+/// Would it be preferable to move the location (DeviceAndLocation) of the different events here? Is there any other type
+/// of event we might want to log? Should we duplicate it to easily serve both uses cases (showing a log of events and
+/// showing the information of a particular event, e.g. where was this wallet created?)?
 model EventLog {
   id        String   @id @default(uuid())
   userId    String
   eventType String
   details   Json
   createdAt DateTime @default(now())
+
+  @@map("EventLog")
 }
