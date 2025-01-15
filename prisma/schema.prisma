@@ -1,0 +1,85 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+}
+
+model DbUser {
+  id        String       @id @default(uuid())
+  name      String
+  developer DBDeveloper? @relation
+}
+
+model DBDeveloper {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  apiKey    String   @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  dbUserId  String   @unique
+  dbUser    DbUser   @relation(fields: [dbUserId], references: [id])
+}
+
+model DbWallet {
+  id                        String  @id @default(uuid())
+  userId                    String
+  chain                     String
+  address                   String
+  publicKey                 String
+  walletType                String
+  canBeUsedToRecoverAccount Boolean
+  canRecover                Boolean
+  info                      Json
+  source                    Json
+  lastUsed                  Int
+  status                    String
+
+  DbWalletExports DbWalletExports[]
+}
+
+model DbWalletExports {
+  id         String   @id @default(uuid())
+  walletId   String
+  exportedAt DateTime @default(now())
+  location   String
+
+  wallet DbWallet @relation(fields: [walletId], references: [id])
+}
+
+model DbKeyShare {
+  id                      String @id @default(uuid())
+  status                  String
+  userId                  String
+  walletId                String
+  walletAddress           String
+  createdAt               Int
+  deviceNonceRotatedAt    Int
+  sharesRotatedAt         Int
+  lastRequestedAt         Int
+  usagesAfterExpiration   Int
+  deviceNonce             String
+  authShare               String
+  deviceShareHash         String
+  recoveryAuthShare       String
+  recoveryBackupShareHash String
+  recoveryDeviceShareHash String
+}
+
+model Challenge {
+  id       String   @id @default(uuid())
+  userId   String
+  issuedAt DateTime @default(now())
+  version  String
+}
+
+model EventLog {
+  id        String   @id @default(uuid())
+  userId    String
+  eventType String
+  details   Json
+  createdAt DateTime @default(now())
+}

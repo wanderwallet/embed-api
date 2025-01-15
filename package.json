@@ -6,9 +6,12 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "db:migrate": "prisma migrate dev",
+    "seed": "ts-node prisma/seed.ts",
+    "db:postinstall": "prisma generate && prisma migrate deploy"
   },
   "dependencies": {
+    "@prisma/client": "6.2.1",
     "@tanstack/react-query": "4.36.1",
     "@trpc/client": "^10.45.2",
     "@trpc/next": "10.43.6",
@@ -27,6 +30,7 @@
     "@types/react-dom": "^18",
     "eslint": "^8",
     "eslint-config-next": "14.2.16",
+    "prisma": "6.2.1",
     "typescript": "^5"
   }
 }
