@@ -76,6 +76,8 @@ enum ChallengePurpose {
 
 // TODO: Use VarChar in some fields?
 
+// TODO: Align on models and quickly release API without authentication.
+
 model AuthMethod {
   id            String           @id @default(uuid())
   // TODO: Not sure we need this separate ID. This would come from Auth0. Maybe it can just be the main id on this table.
@@ -317,7 +319,7 @@ model RecoveryKeyShare {
   id        String   @id @default(uuid())
   status    String
   createdAt DateTime @default(now())
-  
+
   location String
 
   recoveryAuthShare            String
@@ -378,6 +380,7 @@ model DeviceAndLocation {
   deviceNonce String
   ip          String
   userAgent   String
+   // TODO: Maybe this should link to "Application" instead?
   domain      String
 
   user   User?   @relation(fields: [userId], references: [id])
@@ -397,10 +400,7 @@ model Session {
   ip                String
   userAgent         String
 
-  // TODO: There should probably be a single domain String property in here and a separate "Session" or similar model
-  // for the currently live sessions.
-  /// Specific actions like generating or exporting a wallet will have a single domain, while WorkKeyShares might have
-  /// multiple values at the same time.
+  // TODO: Maybe this should link to "Application" instead?
   domains String[]
 
   user   User?   @relation(fields: [userId], references: [id])
