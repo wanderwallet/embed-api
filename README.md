@@ -10,7 +10,9 @@ yarn dev
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 
-## Config
+## Server Config
+
+- API_KEYS
 
 - MAX_AUTH_METHODS_PER_USER
 - MAX_WALLETS_PER_USER
@@ -26,6 +28,8 @@ Open [http://localhost:3000](http://localhost:3000) with your browser to see the
 **Authentication:**
 - authenticate => GET /auth
 - refreshSession => GET /auth/<userId>
+- fakeAuthenticate => GET /auth/fake
+- fakeRefreshSession => GET /auth/fake/<[alice|bob]>
 
 **Wallets:**
 - fetchWallets => GET /wallets
