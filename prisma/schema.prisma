@@ -86,7 +86,7 @@ model AuthMethod {
   /// This can be an email for EMAIL, a profile handler for social networks or some kind of device ID for passkeys.
   providerLabel String
   linkedAt      DateTime         @default(now())
-  lastUsedAt    DateTime         @updatedAt
+  lastUsedAt    DateTime         @default(now())
   unlinkedAt    DateTime?
 
   user   User   @relation(fields: [userId], references: [id])
@@ -134,7 +134,7 @@ model Developer {
   planPaidAt String   @default("free")
   apiKey     String   @unique
   createdAt  DateTime @default(now())
-  updatedAt  DateTime @updatedAt
+  updatedAt  DateTime @default(now())
 
   applications Application[]
 
@@ -148,7 +148,7 @@ model Application {
   id        String   @id @default(uuid())
   domains   String[]
   createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  updatedAt DateTime @default(now())
 
   /// Different customization options developers can set in their apps:
   // TODO: Document its shape.
@@ -169,7 +169,7 @@ model Wallet {
   /// This must be set to WATCH_ONLY if publicKey is not set.
   status    WalletStatus @default(ENABLED)
   createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt
+  updatedAt DateTime     @default(now())
   chain     Chain
   address   String
   /// Can (not must) be empty for watch-only wallets.
@@ -395,7 +395,7 @@ model Session {
   id                String   @id @default(uuid())
   providerSessionId String
   createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  updatedAt         DateTime @default(now())
   deviceNonce       String
   ip                String
   userAgent         String
