@@ -1,5 +1,6 @@
 import { publicProcedure, protectedProcedure, router } from "../trpc"
 import { signJWT } from "../auth"
+// import { supabase } from '@/utils/supabaseClient';
 
 export const appRouter = router({
   authenticate: publicProcedure.mutation(async () => {
