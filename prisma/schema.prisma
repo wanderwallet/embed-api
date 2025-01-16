@@ -425,3 +425,5 @@ model EventLog {
 
   @@map("EventLog")
 }
+
+// TODO: How/where to aggregate data about sessions for analytics to our developers.
