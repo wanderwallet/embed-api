@@ -81,25 +81,28 @@ enum ChallengePurpose {
 model AuthMethod {
   id            String           @id @default(uuid())
   // TODO: Not sure we need this separate ID. This would come from Auth0. Maybe it can just be the main id on this table.
-  providerId    String
+  providerId    String           @db.VarChar(255)
   providerType  AuthProviderType
   /// This can be an email for EMAIL, a profile handler for social networks or some kind of device ID for passkeys.
-  providerLabel String
+  providerLabel String           @db.VarChar(255)
   linkedAt      DateTime         @default(now())
   lastUsedAt    DateTime         @default(now())
   unlinkedAt    DateTime?
 
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   @@unique([userId, providerId], name: "userAuthentication")
+  // TODO: If we end up removing providerId, we can remove this index
+  @@index([providerId])
+  @@index([lastUsedAt])
   @@map("AuthMethods")
 }
 
 model User {
   id        String     @id @default(uuid())
-  name      String?
-  email     String?
+  name      String?    @db.VarChar(100)
+  email     String?    @db.VarChar(255)
   developer Developer?
 
   // Settings:
@@ -109,11 +112,12 @@ model User {
   /// Require 1 or more wallet signatures to recover this account.
   recoveryWalletsRequiredSetting Int                   @default(1)
   /// Only allow requests from these IPs.
-  ipFilterSetting                String?
+  ipFilterSetting                String?               @db.VarChar(255)
   /// If a request is rejected due to ipFilterSetting, include or hide the details in the error.
   ipPrivacyFilterSetting         FilterPrivacySetting? @default(HIDE_DETAILS)
   /// Only allow requests from these countries (based in IP).
-  countryFilterSetting           String?
+  // TODO: ISO 3166-1 alpha-2 codes? or should we do alpha-3?
+  countryFilterSetting           String?               @db.VarChar(2)
   /// If a request is rejected due to countryFilterSetting, include or hide the details in the error.
   countryPrivacySetting          FilterPrivacySetting? @default(HIDE_DETAILS)
 
@@ -125,28 +129,30 @@ model User {
   devicesAndLocations DeviceAndLocation[]
   Session             Session[]
 
+  @@index([email])
   @@map("Users")
 }
 
 model Developer {
   id         Int      @id @default(autoincrement())
-  plan       String   @default("free")
-  planPaidAt String   @default("free")
-  apiKey     String   @unique
+  plan       String   @default("free") @db.VarChar(50)
+  planPaidAt String   @default("free") @db.VarChar(50)
+  apiKey     String   @unique @db.VarChar(255)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @default(now())
 
   applications Application[]
 
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String @unique
 
+  @@index([apiKey])
   @@map("Developers")
 }
 
 model Application {
   id        String   @id @default(uuid())
-  domains   String[]
+  domains   String[] @db.VarChar(255)
   createdAt DateTime @default(now())
   updatedAt DateTime @default(now())
 
@@ -156,11 +162,16 @@ model Application {
 
   // Authentication Provider:
   // TODO: We probably need some additional properties from Auth0 or whatever auth provider we use:  
-  auth0ClientId String
+  auth0ClientId String @db.VarChar(255)
 
-  owner   Developer @relation(fields: [ownerId], references: [id])
-  ownerId Int
+  owner             Developer           @relation(fields: [ownerId], references: [id], onDelete: Cascade)
+  ownerId           Int
+  DeviceAndLocation DeviceAndLocation[]
+  Session           Session[]
 
+  // TODO: refactor this if we decude to go with another auth provider
+  @@index([auth0ClientId])
+  @@index([ownerId])
   @@map("Applications")
 }
 
@@ -171,18 +182,18 @@ model Wallet {
   createdAt DateTime     @default(now())
   updatedAt DateTime     @default(now())
   chain     Chain
-  address   String
+  address   String       @db.VarChar(255)
   /// Can (not must) be empty for watch-only wallets.
-  publicKey String?
+  publicKey String?      @db.VarChar(255)
 
   // Settings:
 
   /// Preferred way to visually present this wallet.
   identifierTypeSetting          WalletIdentifierType @default(ALIAS)
   /// Custom description/note the user can attach to this wallet.
-  descriptionSetting             String?
+  descriptionSetting             String?              @db.VarChar(500)
   /// Custom tags the user can attach to this wallet.
-  tagsSetting                    String[]
+  tagsSetting                    String[]             @db.VarChar(50)
   /// New wallets will prompt the user to backup/export it, but users can disable these reminders (per wallet).
   doNotAskAgainSetting           Boolean              @default(true)
   /// Send the address, only last 4 characters of the address or no address at all when wallets are retrieved.
@@ -219,7 +230,7 @@ model Wallet {
   // TODO: Think about this. We can link to to another model using the deviceNonce, but in that case,
   // when (if) the device nonce is rotated, all these entities must be updated. This might not be a big
   // issue if the deviceNonce is not rotated (only the shares).
-  location String
+  location String @db.VarChar(255)
 
   // TODO: Do we add them or derive them from the related tables?
   // lastActivatedAt                 DateTime? // From WalletActivation
@@ -234,38 +245,44 @@ model Wallet {
   recoveryKeyShares RecoveryKeyShare[]
   challenges        Challenge[]
 
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   @@unique([userId, address, chain], name: "userWallet")
+  @@index([address])
+  @@index([chain])
+  @@index([status])
+  @@index([createdAt])
   @@map("Wallets")
 }
 
 model WalletActivation {
   id          String   @id @default(uuid())
   activatedAt DateTime @default(now())
-  location    String
+  location    String   @db.VarChar(255)
 
-  wallet   Wallet @relation(fields: [walletId], references: [id])
+  wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
 
-  workKeyShare   WorkKeyShare @relation(fields: [workKeyShareId], references: [id])
+  workKeyShare   WorkKeyShare @relation(fields: [workKeyShareId], references: [id], onDelete: Cascade)
   workKeyShareId String
 
+  @@index([activatedAt])
   @@map("WalletActivations")
 }
 
 model WalletRecovery {
   id          String   @id @default(uuid())
   recoveredAt DateTime @default(now())
-  location    String
+  location    String   @db.VarChar(255)
 
-  wallet   Wallet @relation(fields: [walletId], references: [id])
+  wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
 
-  recoveryKeyShare   RecoveryKeyShare @relation(fields: [recoveryKeyShareId], references: [id])
+  recoveryKeyShare   RecoveryKeyShare @relation(fields: [recoveryKeyShareId], references: [id], onDelete: Cascade)
   recoveryKeyShareId String
 
+  @@index([recoveredAt])
   @@map("WalletRecoveries")
 }
 
@@ -273,18 +290,19 @@ model WalletExport {
   id         String     @id @default(uuid())
   type       ExportType
   exportedAt DateTime   @default(now())
-  location   String
+  location   String     @db.VarChar(255)
 
-  wallet   Wallet @relation(fields: [walletId], references: [id])
+  wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
 
+  @@index([exportedAt])
   @@map("WalletExports")
 }
 
 /// TODO: Document this
 model WorkKeyShare {
   id               String   @id @default(uuid())
-  status           String
+  status           String   @db.VarChar(50)
   createdAt        DateTime @default(now())
   sharesRotatedAt  DateTime @default(now())
   rotationWarnings Int      @default(0)
@@ -292,48 +310,52 @@ model WorkKeyShare {
   // TODO: deviceNonce should not rotate and we should actually restore if a device loses it but it still has a
   // device share that we can match. We should replace this with location. If the device share is lost on the device,
   // the shares will also be deleted and force the user to recover them (with a newly generated deviceNonce)
-  deviceNonce String
-  location String
+  deviceNonce String @db.VarChar(255)
+  location    String @db.VarChar(255)
 
-  authShare            String
-  deviceShareHash      String
-  deviceSharePublicKey String
+  authShare            String @db.VarChar(255)
+  deviceShareHash      String @db.VarChar(255)
+  deviceSharePublicKey String @db.VarChar(255)
 
   walletActivations WalletActivation[]
 
-  wallet   Wallet @relation(fields: [walletId], references: [id])
+  wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
 
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
   /// This unique constraint means that if the users loses the deviceShare but, for whatever reason, not the
   /// device nonce, after requesting the recoveryAuthShare and sending the new authShare and deviceShareHash, this will
   /// replace the previous one (as deviceNonce is the same):
   @@unique([userId, deviceNonce, walletId], name: "deviceWorkShares")
+  @@index([status])
+  @@index([sharesRotatedAt])
   @@map("WorkKeyShare")
 }
 
 /// TODO: Document this
 model RecoveryKeyShare {
   id        String   @id @default(uuid())
-  status    String
+  status    String   @db.VarChar(50)
   createdAt DateTime @default(now())
 
-  location String
+  location String @db.VarChar(255)
 
-  recoveryAuthShare            String
-  recoveryBackupShareHash      String
-  recoveryBackupSharePublicKey String
+  recoveryAuthShare            String @db.VarChar(255)
+  recoveryBackupShareHash      String @db.VarChar(255)
+  recoveryBackupSharePublicKey String @db.VarChar(255)
 
   walletRecoveries WalletRecovery[]
 
-  wallet   Wallet @relation(fields: [walletId], references: [id])
+  wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
 
-  user   User   @relation(fields: [userId], references: [id])
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
 
+  @@index([status])
+  @@index([createdAt])
   @@map("RecoveryKeyShare")
 }
 
@@ -347,19 +369,20 @@ model Challenge {
   id       String           @id @default(uuid())
   type     ChallengeType
   purpose  ChallengePurpose
-  value    String
-  version  String
+  value    String           @db.VarChar(255)
+  version  String           @db.VarChar(50)
   issuedAt DateTime         @default(now())
 
-  user   User?   @relation(fields: [userId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String?
 
-  wallet   Wallet? @relation(fields: [walletId], references: [id])
+  wallet   Wallet? @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String?
 
   /// Each user would have up to 5 challenges active at a time (one of each type). Those of the same type will be
   /// overridden.
   @@unique([type, userId], name: "userChallenges")
+  @@index([issuedAt])
   @@map("Challenges")
 }
 
@@ -377,38 +400,47 @@ model Challenge {
 model DeviceAndLocation {
   id          String   @id @default(uuid())
   createdAt   DateTime @default(now())
-  deviceNonce String
-  ip          String
+  deviceNonce String   @db.VarChar(255)
+  // TODO: IPv4 and IPv6? some vpn (cloudflare warp) exposes IPv6 rather than IPv4 if it's specifically set that way
+  ip          String   @db.VarChar(45)
   userAgent   String
-   // TODO: Maybe this should link to "Application" instead?
-  domain      String
 
-  user   User?   @relation(fields: [userId], references: [id])
+  application   Application? @relation(fields: [applicationid], references: [id], onDelete: SetNull)
+  applicationid String?
+
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId String?
 
   @@unique([userId, deviceNonce, ip, userAgent], name: "userDevices")
+  @@index([deviceNonce])
+  @@index([ip])
+  @@index([createdAt])
   @@map("DevicesAndLocations")
 }
 
 // TODO: We might want to keep track of when a user logged in on a specific domain (even if wallets are not activated).
 model Session {
   id                String   @id @default(uuid())
-  providerSessionId String
+  providerSessionId String   @db.VarChar(255)
   createdAt         DateTime @default(now())
   updatedAt         DateTime @default(now())
-  deviceNonce       String
-  ip                String
-  userAgent         String
+  deviceNonce       String   @db.VarChar(255)
+  // TODO: IPv4 and IPv6? some vpn (cloudflare warp) exposes IPv6 rather than IPv4 if it's specifically set that way
+  ip                String   @db.VarChar(45)
+  userAgent         String   @db.VarChar(500)
 
-  // TODO: Maybe this should link to "Application" instead?
-  domains String[]
+  applications Application[]
 
-  user   User?   @relation(fields: [userId], references: [id])
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
   userId String?
 
   /// Note how here we don't include ip and userAgent, as we only want to keep one session per user-device, so if the IP
   /// or the userAgent change on the same device, we simply update the session info.
   @@unique([userId, deviceNonce], name: "userSessions")
+  @@index([providerSessionId])
+  @@index([deviceNonce])
+  @@index([ip])
+  @@index([updatedAt])
   @@map("Sessions")
 }
 
@@ -419,10 +451,13 @@ model Session {
 model EventLog {
   id        String   @id @default(uuid())
   userId    String
-  eventType String
+  eventType String   @db.VarChar(100)
   details   Json
   createdAt DateTime @default(now())
 
+  @@index([userId])
+  @@index([eventType])
+  @@index([createdAt])
   @@map("EventLog")
 }
 
