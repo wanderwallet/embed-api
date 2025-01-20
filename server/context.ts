@@ -1,18 +1,22 @@
-import { inferAsyncReturnType } from "@trpc/server"
-import { verifyJWT } from "./auth"
+import type { inferAsyncReturnType } from "@trpc/server"
+import { supabase } from "../lib/supabaseClient"
+import type { NextRequest } from "next/server"
 
-export async function createContext({ req }: { req: Request }) {
-  // TODO: get user from db
+export async function createContext({ req }: { req: NextRequest }) {
   async function getUserFromHeader() {
-    if (req.headers.get("authorization")) {
-      const token = req.headers.get("authorization")?.split("")[1]
+    const authHeader = req.headers.get("authorization")
+    if (authHeader) {
+      const token = authHeader.split(" ")[1]
       if (token) {
-        try {
-          const verified = await verifyJWT(token)
-          return verified
-        } catch {
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser(token)
+        if (error) {
+          console.error("Error verifying token:", error)
           return null
         }
+        return user
       }
     }
     return null
@@ -21,7 +25,9 @@ export async function createContext({ req }: { req: Request }) {
   const user = await getUserFromHeader()
 
   return {
+    req,
     user,
+    supabase,
   }
 }
 

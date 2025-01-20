@@ -1,4 +1,4 @@
-import { supabase } from '../utils/supabaseClient';
+import { supabase } from '../lib/supabaseClient';
 
 async function seedData() {
   console.log("Seeding data...");
