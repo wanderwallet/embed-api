@@ -34,10 +34,10 @@ export default function Login() {
   const handleGoogleSignIn = async () => {
     setIsLoading(true)
     try {
-      const { url } = await loginMutation.mutateAsync({ authProviderType: "GOOGLE" })
-      if (url) {
+      const loginData = await loginMutation.mutateAsync({ authProviderType: "GOOGLE" })
+      if (loginData?.url) {
         // Redirect to Google's OAuth page
-        window.location.href = url
+        window.location.href = loginData.url
       } else {
         console.error("No URL returned from authenticate")
       }

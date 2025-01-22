@@ -1,7 +1,8 @@
-import { publicProcedure, protectedProcedure } from "../trpc"
-import {getUser} from '../../lib/supabaseClient'
-import { loginWithGoogle, handleGoogleCallback, logoutUser, refreshSession } from "../../services/auth"
+import { publicProcedure, protectedProcedure } from "../../trpc"
+import {getUser} from '../../../lib/supabaseClient'
+import { loginWithGoogle,logoutUser, refreshSession } from "../../../services/auth"
 import { z } from "zod"
+import { googleRoutes } from "./authProviders/google"
 
 enum AuthProviderType {
     PASSKEYS = "PASSKEYS",
@@ -13,22 +14,19 @@ enum AuthProviderType {
   }
 
 export const authenticateRouter = {
+  ...googleRoutes,
   authenticate: publicProcedure
-  .input(z.object({ authProviderType: z.string() }))
+  .input(z.object({ authProviderType: z.string(), options: z.any().optional() }))
   .mutation(async ({input}) => {
-    let url = ''
-
     if(AuthProviderType.GOOGLE === input.authProviderType){
-        url = await loginWithGoogle(input.authProviderType)
+        const url = await loginWithGoogle(input.authProviderType)
         return { url: url }
     }
-
-    return { url: url }
-  }),
-
-  handleGoogleCallback: publicProcedure.query(async () => {
-    const user = await handleGoogleCallback()
-    return { user }
+    if(AuthProviderType.PASSKEYS === input.authProviderType){
+      const url = await loginWithGoogle(input.authProviderType)
+      return { url: url }
+  }
+    return
   }),
 
   getUser: protectedProcedure.query(async () => {

@@ -12,6 +12,8 @@
   },
   "dependencies": {
     "@prisma/client": "6.2.1",
+    "@simplewebauthn/browser": "^13.1.0",
+    "@simplewebauthn/server": "^13.1.0",
     "@supabase/supabase-js": "^2.47.15",
     "@tanstack/react-query": "4.36.1",
     "@trpc/client": "^10.45.2",
@@ -26,6 +28,7 @@
     "zod": "^3.24.1"
   },
   "devDependencies": {
+    "@mermaid-js/mermaid-cli": "^11.4.2",
     "@types/jsonwebtoken": "^9.0.7",
     "@types/node": "^20",
     "@types/react": "^18",
@@ -33,6 +36,7 @@
     "eslint": "^8",
     "eslint-config-next": "14.2.16",
     "prisma": "6.2.1",
+    "prisma-erd-generator": "^1.11.2",
     "ts-node": "^10.9.2",
     "typescript": "^5"
   }

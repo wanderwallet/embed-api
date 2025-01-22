@@ -2,6 +2,10 @@ generator client {
   provider = "prisma-client-js"
 }
 
+generator erd {
+  provider = "prisma-erd-generator"
+}
+
 datasource db {
   provider  = "postgresql"
   url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
@@ -70,6 +74,16 @@ enum ChallengePurpose {
   ACCOUNT_RECOVERY_CONFIRMATION
 }
 
+enum WebAuthnDeviceType {
+  SINGLE_DEVICE
+  MULTI_DEVICE
+}
+
+enum WebAuthnBackupState {
+  NOT_BACKED_UP
+  BACKED_UP
+}
+
 // TODO: Indexes need to be added manually.
 
 // TODO: Should we add triggers somewhere for cascade updates/deletions?
@@ -80,11 +94,15 @@ enum ChallengePurpose {
 
 model AuthMethod {
   id            String           @id @default(uuid())
-  // TODO: Not sure we need this separate ID. This would come from Auth0. Maybe it can just be the main id on this table.
-  providerId    String           @db.VarChar(255)
+  providerId    String           @db.VarChar(255) // Can store passkey credential ID for passkeys
   providerType  AuthProviderType
-  /// This can be an email for EMAIL, a profile handler for social networks or some kind of device ID for passkeys.
-  providerLabel String           @db.VarChar(255)
+  providerLabel String           @db.VarChar(255) // Friendly name for the passkey
+  publicKey     Bytes?           // Public key for passkeys
+  aaguid        String?          @db.VarChar(255) @default("00000000-0000-0000-0000-000000000000") // Authenticator ID
+  signCount     Int?             // Used for replay protection
+  transports    String[]      // List of transports (e.g., "usb", "ble")
+  deviceType    WebAuthnDeviceType @default(SINGLE_DEVICE) // Type of device used
+  backupState   WebAuthnBackupState @default(NOT_BACKED_UP) // Backup state
   linkedAt      DateTime         @default(now())
   lastUsedAt    DateTime         @default(now())
   unlinkedAt    DateTime?
@@ -93,7 +111,6 @@ model AuthMethod {
   userId String
 
   @@unique([userId, providerId], name: "userAuthentication")
-  // TODO: If we end up removing providerId, we can remove this index
   @@index([providerId])
   @@index([lastUsedAt])
   @@map("AuthMethods")
@@ -372,6 +389,7 @@ model Challenge {
   value    String           @db.VarChar(255)
   version  String           @db.VarChar(50)
   issuedAt DateTime         @default(now())
+  usedAt   DateTime?        // New field to track when the challenge is used?
 
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String?
