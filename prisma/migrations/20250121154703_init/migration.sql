@@ -167,7 +167,7 @@ CREATE TABLE "RecoveryKeyShare" (
     "status" VARCHAR(50) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "location" VARCHAR(255) NOT NULL,
-    "recoveryAuthShare" VARCHAR(255) NOT NULL,
+    "recoveryAuthShare" TEXT NOT NULL,
     "recoveryBackupShareHash" VARCHAR(255) NOT NULL,
     "recoveryBackupSharePublicKey" VARCHAR(255) NOT NULL,
     "walletId" TEXT NOT NULL,
@@ -215,17 +215,6 @@ CREATE TABLE "Sessions" (
     "userId" TEXT,
 
     CONSTRAINT "Sessions_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "EventLog" (
-    "id" TEXT NOT NULL,
-    "userId" TEXT NOT NULL,
-    "eventType" VARCHAR(100) NOT NULL,
-    "details" JSONB NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
-    CONSTRAINT "EventLog_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -334,15 +323,6 @@ CREATE INDEX "Sessions_updatedAt_idx" ON "Sessions"("updatedAt");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Sessions_userId_deviceNonce_key" ON "Sessions"("userId", "deviceNonce");
-
--- CreateIndex
-CREATE INDEX "EventLog_userId_idx" ON "EventLog"("userId");
-
--- CreateIndex
-CREATE INDEX "EventLog_eventType_idx" ON "EventLog"("eventType");
-
--- CreateIndex
-CREATE INDEX "EventLog_createdAt_idx" ON "EventLog"("createdAt");
 
 -- CreateIndex
 CREATE INDEX "_ApplicationToSession_B_index" ON "_ApplicationToSession"("B");

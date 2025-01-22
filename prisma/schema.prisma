@@ -352,9 +352,9 @@ model WorkKeyShare {
   sharesRotatedAt  DateTime @default(now())
   rotationWarnings Int      @default(0)
 
-  authShare            String @db.VarChar(255)
+  authShare            String
   deviceShareHash      String @db.VarChar(255)
-  deviceSharePublicKey String @db.VarChar(255)
+  deviceSharePublicKey String 
   deviceNonce          String @db.VarChar(255)
 
   walletActivations WalletActivation[]
@@ -384,9 +384,9 @@ model RecoveryKeyShare {
   status    String   @db.VarChar(50)
   createdAt DateTime @default(now())
 
-  recoveryAuthShare            String @db.VarChar(255)
+  recoveryAuthShare            String 
   recoveryBackupShareHash      String @db.VarChar(255)
-  recoveryBackupSharePublicKey String @db.VarChar(255)
+  recoveryBackupSharePublicKey String 
 
   walletRecoveries WalletRecovery[]
 
@@ -492,6 +492,7 @@ model Session {
   @@map("Sessions")
 }
 
+<<<<<<< HEAD
 model LoginAttempt {
   id              String   @id @default(uuid())
   rejectionReason String   @db.VarChar(255)
@@ -508,4 +509,22 @@ model LoginAttempt {
 
   @@map("LoginAttempts")
 }
+=======
+/// TODO: It seems that the models above already cover all the events we want to log (wallet creation, wallet export...).
+/// Would it be preferable to move the location (DeviceAndLocation) of the different events here? Is there any other type
+/// of event we might want to log? Should we duplicate it to easily serve both uses cases (showing a log of events and
+/// showing the information of a particular event, e.g. where was this wallet created?)?
+// model EventLog {
+//   id        String   @id @default(uuid())
+//   userId    String
+//   eventType String   @db.VarChar(100)
+//   details   Json
+//   createdAt DateTime @default(now())
+
+//   @@index([userId])
+//   @@index([eventType])
+//   @@index([createdAt])
+//   @@map("EventLog")
+// }
+>>>>>>> 2544c51e304984704253ca5d58d6fad112e6c2a9
 
