@@ -21,7 +21,6 @@ We can probably remove/reset those records every month and only keep aggregated 
 
 ## Server Config
 
-- API_KEYS - Dani: I don't remember what this was for :\
 - TTL_WORK_SHARE
 - TTL_CHALLENGE
 
