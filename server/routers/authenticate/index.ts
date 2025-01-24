@@ -1,5 +1,5 @@
 import { publicProcedure, protectedProcedure } from "../../trpc";
-import { getUser } from "../../../lib/supabaseClient";
+import { getUser, supabase } from "../../../lib/supabaseClient";
 import {
   loginWithGoogle,
   logoutUser,
@@ -26,24 +26,51 @@ export const authenticateRouter = {
       z.object({ authProviderType: z.string(), options: z.any().optional() })
     )
     .mutation(async ({ input }) => {
-      if (AuthProviderType.GOOGLE === input.authProviderType) {
-        const url = await loginWithGoogle(input.authProviderType);
-        return { url: url };
-      }
-      if (AuthProviderType.PASSKEYS === input.authProviderType) {
-        if (input?.options?.type === "authenticate")
-          return await startAuthenticateWithPasskeys(
-            input.authProviderType,
-            input.options?.userId
-          );
-        if (input?.options?.type === "verify")
-            return await verifyAuthenticateWithPasskeys(
+      let response;
+      switch (input.authProviderType) {
+        case AuthProviderType.GOOGLE:
+          const url = await loginWithGoogle(input.authProviderType);
+          return { url };
+
+        case AuthProviderType.PASSKEYS:
+          if (input?.options?.type === "authenticate")
+            return await startAuthenticateWithPasskeys(
               input.authProviderType,
-              input.options?.userId,
-              input.options?.assertionResponse
+              input.options?.userId
             );
+          if (input?.options?.type === "verify")
+              return await verifyAuthenticateWithPasskeys(
+                input.authProviderType,
+                input.options?.userId,
+                input.options?.assertionResponse
+              );
+          return {}
+        case AuthProviderType.FACEBOOK:
+          response = await supabase.auth.signInWithOAuth({ provider: "facebook" });
+          return { url: response.data.url };
+
+        case AuthProviderType.X:
+          response = await supabase.auth.signInWithOAuth({ provider: "twitter" });
+          return { url: response.data.url };
+
+        case AuthProviderType.APPLE:
+          response = await supabase.auth.signInWithOAuth({ provider: "apple" });
+          return { url: response.data.url };
+
+        case AuthProviderType.EMAIL_N_PASSWORD:
+          if (!input?.options?.email || !input?.options?.password) {
+            throw new Error("Email and password are required for this login method");
+          }
+          const { error, data } = await supabase.auth.signInWithPassword({
+            email: input.options.email,
+            password: input.options.password,
+          });
+          if (error) throw new Error(error.message);
+          return { user: data.user };
+
+        default:
+          throw new Error("Unsupported auth provider type");
       }
-      return;
     }),
 
   getUser: protectedProcedure.query(async () => {

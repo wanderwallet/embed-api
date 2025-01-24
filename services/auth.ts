@@ -6,6 +6,8 @@ import { getUser, supabase } from "../lib/supabaseClient";
 import { TRPCError } from "@trpc/server";
 import { relyingPartyID, relyingPartyOrigin } from "./webauthnConfig";
 
+// ************ Passkeys Auth Functions
+
 export async function startAuthenticateWithPasskeys(
   authProviderType: string,
   userId: string
@@ -121,6 +123,9 @@ export async function verifyAuthenticateWithPasskeys(
 
   return { verified: true };
 }
+
+// ************ Google Auth Functions
+
 export async function loginWithGoogle(authProviderType: string) {
   if (authProviderType !== "GOOGLE") {
     throw new TRPCError({
@@ -166,6 +171,9 @@ export async function handleGoogleCallback() {
   }
   return user;
 }
+
+// ************ Session Related Functions
+
 export async function validateSession() {
   const user = await getUser();
   if (!user) {

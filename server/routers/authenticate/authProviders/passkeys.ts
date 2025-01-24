@@ -17,6 +17,7 @@ function stringToUint8Array(str: string): Uint8Array {
   return new TextEncoder().encode(str);
 }
 
+// TODO: switch these over to the switch case in authenticate?
 export const passkeysRoutes = {
   startRegistration: publicProcedure
     .input(
