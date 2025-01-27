@@ -143,7 +143,7 @@ model Developer {
   planStartedAt String   @default("free") @db.VarChar(50)
   apiKey        String   @unique @db.VarChar(255)
   createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt()
 
   // Billing Information:
   name        String?
@@ -198,7 +198,7 @@ model Application {
   id        String   @id @default(uuid())
   domains   String[] @db.VarChar(255)
   createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  updatedAt DateTime @updatedAt()
 
   /// Different customization options developers can set in their apps:
   // TODO: Document its shape once defined.
@@ -219,7 +219,7 @@ model Wallet {
   /// This must be set to WATCH_ONLY if publicKey is not set.
   status    WalletStatus @default(ENABLED)
   createdAt DateTime     @default(now())
-  updatedAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt()
   chain     Chain
   address   String       @db.VarChar(255)
   /// Can (not must) be empty for watch-only wallets.
@@ -444,7 +444,7 @@ model Challenge {
 
   /// Each user would have up to 5 challenges active at a time (one of each type). Those of the same type will be
   /// overridden.
-  @@unique([userId, type], name: "userChallenges")
+  @@unique([userId, purpose], name: "userChallenges")
   @@index([issuedAt])
   @@map("Challenges")
 }
@@ -482,13 +482,13 @@ model DeviceAndLocation {
   @@map("DevicesAndLocations")
 }
 
-/// A Session represents an active session. The unique constraint on userId-deviceNonce makes sure we only have one session on a given device, and forces as to 
+/// A Session represents an active session. The unique constraint on userId-deviceNonce makes sure we only have one session on a given device, and forces as to
 /// maintain ip and userAgent updated.
 model Session {
   id                String   @id @default(uuid())
   providerSessionId String   @db.VarChar(255)
   createdAt         DateTime @default(now())
-  updatedAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt()
   deviceNonce       String   @db.VarChar(255)
   // IPv6 or IPv4-mapped address
   ip                String   @db.VarChar(45)

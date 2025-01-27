@@ -50,14 +50,14 @@ We can probably remove/reset those records every month and only keep aggregated 
 **Work Shares:**
 - generateAuthShareChallenge => PUT /wallets/<walletId>/challenges/activation
 - activateWallet => POST /wallets/<walletId>/activate
-- rotateAuthShare => GET /wallets/<walletId>/rotate
+- rotateAuthShare => PUT /wallets/<walletId>/rotate
 
 **Backup:**
 - registerRecoveryShare => POST /wallets/<walletId>/backups/recovery-shares
 - registerWalletExport => POST /wallets/<walletId>/backups/wallet-exports
 
 **Share Recovery:**
-- generateShareRecoveryChallenge => PUT /wallets/<walletId>/challenges/share-recovery/
+- generateRecoveryShareChallenge => PUT /wallets/<walletId>/challenges/share-recovery/
 - recoverWallet => POST /wallets/<walletId>/recover
 
 **Account Recovery:**
