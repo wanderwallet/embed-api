@@ -4,5 +4,6 @@ export const ErrorMessages = {
   CHALLENGE_NOT_FOUND: `Challenge not found. It might have been resolved already, or it might have expired.`,
   INVALID_CHALLENGE: `Invalid challenge.`,
   WORK_SHARE_NOT_FOUND: `Work share not found.`,
+  RECOVERABLE_ACCOUNTS_NOT_FOUND: `No recoverable wallets found.`,
 } as const;
 

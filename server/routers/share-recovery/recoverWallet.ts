@@ -1,10 +1,9 @@
 import { protectedProcedure } from "@/server/trpc"
 import { z } from "zod"
-import { Challenge, ChallengePurpose } from '@prisma/client';
+import { ChallengePurpose } from '@prisma/client';
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
-import { ChallengeUtils, generateChangeValue } from "@/server/utils/challenge/challenge.utils";
-import { Config } from "@/server/utils/config/config.constants";
+import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 
 export const RecoverWalletSchema = z.object({
   walletId: z.string(),
@@ -21,7 +20,7 @@ export const recoverWallet = protectedProcedure
       where: {
         userId: ctx.user.id,
         walletId: input.walletId,
-        recoveryBackupShareHash
+        recoveryBackupShareHash: input.recoveryBackupShareHash,
       },
     });
 

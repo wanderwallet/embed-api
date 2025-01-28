@@ -14,7 +14,6 @@ export const ActivateWalletSchema = z.object({
 export const activateWallet = protectedProcedure
   .input(ActivateWalletSchema)
   .mutation(async ({ input, ctx }) => {
-
     const now = Date.now();
 
     const workKeySharePromise = ctx.prisma.workKeyShare.findFirst({

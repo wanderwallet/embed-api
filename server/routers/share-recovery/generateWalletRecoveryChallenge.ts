@@ -6,12 +6,12 @@ import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
 
-export const GenerateAuthShareChallengeInputSchema = z.object({
+export const GenerateWalletRecoveryChallengeInputSchema = z.object({
   walletId: z.string()
 });
 
-export const generateAuthShareChallenge = protectedProcedure
-  .input(GenerateAuthShareChallengeInputSchema)
+export const generateWalletRecoveryChallenge = protectedProcedure
+  .input(GenerateWalletRecoveryChallengeInputSchema)
   .mutation(async ({ input, ctx }) => {
 
     // Make sure the user is the owner of the wallet:
@@ -20,6 +20,7 @@ export const generateAuthShareChallenge = protectedProcedure
       where: {
         // TODO: Do I need to add userIds or are they implicit?
         userId: ctx.user.id,
+        // TODO: walletId must be included in the wallet recovery file:
         id: input.walletId,
       },
     });
@@ -34,7 +35,7 @@ export const generateAuthShareChallenge = protectedProcedure
     const challengeValue = ChallengeUtils.generateChangeValue();
     const challengeUpsertData = {
       type: Config.CHALLENGE_TYPE,
-      purpose: ChallengePurpose.ACTIVATION,
+      purpose: ChallengePurpose.SHARE_RECOVERY,
       value: challengeValue, // TODO: Update schema size if needed...
       version: Config.CHALLENGE_VERSION,
 
@@ -43,11 +44,11 @@ export const generateAuthShareChallenge = protectedProcedure
       walletId: userWallet.id,
     } as const satisfies Partial<Challenge>;
 
-    const activationChallenge = await ctx.prisma.challenge.upsert({
+    const shareRecoveryChallenge = await ctx.prisma.challenge.upsert({
       where: {
         userChallenges: {
           userId: ctx.user.id,
-          purpose: ChallengePurpose.SHARE_ROTATION,
+          purpose: ChallengePurpose.SHARE_RECOVERY,
         },
       },
       create: challengeUpsertData,
@@ -55,6 +56,6 @@ export const generateAuthShareChallenge = protectedProcedure
     });
 
     return {
-      activationChallenge,
+      shareRecoveryChallenge,
     };
   });

@@ -89,9 +89,9 @@ model AuthMethod {
   lastUsedAt    DateTime         @default(now())
   unlinkedAt    DateTime?
 
-  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String
-  LoginAttempt LoginAttempt[]
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        String
+  loginAttempts LoginAttempt[]
 
   @@unique([userId, providerId], name: "userAuthentication")
   @@index([providerId])
@@ -100,10 +100,10 @@ model AuthMethod {
 }
 
 model User {
-  id        String     @id @default(uuid())
-  name      String?    @db.VarChar(100)
-  email     String?    @db.VarChar(255)
-  developer Developer?
+  id        String  @id @default(uuid())
+  name      String? @db.VarChar(100)
+  email     String? @db.VarChar(255)
+  jwkSecret String
 
   // Settings:
 
@@ -121,6 +121,7 @@ model User {
   /// If a request is rejected due to countryFilterSetting, include or hide the details in the error.
   countryPrivacySetting          FilterPrivacySetting? @default(HIDE_DETAILS)
 
+  developer           Developer?
   authMethods         AuthMethod[]
   wallets             Wallet[]
   walletActivations   WalletActivation[]
@@ -130,8 +131,8 @@ model User {
   recoveryKeyShares   RecoveryKeyShare[]
   challenges          Challenge[]
   devicesAndLocations DeviceAndLocation[]
-  session             Session[]
-  LoginAttempt        LoginAttempt[]
+  sessions            Session[]
+  loginAttempts       LoginAttempt[]
 
   @@index([email])
   @@map("Users")
@@ -290,16 +291,15 @@ model Wallet {
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
   deviceAndLocationId String
 
-  @@unique([userId, address, chain], name: "userWallet")
-  @@index([address])
-  @@index([chain])
-  @@index([status])
+  @@unique([userId, chain, address, status], name: "userWallet")
+  @@index([chain, address, status, canRecoverAccountSetting])
   @@index([createdAt])
   @@map("Wallets")
 }
 
 model WalletActivation {
   id          String   @id @default(uuid())
+  status      String // TODO: sucessful | error
   activatedAt DateTime @default(now())
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -320,6 +320,7 @@ model WalletActivation {
 
 model WalletRecovery {
   id          String   @id @default(uuid())
+  status      String // TODO: sucessful | error
   recoveredAt DateTime @default(now())
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -419,7 +420,7 @@ model RecoveryKeyShare {
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
   deviceAndLocationId String
 
-  @@unique([userId, walletId, recoveryBackupShareHash])
+  @@unique([userId, recoveryBackupShareHash])
   @@index([status])
   @@index([createdAt])
   @@map("RecoveryKeyShares")
@@ -496,7 +497,7 @@ model Session {
   // IPv6 or IPv4-mapped address
   ip                String   @db.VarChar(45)
   /// ISO 3166-1 alpha-2 code
-  countryCode String   @db.VarChar(2)
+  countryCode       String   @db.VarChar(2)
   userAgent         String   @db.VarChar(500)
 
   applications  Application[]

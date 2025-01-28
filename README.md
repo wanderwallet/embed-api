@@ -48,7 +48,7 @@ We can probably remove/reset those records every month and only keep aggregated 
 - deleteWallet => DELETE /wallets/<walletId>
 
 **Work Shares:**
-- ✅ generateAuthShareChallenge => PUT /wallets/<walletId>/challenges/activation
+- ✅ generateWalletActivationChallenge => PUT /wallets/<walletId>/challenges/activation
 - ✅ activateWallet => POST /wallets/<walletId>/activate
 - ✅ rotateAuthShare => PUT /wallets/<walletId>/rotate
 
@@ -57,11 +57,18 @@ We can probably remove/reset those records every month and only keep aggregated 
 - ✅ registerWalletExport => POST /wallets/<walletId>/backups/wallet-exports
 
 **Share Recovery:**
-- ✅ generateRecoveryShareChallenge => PUT /wallets/<walletId>/challenges/share-recovery/
+- ✅ generateWalletRecoveryChallenge => PUT /wallets/<walletId>/challenges/share-recovery/
 - ✅ recoverWallet => POST /wallets/<walletId>/recover
 
 **Account Recovery:**
-- generateWalletRecoveryChallenge => PUT /<walletId>/challenges/account-recovery/
-- fetchRecoverableAccounts => GET /wallets/<walletId>/accounts/
+- ✅ generateFetchRecoverableWalletsChallenge => PUT /<walletId>/challenges/account-recovery/
+- ✅ fetchRecoverableAccounts => GET /wallets/<walletId>/accounts/
 - generateAccountRecoveryChallenge => PUT /<walletId>/challenges/account-recovery-confirmation/
 - recoverAccount => PUT /accounts/<accountId>/recover
+
+**Misc.**
+- Endpoint to set `doNotAskAgainSetting`
+
+**TODO:**
+- Update `canBeRecovered`
+- Account for `walletPrivacySetting`, `activationAuthsRequiredSetting`, `backupAuthsRequiredSetting`, `recoveryAuthsRequiredSetting`, country filter, ip filter...

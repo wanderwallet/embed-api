@@ -6,12 +6,12 @@ import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
 
-export const GenerateRecoveryShareChallengeInputSchema = z.object({
+export const GenerateWalletActivationChallengeInputSchema = z.object({
   walletId: z.string()
 });
 
-export const generateRecoveryShareChallenge = protectedProcedure
-  .input(GenerateRecoveryShareChallengeInputSchema)
+export const generateWalletActivationChallenge = protectedProcedure
+  .input(GenerateWalletActivationChallengeInputSchema)
   .mutation(async ({ input, ctx }) => {
 
     // Make sure the user is the owner of the wallet:
@@ -34,7 +34,7 @@ export const generateRecoveryShareChallenge = protectedProcedure
     const challengeValue = ChallengeUtils.generateChangeValue();
     const challengeUpsertData = {
       type: Config.CHALLENGE_TYPE,
-      purpose: ChallengePurpose.SHARE_RECOVERY,
+      purpose: ChallengePurpose.ACTIVATION,
       value: challengeValue, // TODO: Update schema size if needed...
       version: Config.CHALLENGE_VERSION,
 
@@ -43,11 +43,11 @@ export const generateRecoveryShareChallenge = protectedProcedure
       walletId: userWallet.id,
     } as const satisfies Partial<Challenge>;
 
-    const shareRecoveryChallenge = await ctx.prisma.challenge.upsert({
+    const activationChallenge = await ctx.prisma.challenge.upsert({
       where: {
         userChallenges: {
           userId: ctx.user.id,
-          purpose: ChallengePurpose.SHARE_RECOVERY,
+          purpose: ChallengePurpose.SHARE_ROTATION,
         },
       },
       create: challengeUpsertData,
@@ -55,6 +55,6 @@ export const generateRecoveryShareChallenge = protectedProcedure
     });
 
     return {
-      shareRecoveryChallenge,
+      activationChallenge,
     };
   });
