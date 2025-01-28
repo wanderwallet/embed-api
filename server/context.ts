@@ -1,6 +1,6 @@
 import { inferAsyncReturnType } from "@trpc/server"
 import { verifyJWT } from "./auth"
-import { DeviceAndLocation, PrismaClient } from "@prisma/client";
+import { DeviceAndLocation, PrismaClient, Session } from "@prisma/client";
 
 interface User {
   id: string;
@@ -41,7 +41,7 @@ export async function createContext({ req }: { req: Request }) {
   // Updated on auth or auth refresh:
 
   // TODO: Set this with real data:
-  const deviceAndLocation: DeviceAndLocation = {
+  const session: Session = {
     id: "",
     createdAt: new Date(),
     deviceNonce: "",
@@ -55,7 +55,7 @@ export async function createContext({ req }: { req: Request }) {
   return {
     prisma,
     user,
-    deviceAndLocation,
+    session,
   }
 }
 

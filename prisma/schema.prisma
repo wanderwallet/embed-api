@@ -373,8 +373,8 @@ model WorkKeyShare {
   deviceShareHash      String @db.VarChar(255)
   deviceSharePublicKey String
 
-  // TODO: Link to a DeviceAndLocation instead to update them automatically if the device changes?
-  deviceNonce          String @db.VarChar(255)
+  // TODO: Use the Session relation instead.
+  // deviceNonce String @db.VarChar(255)
 
   walletActivations WalletActivation[]
 
@@ -390,7 +390,7 @@ model WorkKeyShare {
   /// This unique constraint means that if the users loses the deviceShare but, for whatever reason, not the
   /// device nonce, after requesting the recoveryAuthShare and sending the new authShare and deviceShareHash, this will
   /// replace the previous one (as deviceNonce is the same):
-  @@unique([userId, deviceNonce, walletId], name: "deviceWorkShares")
+  @@unique([userId, sessionId, walletId], name: "deviceWorkShares")
   @@index([status])
   @@index([sharesRotatedAt])
   @@map("WorkKeyShares")
@@ -419,7 +419,7 @@ model RecoveryKeyShare {
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
   deviceAndLocationId String
 
-  @@index([userId])
+  @@unique([userId, walletId, recoveryBackupShareHash])
   @@index([status])
   @@index([createdAt])
   @@map("RecoveryKeyShares")
@@ -495,6 +495,8 @@ model Session {
   deviceNonce       String   @db.VarChar(255)
   // IPv6 or IPv4-mapped address
   ip                String   @db.VarChar(45)
+  /// ISO 3166-1 alpha-2 code
+  countryCode String   @db.VarChar(2)
   userAgent         String   @db.VarChar(500)
 
   applications  Application[]

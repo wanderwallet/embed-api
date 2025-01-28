@@ -1,6 +1,6 @@
 import { protectedProcedure } from "@/server/trpc"
 import { z } from "zod"
-import { ChallengePurpose } from '@prisma/client';
+import { Challenge, ChallengePurpose } from '@prisma/client';
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
@@ -32,6 +32,16 @@ export const generateAuthShareChallenge = protectedProcedure
     }
 
     const challengeValue = ChallengeUtils.generateChangeValue();
+    const challengeUpsertData = {
+      type: Config.CHALLENGE_TYPE,
+      purpose: ChallengePurpose.ACTIVATION,
+      value: challengeValue, // TODO: Update schema size if needed...
+      version: Config.CHALLENGE_VERSION,
+
+      // Relations:
+      userId: ctx.user.id,
+      walletId: userWallet.id,
+    } as const satisfies Partial<Challenge>;
 
     const activationChallenge = await ctx.prisma.challenge.upsert({
       where: {
@@ -40,16 +50,8 @@ export const generateAuthShareChallenge = protectedProcedure
           purpose: ChallengePurpose.SHARE_ROTATION,
         },
       },
-      data: {
-        type: Config.CHALLENGE_TYPE,
-        purpose: ChallengePurpose.ACTIVATION,
-        value: challengeValue, // TODO: Update schema size if needed...
-        version: Config.CHALLENGE_VERSION,
-
-        // Relations:
-        userId: ctx.user.id,
-        walletId: userWallet.id,
-      },
+      create: challengeUpsertData,
+      update: challengeUpsertData,
     });
 
     return {

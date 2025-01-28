@@ -8,9 +8,9 @@ import { Config } from "@/server/utils/config/config.constants";
 
 export const RotateAuthShareSchema = z.object({
   walletId: z.string(),
-  authShare: z.string(), // TODO: Validate length
-  deviceShareHash: z.string(), // TODO: Validate length
-  deviceSharePublicKey: z.string(), // TODO: Validate length
+  authShare: z.string(), // TODO: Validate length/format
+  deviceShareHash: z.string(), // TODO: Validate length/format
+  deviceSharePublicKey: z.string(), // TODO: Validate length/format
   challengeSolution: z.string(),
 });
 
@@ -28,7 +28,7 @@ export const rotateAuthShare = protectedProcedure
       },
     });
 
-    // TODO: Should all procedures update DeviceAndLocation if data has changed?
+    // TODO: Should all procedures update Session info if data has changed?
 
     if (!challenge) {
       // Just try again.
@@ -85,7 +85,7 @@ export const rotateAuthShare = protectedProcedure
           // TODO Add "Index" postfix to all these...
           deviceWorkShares: {
             userId: ctx.user.id,
-            deviceNonce: ctx.deviceAndLocation.deviceNonce,
+            sessionId: ctx.session.id,
             walletId: input.walletId,
           },
         },

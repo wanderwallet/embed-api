@@ -1,6 +1,6 @@
 import { protectedProcedure } from "@/server/trpc"
 import { z } from "zod"
-import { ChallengePurpose } from '@prisma/client';
+import { Challenge, ChallengePurpose } from '@prisma/client';
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils, generateChangeValue } from "@/server/utils/challenge/challenge.utils";
@@ -20,7 +20,7 @@ export const activateWallet = protectedProcedure
     const workKeySharePromise = ctx.prisma.workKeyShare.findFirst({
       where: {
         userId: ctx.user.id,
-        deviceNonce: ctx.deviceAndLocation.deviceNonce,
+        sessionId: ctx.session.id,
         walletId: input.walletId,
       },
     });
@@ -33,7 +33,7 @@ export const activateWallet = protectedProcedure
       },
     });
 
-    // TODO: Should all procedures update DeviceAndLocation if data has changed?
+    // TODO: Should all procedures update Session info if data has changed?
 
     const [
       workKeyShare,
@@ -99,24 +99,26 @@ export const activateWallet = protectedProcedure
     ] = await ctx.prisma.$transaction(async (tx) => {
       const dateNow = new Date();
       const challengeValue = generateChangeValue();
+      const challengeUpsertData = {
+        type: Config.CHALLENGE_TYPE,
+        purpose: ChallengePurpose.SHARE_ROTATION,
+        value: challengeValue, // TODO: Update schema size if needed...
+        version: Config.CHALLENGE_VERSION,
 
-      const rotationChallengePromise = shouldRotate ? ctx.prisma.challenge.upsert({
+        // Relations:
+        userId: ctx.user.id,
+        walletId: ctx.user.id,
+      } as const satisfies Partial<Challenge>;
+
+      const rotationChallengePromise = shouldRotate ? tx.challenge.upsert({
         where: {
           userChallenges: {
             userId: ctx.user.id,
             purpose: ChallengePurpose.SHARE_ROTATION,
           },
         },
-        data: {
-          type: Config.CHALLENGE_TYPE,
-          purpose: ChallengePurpose.SHARE_ROTATION,
-          value: challengeValue, // TODO: Update schema size if needed...
-          version: Config.CHALLENGE_VERSION,
-
-          // Relations:
-          userId: ctx.user.id,
-          walletId: ctx.user.id,
-        },
+        create: challengeUpsertData,
+        update: challengeUpsertData,
       }) : null;
 
       const updateRotationWarningPromise = shouldRotate ? tx.workKeyShare.update({
@@ -144,7 +146,7 @@ export const activateWallet = protectedProcedure
           userId: ctx.user.id,
           walletId: workKeyShare.walletId,
           workKeyShareId: workKeyShare.id,
-          deviceAndLocationId: ctx.deviceAndLocation.id,
+          deviceAndLocationId,
         },
       });
 
