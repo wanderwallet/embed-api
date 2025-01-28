@@ -195,10 +195,11 @@ model Bill {
 }
 
 model Application {
-  id        String   @id @default(uuid())
-  domains   String[] @db.VarChar(255)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt()
+  id          String   @id @default(uuid())
+  description String?  @db.VarChar(255)
+  domains     String[] @db.VarChar(255) // TODO: Consider separating domains to add tags/label to them (e.g. staging, etc.)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt()
 
   /// Different customization options developers can set in their apps:
   // TODO: Document its shape once defined.
@@ -371,6 +372,8 @@ model WorkKeyShare {
   authShare            String
   deviceShareHash      String @db.VarChar(255)
   deviceSharePublicKey String
+
+  // TODO: Link to a DeviceAndLocation instead to update them automatically if the device changes?
   deviceNonce          String @db.VarChar(255)
 
   walletActivations WalletActivation[]

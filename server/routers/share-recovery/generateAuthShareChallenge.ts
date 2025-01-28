@@ -33,7 +33,13 @@ export const generateAuthShareChallenge = protectedProcedure
 
     const challengeValue = ChallengeUtils.generateChangeValue();
 
-    const activationChallenge = await ctx.prisma.challenge.create({
+    const activationChallenge = await ctx.prisma.challenge.upsert({
+      where: {
+        userChallenges: {
+          userId: ctx.user.id,
+          purpose: ChallengePurpose.SHARE_ROTATION,
+        },
+      },
       data: {
         type: Config.CHALLENGE_TYPE,
         purpose: ChallengePurpose.ACTIVATION,

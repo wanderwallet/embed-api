@@ -28,6 +28,7 @@ export const activateWallet = protectedProcedure
     const challengePromise = ctx.prisma.challenge.findFirst({
       where: {
         userId: ctx.user.id,
+        walletId: input.walletId,
         purpose: ChallengePurpose.ACTIVATION,
       },
     });
@@ -99,7 +100,13 @@ export const activateWallet = protectedProcedure
       const dateNow = new Date();
       const challengeValue = generateChangeValue();
 
-      const rotationChallengePromise = shouldRotate ? ctx.prisma.challenge.create({
+      const rotationChallengePromise = shouldRotate ? ctx.prisma.challenge.upsert({
+        where: {
+          userChallenges: {
+            userId: ctx.user.id,
+            purpose: ChallengePurpose.SHARE_ROTATION,
+          },
+        },
         data: {
           type: Config.CHALLENGE_TYPE,
           purpose: ChallengePurpose.SHARE_ROTATION,
