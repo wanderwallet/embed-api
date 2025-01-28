@@ -1,6 +1,6 @@
 import { inferAsyncReturnType } from "@trpc/server"
 import { verifyJWT } from "./auth"
-import { PrismaClient } from "@prisma/client";
+import { DeviceAndLocation, PrismaClient } from "@prisma/client";
 
 interface User {
   id: string;
@@ -36,11 +36,26 @@ export async function createContext({ req }: { req: Request }) {
     return null
   }
 
-  const user = await getUserFromHeader()
+  const user = await getUserFromHeader();
+
+  // Updated on auth or auth refresh:
+
+  // TODO: Set this with real data:
+  const deviceAndLocation: DeviceAndLocation = {
+    id: "",
+    createdAt: new Date(),
+    deviceNonce: "",
+    ip: "",
+    countryCode: "",
+    userAgent: "",
+    userId: "",
+    applicationId: "",
+  }
 
   return {
     prisma,
     user,
+    deviceAndLocation,
   }
 }
 

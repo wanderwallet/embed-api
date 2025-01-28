@@ -12,15 +12,27 @@ export interface VerifyChallengeParams {
   now: number;
 }
 
-export async function verifyActivationChallenge({
+export async function solveChallenge({
+  challenge,
+}: VerifyChallengeParams) {
+  // TODO: To be implemented...
+
+  return "";
+}
+
+
+export async function verifyChallenge({
   challenge,
   solution,
   now,
 }: VerifyChallengeParams) {
+  // TODO: To be implemented...
+
   return true;
 }
 
 export const ChallengeUtils = {
   generateChangeValue,
-  verifyActivationChallenge,
+  solveChallenge,
+  verifyChallenge,
 }

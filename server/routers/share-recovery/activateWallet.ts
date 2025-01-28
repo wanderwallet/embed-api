@@ -1,22 +1,10 @@
 import { protectedProcedure } from "@/server/trpc"
 import { z } from "zod"
-import { ChallengePurpose, ChallengeType } from '@prisma/client';
+import { ChallengePurpose } from '@prisma/client';
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils, generateChangeValue } from "@/server/utils/challenge/challenge.utils";
-
-const CONFIG_CHALLENGE_TYPE = process.env.CHALLENGE_TYPE as ChallengeType;
-const CONFIG_CHALLENGE_VERSION = process.env.CHALLENGE_TYPE || "";
-
-const CHALLENGE_TTL_MS = parseInt(process.env.CHALLENGE_TTL_MS || "0");
-const SHARE_TTL_MS = parseInt(process.env.SHARE_TTL_MS || "0");
-const SHARE_ROTATION_IGNORE_LIMIT = parseInt(process.env.SHARE_ROTATION_IGNORE_LIMIT || "0");
-
-// TODO: We probably want to "load", validate and type ENV vars elsewhere:
-
-if (isNaN(CHALLENGE_TTL_MS) && CHALLENGE_TTL_MS > 0) {
-  throw Error("Invalid ENV variable: CHALLENGE_TTL_MS");
-}
+import { Config } from "@/server/utils/config/config.constants";
 
 export const ActivateWalletSchema = z.object({
   walletId: z.string(),
@@ -32,7 +20,7 @@ export const activateWallet = protectedProcedure
     const workKeySharePromise = ctx.prisma.workKeyShare.findFirst({
       where: {
         userId: ctx.user.id,
-        deviceNonce: ctx.deviceNonce,
+        deviceNonce: ctx.deviceAndLocation.deviceNonce,
         walletId: input.walletId,
       },
     });
@@ -43,6 +31,8 @@ export const activateWallet = protectedProcedure
         purpose: ChallengePurpose.ACTIVATION,
       },
     });
+
+    // TODO: Should all procedures update DeviceAndLocation if data has changed?
 
     const [
       workKeyShare,
@@ -70,7 +60,7 @@ export const activateWallet = protectedProcedure
       });
     }
 
-    const isChallengeValid = await ChallengeUtils.verifyActivationChallenge({
+    const isChallengeValid = await ChallengeUtils.verifyChallenge({
       challenge,
       solution: input.challengeSolution,
       now,
@@ -87,7 +77,7 @@ export const activateWallet = protectedProcedure
       });
     }
 
-    if (workKeyShare.rotationWarnings >= SHARE_ROTATION_IGNORE_LIMIT) {
+    if (workKeyShare.rotationWarnings >= Config.SHARE_ROTATION_IGNORE_LIMIT) {
       // TODO: If rotationWarnings too high, delete workKeyShare...
       await ctx.prisma.workKeyShare.delete({
         where: {
@@ -101,7 +91,7 @@ export const activateWallet = protectedProcedure
       });
     }
 
-    const shouldRotate = now - workKeyShare.sharesRotatedAt.getTime() >= SHARE_TTL_MS;
+    const shouldRotate = now - workKeyShare.sharesRotatedAt.getTime() >= Config.SHARE_TTL_MS;
 
     const [
       rotationChallenge
@@ -111,10 +101,10 @@ export const activateWallet = protectedProcedure
 
       const rotationChallengePromise = shouldRotate ? ctx.prisma.challenge.create({
         data: {
-          type: CONFIG_CHALLENGE_TYPE,
+          type: Config.CHALLENGE_TYPE,
           purpose: ChallengePurpose.SHARE_ROTATION,
           value: challengeValue, // TODO: Update schema size if needed...
-          version: CONFIG_CHALLENGE_VERSION,
+          version: Config.CHALLENGE_VERSION,
 
           // Relations:
           userId: ctx.user.id,
@@ -147,8 +137,7 @@ export const activateWallet = protectedProcedure
           userId: ctx.user.id,
           walletId: workKeyShare.walletId,
           workKeyShareId: workKeyShare.id,
-          deviceAndLocationId: "",
-          // TODO: Add device and location info (should be attached to JWT?)
+          deviceAndLocationId: ctx.deviceAndLocation.id,
         },
       });
 
@@ -164,10 +153,6 @@ export const activateWallet = protectedProcedure
         deleteChallengePromise,
       ]);
     });
-
-    if (rotationChallenge === null) {
-      console.log(rotationChallenge)
-    }
 
     return {
       authShare: workKeyShare.authShare,
