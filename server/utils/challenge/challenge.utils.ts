@@ -1,4 +1,4 @@
-import { Challenge } from "@prisma/client";
+import { AnonChallenge, Challenge } from "@prisma/client";
 
 export function generateChangeValue() {
   return Buffer.from(crypto.getRandomValues(new Uint8Array(512))).toString(
@@ -7,7 +7,7 @@ export function generateChangeValue() {
 }
 
 export interface VerifyChallengeParams {
-  challenge: Challenge;
+  challenge: Challenge | AnonChallenge;
   solution: string;
   now: number;
 }

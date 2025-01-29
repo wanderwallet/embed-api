@@ -70,6 +70,7 @@ export const recoverWallet = protectedProcedure
 
     if (!isChallengeValid) {
       // TODO: Register the failed attempt anyway!
+      // TODO: Delete challenges when failed too.
 
       throw new TRPCError({
         code: "FORBIDDEN",

@@ -63,8 +63,8 @@ We can probably remove/reset those records every month and only keep aggregated 
 **Account Recovery:**
 - ✅ generateFetchRecoverableWalletsChallenge => PUT /<walletId>/challenges/account-recovery/
 - ✅ fetchRecoverableAccounts => GET /wallets/<walletId>/accounts/
-- generateAccountRecoveryChallenge => PUT /<walletId>/challenges/account-recovery-confirmation/
-- recoverAccount => PUT /accounts/<accountId>/recover
+- ✅ generateAccountRecoveryChallenge => PUT /<walletId>/challenges/account-recovery-confirmation/
+- ✅ recoverAccount => PUT /accounts/<accountId>/recover
 
 **Misc.**
 - Endpoint to set `doNotAskAgainSetting`
@@ -72,3 +72,5 @@ We can probably remove/reset those records every month and only keep aggregated 
 **TODO:**
 - Update `canBeRecovered`
 - Account for `walletPrivacySetting`, `activationAuthsRequiredSetting`, `backupAuthsRequiredSetting`, `recoveryAuthsRequiredSetting`, country filter, ip filter...
+- Create / update `DeviceAndLocation` rows.
+- Implement challenge creation/validation logic.

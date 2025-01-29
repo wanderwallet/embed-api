@@ -72,7 +72,6 @@ enum ChallengePurpose {
   SHARE_RECOVERY
   SHARE_ROTATION
   ACCOUNT_RECOVERY
-  ACCOUNT_RECOVERY_CONFIRMATION
 }
 
 // TODO: Document index usages.
@@ -89,9 +88,9 @@ model AuthMethod {
   lastUsedAt    DateTime         @default(now())
   unlinkedAt    DateTime?
 
-  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId        String
-  loginAttempts LoginAttempt[]
+  user                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                 String
+  authenticationAttempts AuthenticationAttempt[]
 
   @@unique([userId, providerId], name: "userAuthentication")
   @@index([providerId])
@@ -100,10 +99,13 @@ model AuthMethod {
 }
 
 model User {
-  id        String  @id @default(uuid())
-  name      String? @db.VarChar(100)
-  email     String? @db.VarChar(255)
-  jwkSecret String
+  id          String    @id @default(uuid())
+  name        String?   @db.VarChar(100)
+  email       String?   @db.VarChar(255)
+  jwkSecret   String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt()
+  recoveredAt DateTime?
 
   // Settings:
 
@@ -121,18 +123,18 @@ model User {
   /// If a request is rejected due to countryFilterSetting, include or hide the details in the error.
   countryPrivacySetting          FilterPrivacySetting? @default(HIDE_DETAILS)
 
-  developer           Developer?
-  authMethods         AuthMethod[]
-  wallets             Wallet[]
-  walletActivations   WalletActivation[]
-  walletRecoveries    WalletRecovery[]
-  walletExports       WalletExport[]
-  workKeyShares       WorkKeyShare[]
-  recoveryKeyShares   RecoveryKeyShare[]
-  challenges          Challenge[]
-  devicesAndLocations DeviceAndLocation[]
-  sessions            Session[]
-  loginAttempts       LoginAttempt[]
+  developer              Developer?
+  authMethods            AuthMethod[]
+  wallets                Wallet[]
+  walletActivations      WalletActivation[]
+  walletRecoveries       WalletRecovery[]
+  walletExports          WalletExport[]
+  workKeyShares          WorkKeyShare[]
+  recoveryKeyShares      RecoveryKeyShare[]
+  challenges             Challenge[]
+  devicesAndLocations    DeviceAndLocation[]
+  sessions               Session[]
+  authenticationAttempts AuthenticationAttempt[]
 
   @@index([email])
   @@map("Users")
@@ -431,26 +433,36 @@ model RecoveryKeyShare {
 /// SHARE_RECOVERY =
 /// SHARE_ROTATION =
 /// ACCOUNT_RECOVERY =
-/// ACCOUNT_RECOVERY_CONFIRMATION =
 model Challenge {
-  id       String           @id @default(uuid())
-  type     ChallengeType
-  purpose  ChallengePurpose
-  value    String           @db.VarChar(255)
-  version  String           @db.VarChar(50)
-  issuedAt DateTime         @default(now())
+  id        String           @id @default(uuid())
+  type      ChallengeType
+  purpose   ChallengePurpose
+  value     String           @db.VarChar(255)
+  version   String           @db.VarChar(50)
+  createdAt DateTime         @default(now())
 
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String?
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
 
-  wallet   Wallet? @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  walletId String?
+  wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  walletId String
 
-  /// Each user would have up to 5 challenges active at a time (one of each type). Those of the same type will be
+  /// Each user would have up to 4 challenges active at a time (one of each type). Those of the same type will be
   /// overridden.
   @@unique([userId, purpose], name: "userChallenges")
-  @@index([issuedAt])
   @@map("Challenges")
+}
+
+/// Used in `generateFetchRecoverableWalletsChallenge()`
+model AnonChallenge {
+  id        String   @id @default(uuid())
+  value     String   @db.VarChar(255)
+  version   String   @db.VarChar(50)
+  createdAt DateTime @default(now())
+  chain     Chain
+  address   String   @db.VarChar(255)
+
+  @@map("AnonChallenges")
 }
 
 /// A DeviceAndLocation item tells us where did a specific event (the entity this item is linked to) happened. The unique constraint on
@@ -466,12 +478,12 @@ model DeviceAndLocation {
   countryCode String   @db.VarChar(2)
   userAgent   String
 
-  wallets           Wallet[]
-  walletActivations WalletActivation[]
-  walletRecoveries  WalletRecovery[]
-  walletExports     WalletExport[]
-  recoveryKeyShares RecoveryKeyShare[]
-  loginAttempts     LoginAttempt[]
+  wallets                Wallet[]
+  walletActivations      WalletActivation[]
+  walletRecoveries       WalletRecovery[]
+  walletExports          WalletExport[]
+  recoveryKeyShares      RecoveryKeyShare[]
+  authenticationAttempts AuthenticationAttempt[]
 
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String?
@@ -516,7 +528,7 @@ model Session {
   @@map("Sessions")
 }
 
-model LoginAttempt {
+model AuthenticationAttempt {
   id              String   @id @default(uuid())
   rejectionReason String   @db.VarChar(255)
   createdAt       DateTime @default(now())

@@ -1,13 +1,11 @@
 import { z } from "zod"
-import { Chain, WalletStatus } from '@prisma/client';
+import { WalletStatus } from '@prisma/client';
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { publicProcedure } from "@/server/trpc";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 
 export const FetchRecoverableAccounts = z.object({
-  chain: z.nativeEnum(Chain),
-  address: z.string(), // TODO: Add proper validation
   challengeId: z.string(),
   challengeSolution: z.string(),
 });
@@ -19,7 +17,7 @@ export const fetchRecoverableAccounts = publicProcedure
   .mutation(async ({ input, ctx }) => {
     const now = Date.now();
 
-    const challenge = await ctx.prisma.anonChallenges.findFirst({
+    const challenge = await ctx.prisma.anonChallenge.findFirst({
       where: {
         id: input.challengeId
       },
@@ -46,15 +44,14 @@ export const fetchRecoverableAccounts = publicProcedure
           },
         },
       },
-      // include: {
-      //   wallets: true
-      // },
       where: {
         wallets: {
-          chain: challenge.chain,
-          address: challenge.address,
-          status: WalletStatus.ENABLED,
-          canRecoverAccountSetting: true,
+          some: {
+            chain: challenge.chain,
+            address: challenge.address,
+            status: WalletStatus.ENABLED,
+            canRecoverAccountSetting: true,
+          },
         },
       },
     });
@@ -66,18 +63,16 @@ export const fetchRecoverableAccounts = publicProcedure
       });
     }
 
-    // TODO: Pass wallet public key
     const isChallengeValid = await ChallengeUtils.verifyChallenge({
       challenge,
       solution: input.challengeSolution,
       now,
-      publicKey: recoverableAccounts[0].wallets[0].publicKey,
-      // TODO: Depending on chain, the signature algorithm might change...
+      // publicKey: recoverableAccounts[0].wallets[0].publicKey,
+      // TODO: Depending on chain, the signature algorithm might change.
+      // TODO: Finish `ChallengeUtils` for all types.
     });
 
     if (!isChallengeValid) {
-      // TODO: Register the failed attempt anyway!
-
       throw new TRPCError({
         code: "FORBIDDEN",
         message: ErrorMessages.INVALID_CHALLENGE,

@@ -1,5 +1,5 @@
 import { z } from "zod"
-import { Chain, ChallengePurpose } from '@prisma/client';
+import { Chain } from '@prisma/client';
 import { publicProcedure } from "@/server/trpc";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
@@ -22,14 +22,13 @@ export const generateFetchRecoverableWalletsChallenge = publicProcedure
 
     const challengeValue = ChallengeUtils.generateChangeValue();
 
-    // TODO: Create new table:
-    const fetchRecoverableWalletsChallenge = await ctx.prisma.anonChallenges.create({
-      type: Config.CHALLENGE_TYPE,
-      purpose: ChallengePurpose.SHARE_RECOVERY,
-      value: challengeValue, // TODO: Update schema size if needed...
-      version: Config.CHALLENGE_VERSION,
-      chain: input.chain,
-      address: input.address,
+    const fetchRecoverableWalletsChallenge = await ctx.prisma.anonChallenge.create({
+      data: {
+        value: challengeValue, // TODO: Update schema size if needed...
+        version: Config.CHALLENGE_VERSION,
+        chain: input.chain,
+        address: input.address,
+      },
     });
 
     return {
