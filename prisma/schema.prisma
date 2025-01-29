@@ -99,13 +99,14 @@ model AuthMethod {
 }
 
 model User {
-  id          String    @id @default(uuid())
-  name        String?   @db.VarChar(100)
-  email       String?   @db.VarChar(255)
-  jwkSecret   String
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt()
-  recoveredAt DateTime?
+  id             String    @id @default(uuid())
+  name           String?   @db.VarChar(100)
+  email          String?   @db.VarChar(255)
+  profilePicture String?   @db.VarChar(255)
+  jwkSecret      String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt()
+  recoveredAt    DateTime?
 
   // Settings:
 
@@ -114,7 +115,7 @@ model User {
   /// Require 1 or more wallet signatures to recover this account.
   recoveryWalletsRequiredSetting Int                   @default(1)
   /// Only allow requests from these IPs.
-  ipFilterSetting                String?               @db.VarChar(255)
+  ipFilterSetting                String[]               @db.VarChar(45)
   /// If a request is rejected due to ipFilterSetting, include or hide the details in the error.
   ipPrivacyFilterSetting         FilterPrivacySetting? @default(HIDE_DETAILS)
   /// Only allow requests from these countries (based in IP). Countries will be stored as ISO 3166-1 alpha-2 codes, as returned by CloudFare

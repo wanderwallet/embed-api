@@ -50,6 +50,10 @@ export const rotateAuthShare = protectedProcedure
     if (!isChallengeValid) {
       // TODO: Register the failed attempt anyway!
 
+      await ctx.prisma.challenge.delete({
+        where: { id: challenge.id },
+      });
+
       throw new TRPCError({
         code: "FORBIDDEN",
         message: ErrorMessages.INVALID_CHALLENGE,

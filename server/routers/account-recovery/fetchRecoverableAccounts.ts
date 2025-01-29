@@ -32,28 +32,43 @@ export const fetchRecoverableAccounts = publicProcedure
       });
     }
 
-    const recoverableAccounts = await ctx.prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true, // TODO: Add privacy setting for this?
-        // TODO: Add picture?
-        wallets: {
-          select: {
-            publicKey: true,
+    const [
+      recoverableAccounts
+    ] = await ctx.prisma.$transaction(async (tx) => {
+      const recoverableAccountsPromise = tx.user.findMany({
+        select: {
+          id: true,
+          name: true,
+          email: true, // TODO: Add privacy setting for this?
+          // TODO: Add picture?
+          wallets: {
+            select: {
+              publicKey: true,
+            },
           },
         },
-      },
-      where: {
-        wallets: {
-          some: {
-            chain: challenge.chain,
-            address: challenge.address,
-            status: WalletStatus.ENABLED,
-            canRecoverAccountSetting: true,
+        where: {
+          wallets: {
+            some: {
+              chain: challenge.chain,
+              address: challenge.address,
+              status: WalletStatus.ENABLED,
+              canRecoverAccountSetting: true,
+            },
           },
         },
-      },
+      });
+
+      const deleteChallengePromise = tx.anonChallenge.delete({
+        where: {
+          id: input.challengeId
+        },
+      });
+
+      return Promise.all([
+        recoverableAccountsPromise,
+        deleteChallengePromise,
+      ]);
     });
 
     if (recoverableAccounts.length === 0) {

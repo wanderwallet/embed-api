@@ -67,10 +67,12 @@ We can probably remove/reset those records every month and only keep aggregated 
 - ✅ recoverAccount => PUT /accounts/<accountId>/recover
 
 **Misc.**
-- Endpoint to set `doNotAskAgainSetting`
+- Endpoint to set `doNotAskAgainSetting` (it's probably updateWallet?)
 
 **TODO:**
+- ✅ Delete challenges even if validation fails.
+- Implement challenge creation/validation logic.
+
 - Update `canBeRecovered`
 - Account for `walletPrivacySetting`, `activationAuthsRequiredSetting`, `backupAuthsRequiredSetting`, `recoveryAuthsRequiredSetting`, country filter, ip filter...
 - Create / update `DeviceAndLocation` rows.
-- Implement challenge creation/validation logic.

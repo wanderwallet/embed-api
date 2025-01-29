@@ -16,14 +16,6 @@ export const recoverWallet = protectedProcedure
   .mutation(async ({ input, ctx }) => {
     const now = Date.now();
 
-    const recoveryKeySharePromise = ctx.prisma.recoveryKeyShare.findFirst({
-      where: {
-        userId: ctx.user.id,
-        walletId: input.walletId,
-        recoveryBackupShareHash: input.recoveryBackupShareHash,
-      },
-    });
-
     const challengePromise = ctx.prisma.challenge.findFirst({
       where: {
         userId: ctx.user.id,
@@ -32,24 +24,23 @@ export const recoverWallet = protectedProcedure
       },
     });
 
+    const recoveryKeySharePromise = ctx.prisma.recoveryKeyShare.findFirst({
+      where: {
+        userId: ctx.user.id,
+        walletId: input.walletId,
+        recoveryBackupShareHash: input.recoveryBackupShareHash,
+      },
+    });
+
     // TODO: Should all procedures update Session info if data has changed?
 
     const [
-      recoveryKeyShare,
       challenge,
+      recoveryKeyShare,
     ] = await Promise.all([
-      recoveryKeySharePromise,
       challengePromise,
+      recoveryKeySharePromise,
     ]);
-
-    if (!recoveryKeyShare) {
-      // TODO: Differentiate between invalid share and deleted share that was once valid.
-
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: ErrorMessages.WORK_SHARE_NOT_FOUND,
-      });
-    }
 
     if (!challenge) {
       // Just try again.
@@ -70,11 +61,23 @@ export const recoverWallet = protectedProcedure
 
     if (!isChallengeValid) {
       // TODO: Register the failed attempt anyway!
-      // TODO: Delete challenges when failed too.
+
+      await ctx.prisma.challenge.delete({
+        where: { id: challenge.id },
+      });
 
       throw new TRPCError({
         code: "FORBIDDEN",
         message: ErrorMessages.INVALID_CHALLENGE,
+      });
+    }
+
+    if (!recoveryKeyShare) {
+      // TODO: Differentiate between invalid share and deleted share that was once valid.
+
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: ErrorMessages.WORK_SHARE_NOT_FOUND,
       });
     }
 

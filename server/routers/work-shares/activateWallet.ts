@@ -16,14 +16,6 @@ export const activateWallet = protectedProcedure
   .mutation(async ({ input, ctx }) => {
     const now = Date.now();
 
-    const workKeySharePromise = ctx.prisma.workKeyShare.findFirst({
-      where: {
-        userId: ctx.user.id,
-        sessionId: ctx.session.id,
-        walletId: input.walletId,
-      },
-    });
-
     const challengePromise = ctx.prisma.challenge.findFirst({
       where: {
         userId: ctx.user.id,
@@ -32,24 +24,23 @@ export const activateWallet = protectedProcedure
       },
     });
 
+    const workKeySharePromise = ctx.prisma.workKeyShare.findFirst({
+      where: {
+        userId: ctx.user.id,
+        sessionId: ctx.session.id,
+        walletId: input.walletId,
+      },
+    });
+
     // TODO: Should all procedures update Session info if data has changed?
 
     const [
-      workKeyShare,
       challenge,
+      workKeyShare,
     ] = await Promise.all([
-      workKeySharePromise,
       challengePromise,
+      workKeySharePromise,
     ]);
-
-    if (!workKeyShare) {
-      // The wallet must be recovered.
-
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: ErrorMessages.WORK_SHARE_NOT_FOUND,
-      });
-    }
 
     if (!challenge) {
       // Just try again.
@@ -71,9 +62,22 @@ export const activateWallet = protectedProcedure
     if (!isChallengeValid) {
       // TODO: Register the failed attempt anyway!
 
+      await ctx.prisma.challenge.delete({
+        where: { id: challenge.id },
+      });
+
       throw new TRPCError({
         code: "FORBIDDEN",
         message: ErrorMessages.INVALID_CHALLENGE,
+      });
+    }
+
+    if (!workKeyShare) {
+      // The wallet must be recovered.
+
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: ErrorMessages.WORK_SHARE_NOT_FOUND,
       });
     }
 

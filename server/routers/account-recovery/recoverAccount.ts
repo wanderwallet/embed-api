@@ -47,7 +47,10 @@ export const recoverAccount = publicProcedure
 
     if (!isChallengeValid) {
       // TODO: Register (update) the failed attempt anyway!
-      // TODO: Delete challenges when failed too.
+
+      await ctx.prisma.challenge.delete({
+        where: { id: challenge.id },
+      });
 
       throw new TRPCError({
         code: "FORBIDDEN",
@@ -67,29 +70,27 @@ export const recoverAccount = publicProcedure
         },
       });
 
-      const deleteAuthMethodsPromise = tx.authMethod.deleteMany({
+      const recreateAuthMethodsPromise = tx.authMethod.deleteMany({
         where: {
           userId: challenge.userId,
         }
-      });
+      }).then(() => {
+        // TODO: Create Session, AuthMethod, JWT... just like with signUps.
+
+        return tx.authMethod.create({
+          data: { },
+        });
+      })
 
       const deleteChallengePromise = tx.challenge.delete({
         where: { id: challenge.id },
       });
 
-      const [registerAccountRecovery] = await Promise.resolve([
+      return Promise.resolve([
         registerAccountRecoveryPromise,
-        deleteAuthMethodsPromise,
+        recreateAuthMethodsPromise,
         deleteChallengePromise,
       ]);
-
-      // TODO: Create Session, AuthMethod, JWT... just like with signUps.
-
-      await tx.authMethod.create({
-        data: { },
-      });
-
-      return registerAccountRecovery;
     });
 
     return {
