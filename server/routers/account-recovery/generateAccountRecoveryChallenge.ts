@@ -24,11 +24,11 @@ export const generateAccountRecoveryChallenge = publicProcedure
         userId: true,
       },
       where: {
+        userId: input.userId,
+        status: WalletStatus.ENABLED,
         chain: input.chain,
         address: input.address,
-        status: WalletStatus.ENABLED,
         canRecoverAccountSetting: true,
-        userId: input.userId,
       },
     });
 

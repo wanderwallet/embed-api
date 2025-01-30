@@ -36,43 +36,46 @@ We can probably remove/reset those records every month and only keep aggregated 
 ## SDK API:
 
 **Authentication:**
-- authenticate => GET /auth
-- refreshSession => GET /auth/<userId>
-- fakeAuthenticate => GET /auth/fake
-- fakeRefreshSession => GET /auth/fake/<[alice|bob]>
+- authenticate
+- refreshSession
+- fakeAuthenticate
+- fakeRefreshSession
 
 **Wallets:**
-- fetchWallets => GET /wallets
-- createWallet => POST /wallets
-- updateWallet => PUT /wallets/<walletId>
-- deleteWallet => DELETE /wallets/<walletId>
+- ✅ fetchWallets
+- ✅ doNotAskAgainForBackup
+- ✅ createWallet
+- ✅ updateWallet
+- ✅ deleteWallet
 
 **Work Shares:**
-- ✅ generateWalletActivationChallenge => PUT /wallets/<walletId>/challenges/activation
-- ✅ activateWallet => POST /wallets/<walletId>/activate
-- ✅ rotateAuthShare => PUT /wallets/<walletId>/rotate
+- ✅ generateWalletActivationChallenge
+- ✅ activateWallet
+- ✅ rotateAuthShare
 
 **Backup:**
-- ✅ registerRecoveryShare => POST /wallets/<walletId>/backups/recovery-shares
-- ✅ registerWalletExport => POST /wallets/<walletId>/backups/wallet-exports
+- ✅ registerRecoveryShare
+- ✅ registerWalletExport
 
 **Share Recovery:**
-- ✅ generateWalletRecoveryChallenge => PUT /wallets/<walletId>/challenges/share-recovery/
-- ✅ recoverWallet => POST /wallets/<walletId>/recover
+- ✅ generateWalletRecoveryChallenge
+- ✅ recoverWallet
 
 **Account Recovery:**
-- ✅ generateFetchRecoverableWalletsChallenge => PUT /<walletId>/challenges/account-recovery/
-- ✅ fetchRecoverableAccounts => GET /wallets/<walletId>/accounts/
-- ✅ generateAccountRecoveryChallenge => PUT /<walletId>/challenges/account-recovery-confirmation/
-- ✅ recoverAccount => PUT /accounts/<accountId>/recover
-
-**Misc.**
-- Endpoint to set `doNotAskAgainSetting` (it's probably updateWallet?)
+- ✅ generateFetchRecoverableWalletsChallenge
+- ✅ fetchRecoverableAccounts
+- ✅ generateAccountRecoveryChallenge
+- ✅ recoverAccount
 
 **TODO:**
 - ✅ Delete challenges even if validation fails.
 - Implement challenge creation/validation logic.
 
-- Update `canBeRecovered`
 - Account for `walletPrivacySetting`, `activationAuthsRequiredSetting`, `backupAuthsRequiredSetting`, `recoveryAuthsRequiredSetting`, country filter, ip filter...
 - Create / update `DeviceAndLocation` rows.
+- Enforce limits on certain tables...
+- Create enum for status fields currently typed as `String`.
+- Validate `Application`
+- Endpoints to create `Application`?
+- Review `// Make sure the user is the owner of the wallet:` comments. Do we actually need a separate query or just a userId filter?
+- Rotate user JWT secret when logging out if there are no more sessions.

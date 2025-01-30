@@ -41,7 +41,7 @@ enum Chain {
 enum WalletStatus {
   ENABLED
   DISABLED
-  WATCH_ONLY
+  READONLY
   LOST
 }
 
@@ -55,6 +55,17 @@ enum WalletIdentifierType {
   ALIAS
   ANS
   PNS
+}
+
+enum WalletSourceType {
+  IMPORTED
+  GENERATED
+}
+
+enum WalletSourceFrom {
+  SEEDPHRASE
+  KEYFILE
+  BINARY
 }
 
 enum ExportType {
@@ -221,7 +232,7 @@ model Application {
 
 model Wallet {
   id        String       @id @default(uuid())
-  /// This must be set to WATCH_ONLY if publicKey is not set.
+  /// This must be set to READONLY if publicKey is not set.
   status    WalletStatus @default(ENABLED)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt()
@@ -239,7 +250,7 @@ model Wallet {
   /// Custom tags the user can attach to this wallet.
   tagsSetting                    String[]             @db.VarChar(50)
   /// New wallets will prompt the user to backup/export it, but users can disable these reminders (per wallet).
-  doNotAskAgainSetting           Boolean              @default(true)
+  doNotAskAgainSetting           Boolean              @default(false)
   /// Send the address, only last 4 characters of the address or no address at all when wallets are retrieved.
   walletPrivacySetting           WalletPrivacySetting @default(PUBLIC)
   /// Users will be able to disable wallets as recovery options. This must be set to false if publicKey is not set.
@@ -262,7 +273,7 @@ model Wallet {
   ///   pns: string;
   ///   pnsResolution: any;
   /// }
-  info Json
+  info Json?
 
   /// Information about the origin/source of this wallet:
   /// {
@@ -294,8 +305,8 @@ model Wallet {
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
   deviceAndLocationId String
 
-  @@unique([userId, chain, address, status], name: "userWallet")
-  @@index([chain, address, status, canRecoverAccountSetting])
+  @@unique([userId, status, chain, address], name: "userWallet")
+  @@index([canRecoverAccountSetting, status, chain, address])
   @@index([createdAt])
   @@map("Wallets")
 }

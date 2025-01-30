@@ -50,10 +50,10 @@ export const fetchRecoverableAccounts = publicProcedure
         where: {
           wallets: {
             some: {
+              canRecoverAccountSetting: true,
+              status: WalletStatus.ENABLED,
               chain: challenge.chain,
               address: challenge.address,
-              status: WalletStatus.ENABLED,
-              canRecoverAccountSetting: true,
             },
           },
         },
