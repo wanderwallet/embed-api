@@ -39,9 +39,15 @@ enum Chain {
 }
 
 enum WalletStatus {
+  /// The wallet can be activated and used normally.
   ENABLED
+  /// The wallet cannot be activated without first changing its status to ENABLED, but shares stay in the DB.
   DISABLED
+  /// READONLY wallets don't have shares stored in the DB (when changing the walletStatus to READONLY, they'll be
+  /// deleted, if they existed).
   READONLY
+  /// LOST wallets don't have shares stored in the DB (when changing the walletStatus to LOST, they'll be deleted, if
+  /// they existed).
   LOST
 }
 
@@ -126,7 +132,7 @@ model User {
   /// Require 1 or more wallet signatures to recover this account.
   recoveryWalletsRequiredSetting Int                   @default(1)
   /// Only allow requests from these IPs.
-  ipFilterSetting                String[]               @db.VarChar(45)
+  ipFilterSetting                String[]              @db.VarChar(45)
   /// If a request is rejected due to ipFilterSetting, include or hide the details in the error.
   ipPrivacyFilterSetting         FilterPrivacySetting? @default(HIDE_DETAILS)
   /// Only allow requests from these countries (based in IP). Countries will be stored as ISO 3166-1 alpha-2 codes, as returned by CloudFare
@@ -245,10 +251,12 @@ model Wallet {
 
   /// Preferred way to visually present this wallet.
   identifierTypeSetting          WalletIdentifierType @default(ALIAS)
+  /// Custom name/alias the user can attach to this wallet.
+  aliasSetting                   String?              @db.VarChar(64)
   /// Custom description/note the user can attach to this wallet.
   descriptionSetting             String?              @db.VarChar(500)
   /// Custom tags the user can attach to this wallet.
-  tagsSetting                    String[]             @db.VarChar(50)
+  tagsSetting                    String[]             @db.VarChar(32)
   /// New wallets will prompt the user to backup/export it, but users can disable these reminders (per wallet).
   doNotAskAgainSetting           Boolean              @default(false)
   /// Send the address, only last 4 characters of the address or no address at all when wallets are retrieved.
@@ -267,11 +275,14 @@ model Wallet {
   /// Includes cached information about how to identify this wallet:
   ///
   /// {
-  ///   alias: string;
+  ///   ens: string;
+  ///   ensResolution: any;
   ///   ans: string;
   ///   ansResolution: any;
   ///   pns: string;
   ///   pnsResolution: any;
+  ///   ...
+  ///   etc. (for other chains)
   /// }
   info Json?
 
@@ -280,7 +291,7 @@ model Wallet {
   ///   type "imported" | "generated",
   ///   from: "seedphrase" | "keyfile" | "binary"
   /// }
-  source Json
+  source Json?
 
   // Stats:
   lastActivatedAt  DateTime? // Can be computed from `WalletActivation`
@@ -378,8 +389,6 @@ model WalletExport {
 /// might be closed, but the deviceNonce and deviceShare stay on the device).
 model WorkKeyShare {
   id               String   @id @default(uuid())
-  // TODO: Replace with ENUM once we know what status are possible:
-  status           String   @db.VarChar(50)
   createdAt        DateTime @default(now())
   sharesRotatedAt  DateTime @default(now())
   rotationWarnings Int      @default(0)
@@ -406,7 +415,6 @@ model WorkKeyShare {
   /// device nonce, after requesting the recoveryAuthShare and sending the new authShare and deviceShareHash, this will
   /// replace the previous one (as deviceNonce is the same):
   @@unique([userId, sessionId, walletId], name: "deviceWorkShares")
-  @@index([status])
   @@index([sharesRotatedAt])
   @@map("WorkKeyShares")
 }
@@ -415,8 +423,6 @@ model WorkKeyShare {
 /// as a file), and are not rotated.
 model RecoveryKeyShare {
   id        String   @id @default(uuid())
-  // TODO: Replace with ENUM once we know what status are possible:
-  status    String   @db.VarChar(50)
   createdAt DateTime @default(now())
 
   recoveryAuthShare            String
@@ -435,7 +441,6 @@ model RecoveryKeyShare {
   deviceAndLocationId String
 
   @@unique([userId, recoveryBackupShareHash])
-  @@index([status])
   @@index([createdAt])
   @@map("RecoveryKeyShares")
 }

@@ -21,7 +21,8 @@ We can probably remove/reset those records every month and only keep aggregated 
 
 ## Server Config
 
-- TTL_WORK_SHARE
+- TTL_WORK_SHARE (time between rotations)
+- TTL_WORK_SHARE (time before deletion if inactive?)
 - TTL_CHALLENGE
 
 - MAX_AUTH_METHODS_PER_USER
@@ -69,13 +70,41 @@ We can probably remove/reset those records every month and only keep aggregated 
 
 **TODO:**
 - ✅ Delete challenges even if validation fails.
-- Implement challenge creation/validation logic.
+- ✅ Update `canBeRecovered` in `registerRecoveryShare` and `registerWalletExport`.
+- ✅ Make sure `activateWallet` only allows it for enabled wallets?
+- ✅ Add `aliasSetting` to `Wallet`.
+- ✅ Add missing `authShare` to `createWallet()`.
 
+- Account for `status` and `walletPrivacySetting` in `fetchWallets`, `createWallet`, and `updateWallet`. Easier to save it taking that value into account than
+  having to filter everywhere. Make sure `SECRET` doesn't generate inaccessible wallets.
+
+- What happens in `updateWallet` if the status is changed to `ENABLED`?
+
+- Review `// Make sure the user is the owner of the wallet:` comments. Do we actually need a separate query or just a userId filter?
+- Implement challenge creation/validation logic.
+- Make sure `publicKey` matches `address`.
+- Log activation attempts of LOST wallets.
+- Add proper validation for addresses and public key fields.
 - Account for `walletPrivacySetting`, `activationAuthsRequiredSetting`, `backupAuthsRequiredSetting`, `recoveryAuthsRequiredSetting`, country filter, ip filter...
 - Create / update `DeviceAndLocation` rows.
 - Enforce limits on certain tables...
 - Create enum for status fields currently typed as `String`.
 - Validate `Application`
 - Endpoints to create `Application`?
-- Review `// Make sure the user is the owner of the wallet:` comments. Do we actually need a separate query or just a userId filter?
 - Rotate user JWT secret when logging out if there are no more sessions.
+- Add all missing ENV variables to `config.constants.ts`.
+
+**Needed for Dashboard:**
+
+- fetchAuthMethods
+- addAuthMethod
+- deleteAuthMethod
+
+- fetchSessions
+- deleteSession (also deletes `WorkKeyShare`s)
+
+- fetchRecoveryKeyShares
+- deleteRecoveryKeyShare (just mark it as deleted?)
+
+- fetchExports
+- deleteExport (just mark it as deleted?)

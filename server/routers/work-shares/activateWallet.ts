@@ -1,6 +1,6 @@
 import { protectedProcedure } from "@/server/trpc"
 import { z } from "zod"
-import { Challenge, ChallengePurpose } from '@prisma/client';
+import { Challenge, ChallengePurpose, WalletStatus } from '@prisma/client';
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils, generateChangeValue } from "@/server/utils/challenge/challenge.utils";
@@ -29,6 +29,9 @@ export const activateWallet = protectedProcedure
         userId: ctx.user.id,
         sessionId: ctx.session.id,
         walletId: input.walletId,
+        wallet: {
+          status: WalletStatus.ENABLED,
+        },
       },
     });
 

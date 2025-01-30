@@ -39,6 +39,7 @@ export const generateAuthShareChallenge = protectedProcedure
           id: userWallet.id,
         },
         data: {
+          canBeRecovered: true,
           lastBackedUpAt: dateNow,
           totalBackups: { increment: 1 },
         },
