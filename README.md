@@ -74,21 +74,20 @@ We can probably remove/reset those records every month and only keep aggregated 
 - ✅ Make sure `activateWallet` only allows it for enabled wallets?
 - ✅ Add `aliasSetting` to `Wallet`.
 - ✅ Add missing `authShare` to `createWallet()`.
+- ✅ Remove `SECRET` in `WalletPrivacySetting`.
 
-- Account for `status` and `walletPrivacySetting` in `fetchWallets`, `createWallet`, and `updateWallet`. Easier to save it taking that value into account than
-  having to filter everywhere. Make sure `SECRET` doesn't generate inaccessible wallets.
-
+- Account for `status` and `walletPrivacySetting` in `fetchWallets`, `createWallet`, and `updateWallet`.
 - What happens in `updateWallet` if the status is changed to `ENABLED`?
+- Make sure `publicKey` matches `address`.
+- Properly validate `address` based on `chain`.
 
+- Create enum for `status` fields currently typed as `String`.
 - Review `// Make sure the user is the owner of the wallet:` comments. Do we actually need a separate query or just a userId filter?
 - Implement challenge creation/validation logic.
-- Make sure `publicKey` matches `address`.
 - Log activation attempts of LOST wallets.
-- Add proper validation for addresses and public key fields.
-- Account for `walletPrivacySetting`, `activationAuthsRequiredSetting`, `backupAuthsRequiredSetting`, `recoveryAuthsRequiredSetting`, country filter, ip filter...
+- Account for `activationAuthsRequiredSetting`, `backupAuthsRequiredSetting`, `recoveryAuthsRequiredSetting`, country filter, ip filter...
 - Create / update `DeviceAndLocation` rows.
 - Enforce limits on certain tables...
-- Create enum for status fields currently typed as `String`.
 - Validate `Application`
 - Endpoints to create `Application`?
 - Rotate user JWT secret when logging out if there are no more sessions.
@@ -106,5 +105,17 @@ We can probably remove/reset those records every month and only keep aggregated 
 - fetchRecoveryKeyShares
 - deleteRecoveryKeyShare (just mark it as deleted?)
 
-- fetchExports
-- deleteExport (just mark it as deleted?)
+- fetchWalletExports
+- deleteWalletExport? (just mark it as deleted?)
+
+- fetchWalletRecoveries
+- reportWalletRecovery?
+- reportWalletRecovery?
+
+- fetchWalletActivations
+- reportWalletActivation?
+- deleteWalletActivation?
+
+
+
+

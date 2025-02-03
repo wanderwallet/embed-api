@@ -41,19 +41,23 @@ enum Chain {
 enum WalletStatus {
   /// The wallet can be activated and used normally.
   ENABLED
+
   /// The wallet cannot be activated without first changing its status to ENABLED, but shares stay in the DB.
   DISABLED
+
   /// READONLY wallets don't have shares stored in the DB (when changing the walletStatus to READONLY, they'll be
   /// deleted, if they existed).
   READONLY
+
   /// LOST wallets don't have shares stored in the DB (when changing the walletStatus to LOST, they'll be deleted, if
   /// they existed).
   LOST
 }
 
 enum WalletPrivacySetting {
-  SECRET
+  /// Only the last 4 characters of `address` are stored. `publicKey` is not stored.
   PRIVATE
+  /// The whole `address` and `publicKey` are stored.
   PUBLIC
 }
 
@@ -262,7 +266,7 @@ model Wallet {
   /// Send the address, only last 4 characters of the address or no address at all when wallets are retrieved.
   walletPrivacySetting           WalletPrivacySetting @default(PUBLIC)
   /// Users will be able to disable wallets as recovery options. This must be set to false if publicKey is not set.
-  canRecoverAccountSetting       Boolean              @default(true)
+  canRecoverAccountSetting       Boolean              @default(false)
   /// Set to true after the user has exported a seedphrase, private key or recovery file.
   canBeRecovered                 Boolean              @default(false)
   /// Require 1 or more authentication tokens to activate this wallet.
