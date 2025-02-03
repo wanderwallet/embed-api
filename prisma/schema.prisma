@@ -42,7 +42,8 @@ enum WalletStatus {
   /// The wallet can be activated and used normally.
   ENABLED
 
-  /// The wallet cannot be activated without first changing its status to ENABLED, but shares stay in the DB.
+  /// The wallet cannot be activated without first changing its status to ENABLED, but shares stay in the DB. They can
+  /// also be used for account recovery if they are not PRIVATE.
   DISABLED
 
   /// READONLY wallets don't have shares stored in the DB (when changing the walletStatus to READONLY, they'll be

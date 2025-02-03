@@ -13,11 +13,11 @@ export const CommonWalletInputShape = {
   aliasSetting: z.string().optional(),
   descriptionSetting: z.string().optional(),
   tagsSetting: z.array(z.string()).optional(),
-  walletPrivacySetting: z.nativeEnum(WalletPrivacySetting).optional(),
 } as const satisfies ZodRawShape;
 
 export const CreateEnabledWalletInputSchema = z.object({
   ...CommonWalletInputShape,
+  walletPrivacySetting: z.nativeEnum(WalletPrivacySetting).optional(),
   canRecoverAccountSetting: z.boolean(),
   source: z.object({
     type: z.nativeEnum(WalletSourceType),

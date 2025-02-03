@@ -45,8 +45,16 @@ We can probably remove/reset those records every month and only keep aggregated 
 **Wallets:**
 - ✅ fetchWallets
 - ✅ doNotAskAgainForBackup
-- ✅ createWallet
-- ✅ updateWallet
+- ❌ createWallet, instead:
+  - createPublicWallet
+  - createPrivateWallet
+  - createReadOnlyWallet
+- ❌ updateWallet, instead:
+  - ✅ makeWalletPrivate
+  - ✅ makeWalletPublic
+  - ✅ updateWalletInfo
+  - ✅ updateWalletRecovery
+  - ✅ updateWalletStatus
 - ✅ deleteWallet
 
 **Work Shares:**
@@ -75,11 +83,10 @@ We can probably remove/reset those records every month and only keep aggregated 
 - ✅ Add `aliasSetting` to `Wallet`.
 - ✅ Add missing `authShare` to `createWallet()`.
 - ✅ Remove `SECRET` in `WalletPrivacySetting`.
+- ✅ Split `updateWallet` into individual procedures.
 
-- Account for `status` and `walletPrivacySetting` in `fetchWallets`, `createWallet`, and `updateWallet`.
-- What happens in `updateWallet` if the status is changed to `ENABLED`?
+- Split `createWallet` into individual procedures.
 - Make sure `publicKey` matches `address`.
-- Properly validate `address` based on `chain`.
 
 - Create enum for `status` fields currently typed as `String`.
 - Review `// Make sure the user is the owner of the wallet:` comments. Do we actually need a separate query or just a userId filter?
