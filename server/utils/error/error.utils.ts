@@ -1,3 +1,4 @@
+import { isNativeError } from "util/types";
 import { ZodError } from "zod";
 
 export function isZodError(err: unknown): err is ZodError {
@@ -9,7 +10,7 @@ export function getZodErrorMessage(err: ZodError) {
 }
 
 export function getErrorMessage(err: unknown) {
-  return isZodError(err)
+  return isZodError(err) || isNativeError(err)
     ? (err.message || err.name || "Unexpected error")
     : "Unexpected error";
 }

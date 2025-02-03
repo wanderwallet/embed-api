@@ -12,12 +12,10 @@ export const MakeWalletPublicInputSchema = z.object({
   chain: z.nativeEnum(Chain),
   address: z.string(), // TODO: Validate length/format
   publicKey: z.string(), // TODO: Validate length/format
-}).superRefine((data, ctx) => {
+}).superRefine(async (data, ctx) => {
   // `chain`, `address` and `publicKey` match:
-  const walletIssues = validateWallet(data.chain, data.address, data.publicKey);
-
-  if (walletIssues?.address) ctx.addIssue(walletIssues.address);
-  if (walletIssues?.publicKey) ctx.addIssue(walletIssues.publicKey);
+  const walletIssues = await validateWallet(data.chain, data.address, data.publicKey);
+  walletIssues.forEach(ctx.addIssue);
 });
 
 export const makeWalletPublic = protectedProcedure

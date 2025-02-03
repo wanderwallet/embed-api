@@ -46,9 +46,9 @@ We can probably remove/reset those records every month and only keep aggregated 
 - ✅ fetchWallets
 - ✅ doNotAskAgainForBackup
 - ❌ createWallet, instead:
-  - createPublicWallet
-  - createPrivateWallet
-  - createReadOnlyWallet
+  - ✅ createPublicWallet
+  - ✅ createPrivateWallet
+  - ✅ createReadOnlyWallet
 - ❌ updateWallet, instead:
   - ✅ makeWalletPrivate
   - ✅ makeWalletPublic
@@ -84,9 +84,9 @@ We can probably remove/reset those records every month and only keep aggregated 
 - ✅ Add missing `authShare` to `createWallet()`.
 - ✅ Remove `SECRET` in `WalletPrivacySetting`.
 - ✅ Split `updateWallet` into individual procedures.
+- ✅ Split `createWallet` into individual procedures.
 
-- Split `createWallet` into individual procedures.
-- Make sure `publicKey` matches `address`.
+- Make sure `publicKey` matches `address` and remove `// TODO: Validate length/format`.
 
 - Create enum for `status` fields currently typed as `String`.
 - Review `// Make sure the user is the owner of the wallet:` comments. Do we actually need a separate query or just a userId filter?
