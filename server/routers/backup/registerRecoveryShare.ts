@@ -19,13 +19,12 @@ export const generateAuthShareChallenge = protectedProcedure
     // operation will probably reuse it. Otherwise, the cleanup cronjobs will take care of it:
     const deviceAndLocationIdPromise = getDeviceAndLocationId(ctx);
 
-    // Make sure the user is the owner of the wallet:
+    // Make sure the user is the owner of the wallet (because of the RecoveryKeyShare relation below):
     const userWallet = await ctx.prisma.wallet.findFirst({
       select: { id: true },
       where: {
-        // TODO: Do I need to add userIds or are they implicit?
-        userId: ctx.user.id,
         id: input.walletId,
+        userId: ctx.user.id,
       },
     });
 
@@ -43,6 +42,7 @@ export const generateAuthShareChallenge = protectedProcedure
       const updateWalletStatsPromise = tx.wallet.update({
         where: {
           id: userWallet.id,
+          userId: ctx.user.id,
         },
         data: {
           canBeRecovered: true,

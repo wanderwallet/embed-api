@@ -108,8 +108,6 @@ These could instead be capped by date (e.g. older than a month), using a _cronjo
 - ✅ Log activation and recovery attempts.
 - ✅ Create / connect `DeviceAndLocation`.
 
-- Review `// Make sure the user is the owner of the wallet:` comments. Do we actually need a separate query or just a userId filter?
-
 - Properly validate share, share hash and share public key format (remove `// TODO: Validate length/format`)
 - Lazily update `Session` on each request if it has changed (meaning, all endpoints might return a new token).
 - Implement challenge creation/validation logic.
@@ -125,6 +123,10 @@ These could instead be capped by date (e.g. older than a month), using a _cronjo
 - Enforce limits on certain tables...
 - Account for `activationAuthsRequiredSetting`, `backupAuthsRequiredSetting`, `recoveryAuthsRequiredSetting`, country filter, ip filter...
 - Enforce ENV variable limits.
+
+**TODO (main repo):**
+
+- `walletId` must be included in the wallet recovery file.
 
 **Needed for Dashboard:**
 

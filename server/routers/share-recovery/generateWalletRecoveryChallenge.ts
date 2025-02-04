@@ -14,16 +14,16 @@ export const GenerateWalletRecoveryChallengeInputSchema = z.object({
 export const generateWalletRecoveryChallenge = protectedProcedure
   .input(GenerateWalletRecoveryChallengeInputSchema)
   .mutation(async ({ input, ctx }) => {
+    // It is faster to make this query outside the transaction and await it inside, but if the transaction fails, this
+    // will leave an orphan DeviceAndLocation behind. Still, this might not be an issue, as retrying this same
+    // operation will probably reuse it. Otherwise, the cleanup cronjobs will take care of it:
     const deviceAndLocationIdPromise = getDeviceAndLocationId(ctx);
 
-    // Make sure the user is the owner of the wallet:
     const userWallet = await ctx.prisma.wallet.findFirst({
       select: { id: true, status: true },
       where: {
-        // TODO: Do I need to add userIds or are they implicit?
-        userId: ctx.user.id,
-        // TODO: walletId must be included in the wallet recovery file:
         id: input.walletId,
+        userId: ctx.user.id,
       },
     });
 

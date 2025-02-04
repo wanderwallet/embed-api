@@ -19,13 +19,11 @@ export const generateWalletActivationChallenge = protectedProcedure
     // operation will probably reuse it. Otherwise, the cleanup cronjobs will take care of it:
     const deviceAndLocationIdPromise = getDeviceAndLocationId(ctx);
 
-    // Make sure the user is the owner of the wallet:
     const userWallet = await ctx.prisma.wallet.findFirst({
       select: { id: true, status: true },
       where: {
-        // TODO: Do I need to add userIds or are they implicit?
-        userId: ctx.user.id,
         id: input.walletId,
+        userId: ctx.user.id,
       },
     });
 
