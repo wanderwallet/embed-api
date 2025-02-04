@@ -21,17 +21,20 @@ We can probably remove/reset those records every month and only keep aggregated 
 
 ## Server Config & Cronjobs
 
-**TTLs**
+**Challenges:**
 
-- `TTL_WORK_SHARE_ACTIVE`: Time between rotations.
-- `TTL_WORK_SHARE_INACTIVE`: Time before deletion if inactive - Needs a _cronjob_.
-- `TTL_CHALLENGE`: Max. elapsed time between `Challenge.createdAt` and its resolution. Because both operations are called
-  sequentially, this TTL should be relatively short (e.g. 5-30 seconds).
+- `CHALLENGE_TYPE`
+- `CHALLENGE_VERSION`
+- `CHALLENGE_TTL_MS`: Max. elapsed time between `Challenge.createdAt` and its resolution. Because both operations are
+  called sequentially, this TTL should be relatively short (e.g. 5-30 seconds).
 
-**Failed Attempts:**
+**Shares:**
 
-- `MAX_FAILED_ACTIVATION_ATTEMPTS` - What happens then?
-- `MAX_FAILED_RECOVERY_ATTEMPTS` - What happens then?
+- `SHARE_ACTIVE_TTL_MS`: Time between rotations.
+- `SHARE_INACTIVE_TTL_MS`: Time before deletion if inactive - Needs a _cronjob_.
+- `SHARE_MAX_FAILED_ACTIVATION_ATTEMPTS` - What happens then?
+- `SHARE_MAX_FAILED_RECOVERY_ATTEMPTS` - What happens then?
+- `SHARE_MAX_IGNORED_SHARE_ROTATION_WARNING`
 
 **Auth Method, Wallet & Share Limits:**
 
@@ -108,9 +111,10 @@ These could instead be capped by date (e.g. older than a month), using a _cronjo
 - ✅ Log activation and recovery attempts.
 - ✅ Create / connect `DeviceAndLocation`.
 
+-  Implement challenge creation & validation logic.
+
 - Properly validate share, share hash and share public key format (remove `// TODO: Validate length/format`)
 - Lazily update `Session` on each request if it has changed (meaning, all endpoints might return a new token).
-- Implement challenge creation/validation logic.
 - Add all missing ENV variables to `config.constants.ts`.
 - Review / clean up TODOs in this PR.
 
