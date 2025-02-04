@@ -86,20 +86,23 @@ We can probably remove/reset those records every month and only keep aggregated 
 - ✅ Split `updateWallet` into individual procedures.
 - ✅ Split `createWallet` into individual procedures.
 - ✅ Create `WalletUsageStatus` enum.
+- ✅ Log activation and recovery attempts.
 
-- Log activation and recovery attempts of LOST wallets.
-
-- Implement challenge creation/validation logic.
 - Create / update `DeviceAndLocation` rows and update session.
+- Implement challenge creation/validation logic.
 - Make sure `publicKey` matches `address` and remove `// TODO: Validate length/format`.
 - Review `// Make sure the user is the owner of the wallet:` comments. Do we actually need a separate query or just a userId filter?
-- Account for `activationAuthsRequiredSetting`, `backupAuthsRequiredSetting`, `recoveryAuthsRequiredSetting`, country filter, ip filter...
-- Enforce limits on certain tables...
-- Validate `Application`
-- Endpoints to create `Application`?
-- Rotate user JWT secret when logging out if there are no more sessions.
 - Add all missing ENV variables to `config.constants.ts`.
+- Review / clean up TODOs in this PR.
+
+**TODO (other PRs):**
+
 - Take into account location and ip filters.
+- Rotate user JWT secret when logging out if there are no more sessions.
+- Endpoints to create `Application`?
+- Validate `Application`.
+- Enforce limits on certain tables...
+- Account for `activationAuthsRequiredSetting`, `backupAuthsRequiredSetting`, `recoveryAuthsRequiredSetting`, country filter, ip filter...
 
 **Needed for Dashboard:**
 
