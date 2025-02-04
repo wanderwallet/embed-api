@@ -79,6 +79,11 @@ enum WalletSourceFrom {
   BINARY
 }
 
+enum WalletUsageStatus {
+  SUCCESSFUL
+  FAILED
+}
+
 enum ExportType {
   SEEDPHRASE
   KEYFILE
@@ -249,7 +254,7 @@ model Wallet {
   updatedAt DateTime     @updatedAt()
   chain     Chain
   address   String       @db.VarChar(255)
-  /// Can (not must) be empty for watch-only wallets.
+  /// Can (not must) be empty for READONLY wallets.
   publicKey String?      @db.VarChar(255)
 
   // Settings:
@@ -328,9 +333,9 @@ model Wallet {
 }
 
 model WalletActivation {
-  id          String   @id @default(uuid())
-  status      String // TODO: sucessful | error
-  activatedAt DateTime @default(now())
+  id          String            @id @default(uuid())
+  status      WalletUsageStatus
+  activatedAt DateTime          @default(now())
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
@@ -338,8 +343,8 @@ model WalletActivation {
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
 
-  workKeyShare   WorkKeyShare @relation(fields: [workKeyShareId], references: [id], onDelete: Cascade)
-  workKeyShareId String
+  workKeyShare   WorkKeyShare? @relation(fields: [workKeyShareId], references: [id], onDelete: Cascade)
+  workKeyShareId String?
 
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
   deviceAndLocationId String
@@ -349,9 +354,9 @@ model WalletActivation {
 }
 
 model WalletRecovery {
-  id          String   @id @default(uuid())
-  status      String // TODO: sucessful | error
-  recoveredAt DateTime @default(now())
+  id          String            @id @default(uuid())
+  status      WalletUsageStatus
+  recoveredAt DateTime          @default(now())
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
@@ -359,8 +364,8 @@ model WalletRecovery {
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
 
-  recoveryKeyShare   RecoveryKeyShare @relation(fields: [recoveryKeyShareId], references: [id], onDelete: Cascade)
-  recoveryKeyShareId String
+  recoveryKeyShare   RecoveryKeyShare? @relation(fields: [recoveryKeyShareId], references: [id], onDelete: Cascade)
+  recoveryKeyShareId String?
 
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
   deviceAndLocationId String

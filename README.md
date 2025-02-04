@@ -85,20 +85,21 @@ We can probably remove/reset those records every month and only keep aggregated 
 - ✅ Remove `SECRET` in `WalletPrivacySetting`.
 - ✅ Split `updateWallet` into individual procedures.
 - ✅ Split `createWallet` into individual procedures.
+- ✅ Create `WalletUsageStatus` enum.
 
-- Make sure `publicKey` matches `address` and remove `// TODO: Validate length/format`.
+- Log activation and recovery attempts of LOST wallets.
 
-- Create enum for `status` fields currently typed as `String`.
-- Review `// Make sure the user is the owner of the wallet:` comments. Do we actually need a separate query or just a userId filter?
 - Implement challenge creation/validation logic.
-- Log activation attempts of LOST wallets.
+- Create / update `DeviceAndLocation` rows and update session.
+- Make sure `publicKey` matches `address` and remove `// TODO: Validate length/format`.
+- Review `// Make sure the user is the owner of the wallet:` comments. Do we actually need a separate query or just a userId filter?
 - Account for `activationAuthsRequiredSetting`, `backupAuthsRequiredSetting`, `recoveryAuthsRequiredSetting`, country filter, ip filter...
-- Create / update `DeviceAndLocation` rows.
 - Enforce limits on certain tables...
 - Validate `Application`
 - Endpoints to create `Application`?
 - Rotate user JWT secret when logging out if there are no more sessions.
 - Add all missing ENV variables to `config.constants.ts`.
+- Take into account location and ip filters.
 
 **Needed for Dashboard:**
 

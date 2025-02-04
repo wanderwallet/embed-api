@@ -1,6 +1,6 @@
 import { protectedProcedure } from "@/server/trpc"
 import { z } from "zod"
-import { Challenge, ChallengePurpose, WalletStatus } from '@prisma/client';
+import { Challenge, ChallengePurpose, WalletStatus, WalletUsageStatus } from '@prisma/client';
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils, generateChangeValue } from "@/server/utils/challenge/challenge.utils";
@@ -54,47 +54,58 @@ export const activateWallet = protectedProcedure
       });
     }
 
-    const isChallengeValid = await ChallengeUtils.verifyChallenge({
-      challenge,
-      solution: input.challengeSolution,
-      now,
-    });
+    if (!workKeyShare || workKeyShare.rotationWarnings >= Config.SHARE_ROTATION_IGNORE_LIMIT) {
+      if (workKeyShare) {
+        // If rotationWarnings too high, delete workKeyShare:
+        await ctx.prisma.workKeyShare.delete({
+          where: {
+            id: workKeyShare.id,
+          },
+        });
+      }
 
-    // TODO: Add a wallet activation attempt limit?
-
-    if (!isChallengeValid) {
-      // TODO: Register the failed attempt anyway!
-
-      await ctx.prisma.challenge.delete({
-        where: { id: challenge.id },
-      });
-
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: ErrorMessages.INVALID_CHALLENGE,
-      });
-    }
-
-    if (!workKeyShare) {
-      // The wallet must be recovered.
-
+      // At this point it's already too late. The wallet must be recovered:
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.WORK_SHARE_NOT_FOUND,
       });
     }
 
-    if (workKeyShare.rotationWarnings >= Config.SHARE_ROTATION_IGNORE_LIMIT) {
-      // TODO: If rotationWarnings too high, delete workKeyShare...
-      await ctx.prisma.workKeyShare.delete({
-        where: {
-          id: workKeyShare.id,
-        },
+    const isChallengeValid = await ChallengeUtils.verifyChallenge({
+      challenge,
+      solution: input.challengeSolution,
+      now,
+    });
+
+    if (!isChallengeValid) {
+      // TODO: Add a wallet activation attempt limit?
+      // TODO: How to limit the # of activations per user?
+
+      await ctx.prisma.$transaction(async (tx) => {
+        const deleteChallengePromise = tx.challenge.delete({
+          where: { id: challenge.id },
+        });
+
+        // Log failed activation attempt:
+        const registerWalletActivationAttemptPromise = tx.walletActivation.create({
+          data: {
+            status: WalletUsageStatus.FAILED,
+            userId: ctx.user.id,
+            walletId: workKeyShare.walletId,
+            workKeyShareId: workKeyShare.id,
+            deviceAndLocationId,
+          },
+        });
+
+        return Promise.all([
+          deleteChallengePromise,
+          registerWalletActivationAttemptPromise,
+        ]);
       });
 
       throw new TRPCError({
-        code: "NOT_FOUND",
-        message: ErrorMessages.CHALLENGE_NOT_FOUND,
+        code: "FORBIDDEN",
+        message: ErrorMessages.INVALID_CHALLENGE,
       });
     }
 
@@ -149,6 +160,7 @@ export const activateWallet = protectedProcedure
       // TODO: How to limit the # of activations per user?
       const registerWalletActivationPromise = tx.walletActivation.create({
         data: {
+          status: WalletUsageStatus.SUCCESSFUL,
           userId: ctx.user.id,
           walletId: workKeyShare.walletId,
           workKeyShareId: workKeyShare.id,

@@ -1,6 +1,6 @@
 import { protectedProcedure } from "@/server/trpc"
 import { z } from "zod"
-import { ChallengePurpose } from '@prisma/client';
+import { ChallengePurpose, WalletUsageStatus } from '@prisma/client';
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
@@ -51,33 +51,50 @@ export const recoverWallet = protectedProcedure
       });
     }
 
-    const isChallengeValid = await ChallengeUtils.verifyChallenge({
-      challenge,
-      solution: input.challengeSolution,
-      now,
-    });
-
-    // TODO: Add a wallet recovery attempt limit?
-
-    if (!isChallengeValid) {
-      // TODO: Register the failed attempt anyway!
-
-      await ctx.prisma.challenge.delete({
-        where: { id: challenge.id },
-      });
-
-      throw new TRPCError({
-        code: "FORBIDDEN",
-        message: ErrorMessages.INVALID_CHALLENGE,
-      });
-    }
-
     if (!recoveryKeyShare) {
       // TODO: Differentiate between invalid share and deleted share that was once valid.
 
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.WORK_SHARE_NOT_FOUND,
+      });
+    }
+
+    const isChallengeValid = await ChallengeUtils.verifyChallenge({
+      challenge,
+      solution: input.challengeSolution,
+      now,
+    });
+
+    if (!isChallengeValid) {
+      // TODO: Add a wallet recovery attempt limit?
+      // TODO: How to limit the # of recoveries per user?
+
+      await ctx.prisma.$transaction(async (tx) => {
+        const deleteChallengePromise = tx.challenge.delete({
+          where: { id: challenge.id },
+        });
+
+        // Log failed recovery attempt:
+        const registerWalletActivationAttemptPromise = tx.walletRecovery.create({
+          data: {
+            status: WalletUsageStatus.FAILED,
+            userId: ctx.user.id,
+            walletId: recoveryKeyShare.walletId,
+            recoveryKeyShareId: recoveryKeyShare.id,
+            deviceAndLocationId,
+          },
+        });
+
+        return Promise.all([
+          deleteChallengePromise,
+          registerWalletActivationAttemptPromise,
+        ]);
+      });
+
+      throw new TRPCError({
+        code: "FORBIDDEN",
+        message: ErrorMessages.INVALID_CHALLENGE,
       });
     }
 
@@ -97,6 +114,7 @@ export const recoverWallet = protectedProcedure
       // TODO: How to limit the # of recoveries per user?
       const registerWalletActivationPromise = tx.walletRecovery.create({
         data: {
+          status: WalletUsageStatus.SUCCESSFUL,
           userId: ctx.user.id,
           walletId: recoveryKeyShare.walletId,
           recoveryKeyShareId: recoveryKeyShare.id,

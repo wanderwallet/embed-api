@@ -47,7 +47,6 @@ export const generateAuthShareChallenge = protectedProcedure
 
       const createRecoverySharePromise = ctx.prisma.recoveryKeyShare.create({
         data: {
-          status: "",
           recoveryAuthShare: input.recoveryAuthShare,
           recoveryBackupShareHash: input.recoveryBackupShareHash,
           recoveryBackupSharePublicKey: input.recoveryBackupSharePublicKey,
