@@ -17,7 +17,6 @@ export const RotateAuthShareSchema = z.object({
 export const rotateAuthShare = protectedProcedure
   .input(RotateAuthShareSchema)
   .mutation(async ({ input, ctx }) => {
-
     const now = Date.now();
 
     const challenge = await ctx.prisma.challenge.findFirst({

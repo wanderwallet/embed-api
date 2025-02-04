@@ -5,6 +5,7 @@ import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils, generateChangeValue } from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
+import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 
 export const ActivateWalletSchema = z.object({
   walletId: z.string(),
@@ -14,6 +15,10 @@ export const ActivateWalletSchema = z.object({
 export const activateWallet = protectedProcedure
   .input(ActivateWalletSchema)
   .mutation(async ({ input, ctx }) => {
+    // It is faster to make this query outside the transaction and await it inside, but if the transaction fails, this
+    // will leave an orphan DeviceAndLocation behind. Still, this might not be an issue, as retrying this same
+    // operation will probably reuse it. Otherwise, the cleanup cronjobs will take care of it:
+    const deviceAndLocationIdPromise = getDeviceAndLocationId(ctx);
     const now = Date.now();
 
     const challengePromise = ctx.prisma.challenge.findFirst({
@@ -82,6 +87,8 @@ export const activateWallet = protectedProcedure
       // TODO: How to limit the # of activations per user?
 
       await ctx.prisma.$transaction(async (tx) => {
+        const deviceAndLocationId = await deviceAndLocationIdPromise;
+
         const deleteChallengePromise = tx.challenge.delete({
           where: { id: challenge.id },
         });
@@ -114,6 +121,7 @@ export const activateWallet = protectedProcedure
     const [
       rotationChallenge
     ] = await ctx.prisma.$transaction(async (tx) => {
+      const deviceAndLocationId = await deviceAndLocationIdPromise;
       const dateNow = new Date();
       const challengeValue = generateChangeValue();
       const challengeUpsertData = {

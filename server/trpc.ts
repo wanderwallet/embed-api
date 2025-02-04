@@ -1,7 +1,7 @@
 import { initTRPC, TRPCError } from "@trpc/server"
 import { Context } from "./context"
 
-const t = initTRPC.context<Context>().create()
+const t = initTRPC.context<Context>().create();
 
 const isAuthed = t.middleware(({ ctx, next }) => {
   // TODO: Make sure this comes from a valid Application...
@@ -10,9 +10,12 @@ const isAuthed = t.middleware(({ ctx, next }) => {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   }
 
+
   return next({
     ctx: {
+      prisma: ctx.prisma,
       user: ctx.user,
+      session: ctx.session,
     },
   })
 })

@@ -5,6 +5,7 @@ import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
+import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 
 export const GenerateWalletRecoveryChallengeInputSchema = z.object({
   walletId: z.string()
@@ -13,6 +14,7 @@ export const GenerateWalletRecoveryChallengeInputSchema = z.object({
 export const generateWalletRecoveryChallenge = protectedProcedure
   .input(GenerateWalletRecoveryChallengeInputSchema)
   .mutation(async ({ input, ctx }) => {
+    const deviceAndLocationIdPromise = getDeviceAndLocationId(ctx);
 
     // Make sure the user is the owner of the wallet:
     const userWallet = await ctx.prisma.wallet.findFirst({
@@ -27,6 +29,8 @@ export const generateWalletRecoveryChallenge = protectedProcedure
 
     if (!userWallet || userWallet.status !== WalletStatus.ENABLED) {
       if (userWallet) {
+        const deviceAndLocationId = await deviceAndLocationIdPromise;
+
         // Log recovery attempt of a non-ENABLED wallet:
         await ctx.prisma.walletRecovery.create({
           data: {

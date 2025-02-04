@@ -2,6 +2,7 @@ import { protectedProcedure } from "@/server/trpc"
 import { z } from "zod"
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
+import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 
 export const RegisterRecoveryShareInputSchema = z.object({
   walletId: z.string(),
@@ -13,6 +14,10 @@ export const RegisterRecoveryShareInputSchema = z.object({
 export const generateAuthShareChallenge = protectedProcedure
   .input(RegisterRecoveryShareInputSchema)
   .mutation(async ({ input, ctx }) => {
+    // It is faster to make this query outside the transaction and await it inside, but if the transaction fails, this
+    // will leave an orphan DeviceAndLocation behind. Still, this might not be an issue, as retrying this same
+    // operation will probably reuse it. Otherwise, the cleanup cronjobs will take care of it:
+    const deviceAndLocationIdPromise = getDeviceAndLocationId(ctx);
 
     // Make sure the user is the owner of the wallet:
     const userWallet = await ctx.prisma.wallet.findFirst({
@@ -32,6 +37,7 @@ export const generateAuthShareChallenge = protectedProcedure
     }
 
     await ctx.prisma.$transaction(async (tx) => {
+      const deviceAndLocationId = await deviceAndLocationIdPromise;
       const dateNow = new Date();
 
       const updateWalletStatsPromise = tx.wallet.update({

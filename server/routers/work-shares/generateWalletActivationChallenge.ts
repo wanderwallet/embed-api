@@ -5,6 +5,7 @@ import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
+import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 
 export const GenerateWalletActivationChallengeInputSchema = z.object({
   walletId: z.string()
@@ -13,6 +14,10 @@ export const GenerateWalletActivationChallengeInputSchema = z.object({
 export const generateWalletActivationChallenge = protectedProcedure
   .input(GenerateWalletActivationChallengeInputSchema)
   .mutation(async ({ input, ctx }) => {
+    // It is faster to make this query outside the transaction and await it inside, but if the transaction fails, this
+    // will leave an orphan DeviceAndLocation behind. Still, this might not be an issue, as retrying this same
+    // operation will probably reuse it. Otherwise, the cleanup cronjobs will take care of it:
+    const deviceAndLocationIdPromise = getDeviceAndLocationId(ctx);
 
     // Make sure the user is the owner of the wallet:
     const userWallet = await ctx.prisma.wallet.findFirst({
@@ -26,6 +31,8 @@ export const generateWalletActivationChallenge = protectedProcedure
 
     if (!userWallet || userWallet.status !== WalletStatus.ENABLED) {
       if (userWallet) {
+        const deviceAndLocationId = await deviceAndLocationIdPromise;
+
         // Log activation attempt of a non-ENABLED wallet:
         await ctx.prisma.walletActivation.create({
           data: {

@@ -38,25 +38,27 @@ export async function createContext({ req }: { req: Request }) {
 
   const user = await getUserFromHeader();
 
-  // Updated on auth or auth refresh:
+  // TODO: Lazily update session...
 
-  // TODO: Set this with real data:
   const session: Session = {
     id: "",
+    providerSessionId: "",
     createdAt: new Date(),
+    updatedAt: new Date(),
     deviceNonce: "",
     ip: "",
     countryCode: "",
     userAgent: "",
     userId: "",
-    applicationId: "",
+    // TODO: This should be an array:
+    // applicationId: "",
   }
 
   return {
     prisma,
     user,
     session,
-  }
+  };
 }
 
 export type Context = inferAsyncReturnType<typeof createContext>

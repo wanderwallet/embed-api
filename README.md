@@ -19,20 +19,38 @@ we'll have to keep track of all unique user IDs that accessed their account and/
 
 We can probably remove/reset those records every month and only keep aggregated data around in the tables related to billing (to be added).
 
-## Server Config
+## Server Config & Cronjobs
 
-- TTL_WORK_SHARE (time between rotations)
-- TTL_WORK_SHARE (time before deletion if inactive?)
-- TTL_CHALLENGE
+**TTLs**
 
-- MAX_AUTH_METHODS_PER_USER
-- MAX_WALLETS_PER_USER
+- `TTL_WORK_SHARE_ACTIVE`: Time between rotations.
+- `TTL_WORK_SHARE_INACTIVE`: Time before deletion if inactive - Needs a _cronjob_.
+- `TTL_CHALLENGE`: Max. elapsed time between `Challenge.createdAt` and its resolution. Because both operations are called
+  sequentially, this TTL should be relatively short (e.g. 5-30 seconds).
 
-- MAX_ACTIVATIONS_PER_WALLET
-- MAX_WORK_SHARES_PER_WALLET
-- MAX_RECOVERY_SHARES_PER_WALLET
-- MAX_RECOVERIES_PER_WALLET
-- MAX_EXPORTS_PER_WALLET
+**Failed Attempts:**
+
+- `MAX_FAILED_ACTIVATION_ATTEMPTS` - What happens then?
+- `MAX_FAILED_RECOVERY_ATTEMPTS` - What happens then?
+
+**Auth Method, Wallet & Share Limits:**
+
+- `MAX_AUTH_METHODS_PER_USER`
+- `MAX_WALLETS_PER_USER`
+- `MAX_WORK_SHARES_PER_WALLET` (or per user) - What happens then?
+- `MAX_RECOVERY_SHARES_PER_WALLET` (or per user) - What happens then?
+
+**Activity Log Limits:**
+
+These could instead be capped by date (e.g. older than a month), using a _cronjob_:
+
+- `MAX_ACTIVATIONS_PER_WALLET`
+- `MAX_RECOVERIES_PER_WALLET`
+- `MAX_EXPORTS_PER_WALLET`
+
+**Cronjobs:**
+
+- Orphan `DeviceAndLocation` _cronjob_.
 
 ## SDK API:
 
@@ -87,8 +105,9 @@ We can probably remove/reset those records every month and only keep aggregated 
 - ✅ Split `createWallet` into individual procedures.
 - ✅ Create `WalletUsageStatus` enum.
 - ✅ Log activation and recovery attempts.
+- ✅ Create / connect `DeviceAndLocation`.
 
-- Create / update `DeviceAndLocation` rows and update session.
+- Lazily update `Session` on each request if it has changed (meaning, all endpoints might return a new token).
 - Implement challenge creation/validation logic.
 - Make sure `publicKey` matches `address` and remove `// TODO: Validate length/format`.
 - Review `// Make sure the user is the owner of the wallet:` comments. Do we actually need a separate query or just a userId filter?
@@ -103,6 +122,7 @@ We can probably remove/reset those records every month and only keep aggregated 
 - Validate `Application`.
 - Enforce limits on certain tables...
 - Account for `activationAuthsRequiredSetting`, `backupAuthsRequiredSetting`, `recoveryAuthsRequiredSetting`, country filter, ip filter...
+- Enforce ENV variable limits.
 
 **Needed for Dashboard:**
 
