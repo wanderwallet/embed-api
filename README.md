@@ -103,14 +103,16 @@ These could instead be capped by date (e.g. older than a month), using a _cronjo
 - ✅ Remove `SECRET` in `WalletPrivacySetting`.
 - ✅ Split `updateWallet` into individual procedures.
 - ✅ Split `createWallet` into individual procedures.
+- ✅ Validate `publicKey` matches `address`.
 - ✅ Create `WalletUsageStatus` enum.
 - ✅ Log activation and recovery attempts.
 - ✅ Create / connect `DeviceAndLocation`.
 
+- Review `// Make sure the user is the owner of the wallet:` comments. Do we actually need a separate query or just a userId filter?
+
+- Properly validate share, share hash and share public key format (remove `// TODO: Validate length/format`)
 - Lazily update `Session` on each request if it has changed (meaning, all endpoints might return a new token).
 - Implement challenge creation/validation logic.
-- Make sure `publicKey` matches `address` and remove `// TODO: Validate length/format`.
-- Review `// Make sure the user is the owner of the wallet:` comments. Do we actually need a separate query or just a userId filter?
 - Add all missing ENV variables to `config.constants.ts`.
 - Review / clean up TODOs in this PR.
 

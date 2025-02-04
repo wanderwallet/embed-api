@@ -10,8 +10,8 @@ export const MakeWalletPublicInputSchema = z.object({
   walletId: z.string(),
   walletPrivacySetting: z.literal(WalletPrivacySetting.PUBLIC),
   chain: z.nativeEnum(Chain),
-  address: z.string(), // TODO: Validate length/format
-  publicKey: z.string(), // TODO: Validate length/format
+  address: z.string(),
+  publicKey: z.string(),
 }).superRefine(async (data, ctx) => {
   // `chain`, `address` and `publicKey` match:
   const walletIssues = await validateWallet(data.chain, data.address, data.publicKey);

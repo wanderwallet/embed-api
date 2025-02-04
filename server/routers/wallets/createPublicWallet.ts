@@ -8,8 +8,8 @@ import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-
 export const CreatePublicWalletInputSchema = z.object({
   status: z.enum([WalletStatus.ENABLED, WalletStatus.DISABLED]),
   chain: z.nativeEnum(Chain),
-  address: z.string(), // TODO: Validate length/format
-  publicKey: z.string(), // TODO: Validate length/format
+  address: z.string(),
+  publicKey: z.string(),
   aliasSetting: z.string().optional(),
   descriptionSetting: z.string().optional(),
   tagsSetting: z.array(z.string()).optional(),

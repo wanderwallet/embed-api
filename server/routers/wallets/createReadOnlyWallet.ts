@@ -7,8 +7,8 @@ import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-
 export const CreateReadOnlyWalletInputSchema = z.object({
   status: z.enum([WalletStatus.READONLY, WalletStatus.LOST]),
   chain: z.nativeEnum(Chain),
-  address: z.string(), // TODO: Validate length/format
-  publicKey: z.string().optional(), // TODO: Validate length/format
+  address: z.string(),
+  publicKey: z.string().optional(),
   aliasSetting: z.string().optional(),
   descriptionSetting: z.string().optional(),
   tagsSetting: z.array(z.string()).optional(),
