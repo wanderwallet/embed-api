@@ -16,6 +16,9 @@ export const RecoverAccountSchema = z.object({
 export const recoverAccount = publicProcedure
   .input(RecoverAccountSchema)
   .mutation(async ({ input, ctx }) => {
+    // TODO: This procedure should be like a clone of `authenticate` but with the `userId` and `challengeSolution`
+    // needed to link an existing user to the currently used authentication method, rather than creating a new one.
+
     const now = Date.now();
 
     // TODO: Should all procedures update Session info if data has changed?

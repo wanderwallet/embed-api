@@ -19,6 +19,11 @@ export const rotateAuthShare = protectedProcedure
   .mutation(async ({ input, ctx }) => {
     const now = Date.now();
 
+    // This `SHARE_ROTATION` challenge will only exist if `activateWallet` created it automatically when
+    // `shouldRotate = now - workKeyShare.sharesRotatedAt.getTime() >= Config.SHARE_ACTIVE_TTL_MS`, so we don't need to
+    // check that condition again here. It's also `activateWallet` where shares are deleted if the rotation warnings
+    // have been ignored for too long.
+
     const challenge = await ctx.prisma.challenge.findFirst({
       where: {
         userId: ctx.user.id,
@@ -65,33 +70,12 @@ export const rotateAuthShare = protectedProcedure
       });
     }
 
-    // TODO: Only allow rotation if shouldRotate?
-
-    /*
-    if (workKeyShare.rotationWarnings >= Config.SHARE_ROTATION_IGNORE_LIMIT) {
-      // TODO: If rotationWarnings too high, delete workKeyShare...
-      await ctx.prisma.workKeyShare.delete({
-        where: {
-          id: workKeyShare.id,
-        },
-      });
-
-      throw new TRPCError({
-        code: "NOT_FOUND",
-        message: ErrorMessages.CHALLENGE_NOT_FOUND,
-      });
-    }
-
-    const shouldRotate = now - workKeyShare.sharesRotatedAt.getTime() >= Config.SHARE_TTL_MS;
-    */
-
     const dateNow = new Date();
-    const nextRotationAt = new Date(dateNow.getTime() + Config.SHARE_TTL_MS);
+    const nextRotationAt = new Date(dateNow.getTime() + Config.SHARE_ACTIVE_TTL_MS);
 
     await ctx.prisma.$transaction(async (tx) => {
       const rotateWorkKeySharePromise = tx.workKeyShare.update({
         where: {
-          // TODO Add "Index" postfix to all these...
           deviceWorkShares: {
             userId: ctx.user.id,
             sessionId: ctx.session.id,

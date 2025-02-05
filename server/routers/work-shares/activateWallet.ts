@@ -59,9 +59,13 @@ export const activateWallet = protectedProcedure
       });
     }
 
-    if (!workKeyShare || workKeyShare.rotationWarnings >= Config.SHARE_ROTATION_IGNORE_LIMIT) {
+    if (
+      !workKeyShare
+        || workKeyShare.rotationWarnings >= Config.SHARE_MAX_ROTATION_IGNORES
+        || now - workKeyShare.sharesRotatedAt.getTime() >= Config.SHARE_INACTIVE_TTL_MS
+    ) {
       if (workKeyShare) {
-        // If rotationWarnings too high, delete workKeyShare:
+        // If `rotationWarnings` too high, or it's been too long since the share was last rotated, delete it:
         await ctx.prisma.workKeyShare.delete({
           where: {
             id: workKeyShare.id,
@@ -119,7 +123,7 @@ export const activateWallet = protectedProcedure
       });
     }
 
-    const shouldRotate = now - workKeyShare.sharesRotatedAt.getTime() >= Config.SHARE_TTL_MS;
+    const shouldRotate = now - workKeyShare.sharesRotatedAt.getTime() >= Config.SHARE_ACTIVE_TTL_MS;
 
     const [
       rotationChallenge

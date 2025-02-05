@@ -23,37 +23,40 @@ We can probably remove/reset those records every month and only keep aggregated 
 
 **Challenges:**
 
-- `CHALLENGE_TYPE`
-- `CHALLENGE_VERSION`
-- `CHALLENGE_TTL_MS`: Max. elapsed time between `Challenge.createdAt` and its resolution. Because both operations are
-  called sequentially, this TTL should be relatively short (e.g. 5-30 seconds).
+- ✅ `CHALLENGE_TYPE`
+- ✅ `CHALLENGE_VERSION`
+- ✅ `CHALLENGE_TTL_MS`: Max. elapsed time between `Challenge.createdAt` and its resolution. Because both operations
+  are called sequentially, this TTL should be relatively short (e.g. 5-30 seconds).
 
 **Shares:**
 
-- `SHARE_ACTIVE_TTL_MS`: Time between rotations.
-- `SHARE_INACTIVE_TTL_MS`: Time before deletion if inactive - Needs a _cronjob_.
-- `SHARE_MAX_FAILED_ACTIVATION_ATTEMPTS` - What happens then?
-- `SHARE_MAX_FAILED_RECOVERY_ATTEMPTS` - What happens then?
-- `SHARE_MAX_IGNORED_SHARE_ROTATION_WARNING`
+- ✅ `SHARE_ACTIVE_TTL_MS`: Time before a share rotation is requested.
+- ✅ `SHARE_INACTIVE_TTL_MS`: Time before an inactive share is deleted (if it hasn't been rotated in a long time).
+- ✅ `SHARE_MAX_ROTATION_IGNORES`
+
+- ❌ `SHARE_MAX_FAILED_ACTIVATION_ATTEMPTS` - What happens then? De-auth user?
+- ❌ `SHARE_MAX_FAILED_RECOVERY_ATTEMPTS` - What happens then? De-auth user?
+- Maybe replace the 2 above with a single `MAX_SUSPICIOUS_ACTIVITY` (DB `User` needs `maxSuspiciousActionCount` and
+  `lastSuspiciousActionDate`).
 
 **Auth Method, Wallet & Share Limits:**
 
-- `MAX_AUTH_METHODS_PER_USER`
-- `MAX_WALLETS_PER_USER`
-- `MAX_WORK_SHARES_PER_WALLET` (or per user) - What happens then?
-- `MAX_RECOVERY_SHARES_PER_WALLET` (or per user) - What happens then?
+- ❌ `MAX_AUTH_METHODS_PER_USER`
+- ❌ `MAX_WALLETS_PER_USER`
+- ❌ `MAX_WORK_SHARES_PER_WALLET` (or per user) - What happens then?
+- ❌ `MAX_RECOVERY_SHARES_PER_WALLET` (or per user) - What happens then?
 
 **Activity Log Limits:**
 
-These could instead be capped by date (e.g. older than a month), using a _cronjob_:
-
-- `MAX_ACTIVATIONS_PER_WALLET`
-- `MAX_RECOVERIES_PER_WALLET`
-- `MAX_EXPORTS_PER_WALLET`
+- ❌ `MAX_ACTIVATIONS_PER_WALLET`
+- ❌ `MAX_RECOVERIES_PER_WALLET`
+- ❌ `MAX_EXPORTS_PER_WALLET`
 
 **Cronjobs:**
 
-- Orphan `DeviceAndLocation` _cronjob_.
+- ❌ All _Activity Log Limits_ above could instead be capped by date (e.g. older than a month).
+- ❌ Orphan `DeviceAndLocation` (not referenced by any other table).
+- ❌ Inactive `WorkKeyShare` (deleted passively using `SHARE_INACTIVE_TTL_MS`).
 
 ## SDK API:
 
@@ -111,14 +114,15 @@ These could instead be capped by date (e.g. older than a month), using a _cronjo
 - ✅ Log activation and recovery attempts.
 - ✅ Create / connect `DeviceAndLocation`.
 - ✅ Implement challenge creation & validation logic.
+- ✅ Add all missing ENV variables to `config.constants.ts`.
 
-- Add all missing ENV variables to `config.constants.ts`.
-
+- Add "Index" or "unique" postfix to indexes.
 - Review / clean up TODOs in this PR.
 - Properly validate share, share hash and share public key format (remove `// TODO: Validate length/format`)
 
 **TODO (other PRs):**
 
+- Log suspicious activity and de-auth user in that case (failed activations, recoveries, challenges...).
 - Lazily update `Session` on each request if it has changed (meaning, all endpoints might return a new token).
 - Take into account location and ip filters.
 - Rotate user JWT secret when logging out if there are no more sessions.
@@ -128,10 +132,11 @@ These could instead be capped by date (e.g. older than a month), using a _cronjo
 - Account for `activationAuthsRequiredSetting`, `backupAuthsRequiredSetting`, `recoveryAuthsRequiredSetting`, country filter, ip filter...
 - Enforce ENV variable limits.
 - Finish `recoverAccount` procedure (after the authentication ones are merged).
+- Include remaining ENV variables in `config.constants.ts` and validate them.
 
 **TODO (main repo):**
 
-- `walletId` must be included in the wallet recovery file.
+- `walletId` must be included in the wallet recovery file. Also, include server signature to verify they were once valid.
 
 **Needed for Dashboard:**
 
