@@ -1,8 +1,5 @@
 import jwt from "jsonwebtoken"
 
-// TODO: Consider rotating them and sharding them? This way we can reset it "globally"
-// without disrupting all users.
-
 const JWT_SECRET = process.env.JWT_SECRET || "your-secret-key"
 
 export async function signJWT(payload: any): Promise<string> {

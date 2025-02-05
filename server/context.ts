@@ -1,6 +1,6 @@
 import { inferAsyncReturnType } from "@trpc/server"
 import { verifyJWT } from "./auth"
-import { DeviceAndLocation, PrismaClient, Session } from "@prisma/client";
+import { PrismaClient, Session } from "@prisma/client";
 
 interface User {
   id: string;
@@ -9,17 +9,16 @@ interface User {
 export async function createContext({ req }: { req: Request }) {
   const prisma = new PrismaClient();
 
-  // TODO: get user from db
-
-  // TODO: We probably want to check the session in the DB either way to be able
-  // to close sessions / invalidate JWTs. We can add an "invalidated" column to
-  // sessions with an index.
-
-  // TODO: See if we need our own sessions table or if we can add additional
-  // columns to the default one.
-
-  // See https://supabase.com/docs/guides/auth/sessions
-  // See https://github.com/orgs/supabase/discussions/14708
+  // TODO: There's no need to load the User from the DB but at least we need to load its `jwkSecret` to be able to
+  // verify JWTs with different keys for each user. Also, there are some fields we are currently not using:
+  // `User.ipFilterSetting`, `USer.countryFilterSetting`...
+  //
+  // If a JWT is invalid, we might want to mark its corresponding `Session` as `INVALIDATED`
+  //
+  // Also see if we need our own sessions table or if we can add additional columns to the default one:
+  //
+  // - See https://supabase.com/docs/guides/auth/sessions
+  // - See https://github.com/orgs/supabase/discussions/14708
 
   async function getUserFromHeader(): Promise<User | null> {
     if (req.headers.get("authorization")) {

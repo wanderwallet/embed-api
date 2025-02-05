@@ -116,27 +116,22 @@ We can probably remove/reset those records every month and only keep aggregated 
 - ✅ Implement challenge creation & validation logic.
 - ✅ Add all missing ENV variables to `config.constants.ts`.
 
+- Update backup generation and validation to include server signatures.
+
 - Add "Index" or "unique" postfix to indexes.
 - Review / clean up TODOs in this PR.
-- Properly validate share, share hash and share public key format (remove `// TODO: Validate length/format`)
-
-**TODO (other PRs):**
-
-- Log suspicious activity and de-auth user in that case (failed activations, recoveries, challenges...).
-- Lazily update `Session` on each request if it has changed (meaning, all endpoints might return a new token).
-- Take into account location and ip filters.
-- Rotate user JWT secret when logging out if there are no more sessions.
-- Endpoints to create `Application`?
-- Validate `Application`.
-- Enforce limits on certain tables...
-- Account for `activationAuthsRequiredSetting`, `backupAuthsRequiredSetting`, `recoveryAuthsRequiredSetting`, country filter, ip filter...
-- Enforce ENV variable limits.
-- Finish `recoverAccount` procedure (after the authentication ones are merged).
+- Properly validate share, share hash and share public key format (remove `// TODO: Validate length/format`).
 - Include remaining ENV variables in `config.constants.ts` and validate them.
+- Log suspicious activity and de-auth user in that case (failed activations, recoveries, challenges...).
 
-**TODO (main repo):**
+**Needed for Developer Portal:**
 
-- `walletId` must be included in the wallet recovery file. Also, include server signature to verify they were once valid.
+- fetchDeveloper
+- upsertDeveloper
+- fetchApplications
+- fetchApplication
+- createApplication
+- updateApplication
 
 **Needed for Dashboard:**
 

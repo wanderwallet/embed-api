@@ -239,6 +239,8 @@ model Application {
   DeviceAndLocation DeviceAndLocation[]
   Session           Session[]
 
+  // TODO: We might want to change this so that Applications can be shared to more than one Developer? But probably
+  // later, and consider adding teams at that point. Or replace Developer with Team.
   developer   Developer @relation(fields: [developerId], references: [id], onDelete: Cascade)
   developerId String
 
@@ -276,11 +278,11 @@ model Wallet {
   /// Set to true after the user has exported a seedphrase, private key or recovery file.
   canBeRecovered                 Boolean              @default(false)
   /// Require 1 or more authentication tokens to activate this wallet.
-  activationAuthsRequiredSetting Int                  @default(1)
+  activationAuthsRequiredSetting Int                  @default(0)
   /// Require 1 or more authentication tokens to backup this wallet (get a recovery share).
-  backupAuthsRequiredSetting     Int                  @default(1)
+  backupAuthsRequiredSetting     Int                  @default(0)
   /// Require 1 or more authentication tokens to recover this wallet.
-  recoveryAuthsRequiredSetting   Int                  @default(1)
+  recoveryAuthsRequiredSetting   Int                  @default(0)
 
   /// Includes cached information about how to identify this wallet:
   ///
