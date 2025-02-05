@@ -254,7 +254,7 @@ model Wallet {
   updatedAt DateTime     @updatedAt()
   chain     Chain
   address   String       @db.VarChar(255)
-  /// Can (not must) be empty for READONLY wallets.
+  /// Can (not must) be empty for READONLY wallets. B64 string.
   publicKey String?      @db.VarChar(255)
 
   // Settings:

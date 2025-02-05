@@ -25,6 +25,9 @@ export const rotateAuthShare = protectedProcedure
         walletId: input.walletId,
         purpose: ChallengePurpose.SHARE_ROTATION,
       },
+      include: {
+        wallet: true,
+      },
     });
 
     // TODO: Should all procedures update Session info if data has changed?
@@ -40,8 +43,11 @@ export const rotateAuthShare = protectedProcedure
 
     const isChallengeValid = await ChallengeUtils.verifyChallenge({
       challenge,
-      solution: input.challengeSolution,
+      session: ctx.session,
+      shareHash: null,
       now,
+      solution: input.challengeSolution,
+      publicKey: challenge.wallet.publicKey || null,
     });
 
     // TODO: Add a wallet activation attempt limit?

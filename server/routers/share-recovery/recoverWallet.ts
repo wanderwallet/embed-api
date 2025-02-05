@@ -67,8 +67,11 @@ export const recoverWallet = protectedProcedure
 
     const isChallengeValid = await ChallengeUtils.verifyChallenge({
       challenge,
-      solution: input.challengeSolution,
+      session: ctx.session,
+      shareHash: recoveryKeyShare.recoveryBackupShareHash,
       now,
+      solution: input.challengeSolution,
+      publicKey: recoveryKeyShare.recoveryBackupSharePublicKey,
     });
 
     if (!isChallengeValid) {

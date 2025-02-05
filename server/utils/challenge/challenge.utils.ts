@@ -1,5 +1,7 @@
-import { AnonChallenge, Challenge, ChallengeType, Wallet } from "@prisma/client";
-import { JWKInterface } from "arweave/node/lib/wallet";
+import { ChallengeClient, ChallengeClientVersion, ChallengeData } from "@/server/utils/challenge/challenge.types";
+import { ChallengeClientV1 } from "@/server/utils/challenge/clients/challenge-client-v1";
+import { Config } from "@/server/utils/config/config.constants";
+import { AnonChallenge, Challenge, ChallengeType } from "@prisma/client";
 
 export function isAnonChallenge(challenge: Challenge | AnonChallenge): challenge is AnonChallenge {
   return !!(challenge as AnonChallenge).chain && !!(challenge as AnonChallenge).address;
@@ -11,140 +13,73 @@ export function generateChangeValue() {
   );
 }
 
-export interface SolveChallengeParams {
-  challenge: Challenge | AnonChallenge;
-  jwk?: JWKInterface;
-}
+const CHALLENGE_CLIENTS = {
+  [ChallengeClientV1.version]: ChallengeClientV1,
+} as const satisfies Record<ChallengeClientVersion, ChallengeClient>;
 
-export async function solveChallenge({
-  challenge,
-  jwk,
-}: SolveChallengeParams) {
-  if (isAnonChallenge(challenge)) {
-    const privateKey = await window.crypto.subtle.importKey(
-      "jwk",
-      jwk,
-      {
-        name: "RSA-PSS",
-        hash: "SHA-256",
-      },
-      true,
-      ["sign"],
-    );
-
-    const encoded = Buffer.from(`ANON|${ challenge.value }|${ chain }|${ address }`);
-
-    return crypto.subtle.sign(
-      {
-        name: "RSA-PSS",
-        saltLength: 32, // TODO: Get from `challenge` (random)
-      },
-      privateKey,
-      encoded,
-    );
-  }
-
-  let dataToEncode = "";
-
-  switch(challenge.purpose) {
-    case "ACTIVATION":
-      dataToEncode = `ACTIVATION|${ challenge.value }|${ userId }|${ walletId }|${ deviceShareHash }`;
-      break;
-
-    case "SHARE_ROTATION":
-      dataToEncode = `SHARE_ROTATION|${ challenge.value }|${ userId }|${ walletId }|${ deviceShareHash }`;
-      break;
-
-    case "SHARE_RECOVERY":
-      dataToEncode = `SHARE_RECOVERY|${ challenge.value }|${ userId }|${ walletId }|${ recoveryBackupShareHash }`;
-      break;
-
-    case "ACCOUNT_RECOVERY":
-      dataToEncode = `ACCOUNT_RECOVERY|${ challenge.value }|${ userId }|${ walletId }`;
-      break;
-  }
-
-  if (challenge.type === ChallengeType.SIGNATURE) {
-    const encoded = Buffer.from(dataToEncode);
-
-    return crypto.subtle.sign(
-      {
-        name: "RSA-PSS",
-        saltLength: 32, // TODO: Get from `challenge` (random)
-      },
-      privateKey,
-      encoded,
-    );
-  }
-
-  // TODO: Append challenge version to raw output.
-
-  return {
-    plain: dataToEncode,
-    hash: null,
-    signature: null,
-  }
-
-}
-
-export interface VerifyChallengeParams {
-  challenge: Challenge | AnonChallenge;
-  wallet: Wallet;
-  solution: string;
+export interface VerifyChallengeParams extends ChallengeData {
   now: number;
+  solution: string; // B64
+  publicKey: null | string; // B64
 }
 
 export async function verifyChallenge({
+  // ChallengeData:
   challenge,
-  wallet,
-  solution,
+  session,
+  shareHash,
+
+  // Verification:
   now,
+  solution,
+  publicKey: publicKeyParam,
 }: VerifyChallengeParams) {
-  // TODO: Challenge must come from the same device/IP (just serialize session)?
+  try {
+    const challengeClient = CHALLENGE_CLIENTS[solution.split(".")[0]];
 
-  const solved = await solveChallenge({
-    challenge,
-  });
+    if (!challengeClient) {
+      throw new Error(`Invalid challenge version`);
+    }
 
-  if (isAnonChallenge(challenge)) {
-    const publicKey = await window.crypto.subtle.importKey(
-      "spki",
-      new ArrayBuffer(atob(wallet.publicKey)),
-      {
-        // TODO: Move to config and keep implementation for different "challenge version" live at the same time.
-        name: "RSA-PSS",
-        hash: "SHA-256",
-      },
-      true,
-      ["sign"],
-    );
+    if (now - challenge.createdAt.getTime() >= Config.CHALLENGE_TTL_MS) {
+      return false;
+    }
 
-    crypto.subtle.verify({
-      name: "RSA-PSS",
-      saltLength: 32,
-    }, publicKey, signature, solved.hash)
-  } else {
+    if (isAnonChallenge(challenge) || challenge.type === ChallengeType.SIGNATURE) {
+      if (!publicKeyParam) {
+        throw new Error("Missing `publicKey` (base64 public key)");
+      }
 
+      const publicKey = await window.crypto.subtle.importKey(
+        "spki",
+        Buffer.from(publicKeyParam, "base64"),
+        challengeClient.importKeyAlgorithm,
+        true,
+        ["sign"],
+      );
+
+      const challengeRawData = await challengeClient.getChallengeRawData({ challenge, session, shareHash });
+      const challengeRawDataBuffer = Buffer.from(challengeRawData);
+
+      return crypto.subtle.verify(
+        challengeClient.signAlgorithm,
+        publicKey,
+        Buffer.from(solution, "base64"),
+        challengeRawDataBuffer,
+      );
+    }
+
+    const expectedSolution = await challengeClient.solveChallenge({ challenge, session, shareHash });
+
+    return expectedSolution === solution;
+  } catch (err) {
+    console.warn(`Unexpected challenge validation error =`, err);
+
+    return false;
   }
-
-  if (challenge.type === ChallengeType.SIGNATURE) {
-    const encoded = Buffer.from(dataToEncode);
-
-    return crypto.subtle.sign(
-      {
-        name: "RSA-PSS",
-        saltLength: 32, // TODO: Get from `challenge` (random)
-      },
-      privateKey,
-      encoded,
-    );
-  }
-
-  return true;
 }
 
 export const ChallengeUtils = {
   generateChangeValue,
-  solveChallenge,
   verifyChallenge,
 }

@@ -17,13 +17,13 @@ export const fetchRecoverableAccounts = publicProcedure
   .mutation(async ({ input, ctx }) => {
     const now = Date.now();
 
-    const challenge = await ctx.prisma.anonChallenge.findFirst({
+    const anonChallenge = await ctx.prisma.anonChallenge.findFirst({
       where: {
         id: input.challengeId
       },
     });
 
-    if (!challenge) {
+    if (!anonChallenge) {
       // Just try again.
 
       throw new TRPCError({
@@ -52,8 +52,8 @@ export const fetchRecoverableAccounts = publicProcedure
             some: {
               canRecoverAccountSetting: true,
               status: WalletStatus.ENABLED,
-              chain: challenge.chain,
-              address: challenge.address,
+              chain: anonChallenge.chain,
+              address: anonChallenge.address,
             },
           },
         },
@@ -79,12 +79,12 @@ export const fetchRecoverableAccounts = publicProcedure
     }
 
     const isChallengeValid = await ChallengeUtils.verifyChallenge({
-      challenge,
-      solution: input.challengeSolution,
+      challenge: anonChallenge,
+      session: ctx.session,
+      shareHash: null,
       now,
-      // publicKey: recoverableAccounts[0].wallets[0].publicKey,
-      // TODO: Depending on chain, the signature algorithm might change.
-      // TODO: Finish `ChallengeUtils` for all types.
+      solution: input.challengeSolution,
+      publicKey: recoverableAccounts[0].wallets[0].publicKey || null,
     });
 
     if (!isChallengeValid) {

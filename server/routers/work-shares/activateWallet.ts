@@ -78,8 +78,11 @@ export const activateWallet = protectedProcedure
 
     const isChallengeValid = await ChallengeUtils.verifyChallenge({
       challenge,
-      solution: input.challengeSolution,
+      session: ctx.session,
+      shareHash: workKeyShare.deviceShareHash,
       now,
+      solution: input.challengeSolution,
+      publicKey: workKeyShare.deviceSharePublicKey,
     });
 
     if (!isChallengeValid) {

@@ -110,16 +110,16 @@ These could instead be capped by date (e.g. older than a month), using a _cronjo
 - ✅ Create `WalletUsageStatus` enum.
 - ✅ Log activation and recovery attempts.
 - ✅ Create / connect `DeviceAndLocation`.
+- ✅ Implement challenge creation & validation logic.
 
--  Implement challenge creation & validation logic.
-
-- Properly validate share, share hash and share public key format (remove `// TODO: Validate length/format`)
-- Lazily update `Session` on each request if it has changed (meaning, all endpoints might return a new token).
 - Add all missing ENV variables to `config.constants.ts`.
+
 - Review / clean up TODOs in this PR.
+- Properly validate share, share hash and share public key format (remove `// TODO: Validate length/format`)
 
 **TODO (other PRs):**
 
+- Lazily update `Session` on each request if it has changed (meaning, all endpoints might return a new token).
 - Take into account location and ip filters.
 - Rotate user JWT secret when logging out if there are no more sessions.
 - Endpoints to create `Application`?
@@ -127,6 +127,7 @@ These could instead be capped by date (e.g. older than a month), using a _cronjo
 - Enforce limits on certain tables...
 - Account for `activationAuthsRequiredSetting`, `backupAuthsRequiredSetting`, `recoveryAuthsRequiredSetting`, country filter, ip filter...
 - Enforce ENV variable limits.
+- Finish `recoverAccount` procedure (after the authentication ones are merged).
 
 **TODO (main repo):**
 

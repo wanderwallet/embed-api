@@ -25,6 +25,9 @@ export const recoverAccount = publicProcedure
         userId: input.userId,
         purpose: ChallengePurpose.ACCOUNT_RECOVERY,
       },
+      include: {
+        wallet: true,
+      }
     });
 
     if (!challenge) {
@@ -38,9 +41,11 @@ export const recoverAccount = publicProcedure
 
     const isChallengeValid = await ChallengeUtils.verifyChallenge({
       challenge,
-      solution: input.challengeSolution,
+      session: ctx.session,
+      shareHash: null,
       now,
-      // TODO: Pass public key
+      solution: input.challengeSolution,
+      publicKey: challenge.wallet.publicKey || null,
     });
 
     // TODO: Add an account recovery attempt limit?
