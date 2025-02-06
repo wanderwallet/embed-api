@@ -9,7 +9,7 @@ import { validateWallet } from "@/server/utils/wallet/wallet.validators";
 
 export const GenerateAccountRecoveryChallengeInputSchema = z.object({
   chain: z.nativeEnum(Chain),
-  address: z.string(), // TODO: Add proper validation
+  address: z.string(),
   userId: z.string().uuid(),
 }).superRefine(async (data, ctx) => {
   // `chain` and `address` format match:
