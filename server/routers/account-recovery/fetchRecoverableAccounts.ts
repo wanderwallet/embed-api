@@ -7,7 +7,7 @@ import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 
 export const FetchRecoverableAccounts = z.object({
   challengeId: z.string().uuid(),
-  challengeSolution: z.string(),
+  challengeSolution: z.string(), // Format validation implicit in `verifyChallenge()`.
 });
 
 // Note this is `publicProcedure`!
