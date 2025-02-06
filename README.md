@@ -95,7 +95,7 @@ We can probably remove/reset those records every month and only keep aggregated 
 - ✅ recoverWallet
 
 **Account Recovery:**
-- ✅ generateFetchRecoverableWalletsChallenge
+- ✅ generateFetchRecoverableAccountsChallenge
 - ✅ fetchRecoverableAccounts
 - ✅ generateAccountRecoveryChallenge
 - ✅ recoverAccount

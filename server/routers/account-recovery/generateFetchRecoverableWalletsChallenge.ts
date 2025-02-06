@@ -16,7 +16,7 @@ export const GenerateFetchRecoverableAccountsChallenge = z.object({
 
 // Note this is `publicProcedure`!
 
-export const generateFetchRecoverableWalletsChallenge = publicProcedure
+export const generateFetchRecoverableAccountsChallenge = publicProcedure
   .input(GenerateFetchRecoverableAccountsChallenge)
   .mutation(async ({ input, ctx }) => {
 
