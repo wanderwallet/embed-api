@@ -115,14 +115,12 @@ We can probably remove/reset those records every month and only keep aggregated 
 - ✅ Create / connect `DeviceAndLocation`.
 - ✅ Implement challenge creation & validation logic.
 - ✅ Add all missing ENV variables to `config.constants.ts`.
-
-- Update backup generation and validation to include server signatures.
+- ✅ Update backup generation and validation to include server signatures.
 
 - Add "Index" or "unique" postfix to indexes.
-- Review / clean up TODOs in this PR.
 - Properly validate share, share hash and share public key format (remove `// TODO: Validate length/format`).
-- Include remaining ENV variables in `config.constants.ts` and validate them.
 - Log suspicious activity and de-auth user in that case (failed activations, recoveries, challenges...).
+- Review / clean up TODOs in this PR.
 
 **Needed for Developer Portal:**
 

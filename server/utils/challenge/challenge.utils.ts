@@ -31,11 +31,12 @@ export async function verifyChallenge({
 
   // Verification:
   now,
-  solution,
+  solution: solutionParam,
   publicKey: publicKeyParam,
 }: VerifyChallengeParams) {
   try {
-    const challengeClient = CHALLENGE_CLIENTS[solution.split(".")[0]];
+    const [solutionVersion, solution] = solutionParam.split(".");
+    const challengeClient = CHALLENGE_CLIENTS[solutionVersion];
 
     if (!challengeClient) {
       throw new Error(`Invalid challenge version`);

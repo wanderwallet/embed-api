@@ -19,6 +19,21 @@ export function getEnvEnumValidator<T extends EnumLike>(key: string, values: T) 
   return z.nativeEnum(values);
 }
 
+export function getEnvPrivateRSAKeyValidator(key: string) {
+  // TODO: Properly validate private RSA key format
+  return z
+    .string()
+    .nonempty(`${ key } is required`);
+}
+
+export function getEnvPublicRSAKeyValidator(key: string) {
+  // TODO: Properly validate public RSA key format
+
+  return z
+    .string()
+    .nonempty(`${ key } is required`);
+}
+
 export function initConfig() {
   // Challenges:
   const CHALLENGE_TYPE = process.env.CHALLENGE_TYPE as ChallengeType;
@@ -38,6 +53,10 @@ export function initConfig() {
   const MAX_WORK_SHARES_PER_WALLET = process.env.MAX_WORK_SHARES_PER_WALLET;
   const MAX_RECOVERY_SHARES_PER_WALLET = process.env.MAX_RECOVERY_SHARES_PER_WALLET;
 
+  // Backup:
+  const BACKUP_FILE_PRIVATE_KEY = process.env.BACKUP_FILE_PRIVATE_KEY;
+  const BACKUP_FILE_PUBLIC_KEY = process.env.BACKUP_FILE_PUBLIC_KEY;
+
   const ConfigSchema = z.object({
     // Challenges:
     CHALLENGE_TYPE: getEnvEnumValidator("CHALLENGE_TYPE", ChallengeType),
@@ -56,6 +75,10 @@ export function initConfig() {
     MAX_WALLETS_PER_USER: getEnvNumberValidator("MAX_WALLETS_PER_USER"),
     MAX_WORK_SHARES_PER_WALLET: getEnvNumberValidator("MAX_WORK_SHARES_PER_WALLET"),
     MAX_RECOVERY_SHARES_PER_WALLET: getEnvNumberValidator("MAX_RECOVERY_SHARES_PER_WALLET"),
+
+    // Backup:
+    BACKUP_FILE_PRIVATE_KEY: getEnvPrivateRSAKeyValidator("BACKUP_FILE_PRIVATE_KEY"),
+    BACKUP_FILE_PUBLIC_KEY: getEnvPublicRSAKeyValidator("BACKUP_FILE_PUBLIC_KEY"),
   });
 
   const config = ConfigSchema.parse({
@@ -76,6 +99,10 @@ export function initConfig() {
     MAX_WALLETS_PER_USER,
     MAX_WORK_SHARES_PER_WALLET,
     MAX_RECOVERY_SHARES_PER_WALLET,
+
+    // Backup:
+    BACKUP_FILE_PRIVATE_KEY,
+    BACKUP_FILE_PUBLIC_KEY,
   });
 
   return config;

@@ -3,6 +3,7 @@ import { z } from "zod"
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
+import { BackupUtils } from "@/server/utils/backup/backup.utils";
 
 export const RegisterRecoveryShareInputSchema = z.object({
   walletId: z.string(),
@@ -70,7 +71,13 @@ export const generateAuthShareChallenge = protectedProcedure
       ]);
     });
 
-    // TODO: Return server signature to be able to verify this backup file was once valid
-    // even if the db share is deleted.
-    return {};
+    const recoveryFileServerSignature = await BackupUtils.generateRecoveryFileSignature({
+      walletId: userWallet.id,
+      recoveryBackupShareHash: input.recoveryBackupShareHash,
+    });
+
+    return {
+      walletId: userWallet.id,
+      recoveryFileServerSignature,
+    };
   });

@@ -5,10 +5,13 @@ import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
+import { BackupUtils } from "@/server/utils/backup/backup.utils";
+import { Config } from "@/server/utils/config/config.constants";
 
 export const RecoverWalletSchema = z.object({
   walletId: z.string(),
   recoveryBackupShareHash: z.string(), // TODO: Validate length/format
+  recoveryFileServerSignature: z.string(), // TODO: Validate length/format
   challengeSolution: z.string(),
 });
 
@@ -57,7 +60,18 @@ export const recoverWallet = protectedProcedure
     }
 
     if (!recoveryKeyShare) {
-      // TODO: Differentiate between invalid share and deleted share that was once valid.
+      const isSignatureValid = await BackupUtils.verifyRecoveryFileSignature({
+        walletId: input.walletId,
+        recoveryBackupShareHash: input.recoveryBackupShareHash,
+        recoveryFileServerSignature: input.recoveryFileServerSignature
+      });
+
+      if (isSignatureValid) {
+        return {
+          recoveryAuthShare: null,
+          recoveryBackupServerPublicKey: Config.BACKUP_FILE_PUBLIC_KEY,
+        };
+      }
 
       throw new TRPCError({
         code: "NOT_FOUND",

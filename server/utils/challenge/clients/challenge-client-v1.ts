@@ -82,11 +82,9 @@ async function solveChallenge({
       privateKey,
       challengeRawDataBuffer,
     );
+  } else {
+    signatureOrHashBuffer = await crypto.subtle.digest("SHA-256", challengeRawDataBuffer);
   }
-
-  signatureOrHashBuffer = await crypto.subtle.digest({
-    name: "",
-  }, challengeRawDataBuffer);
 
   const signatureOrHashString = Buffer.from(signatureOrHashBuffer).toString("base64");
 
