@@ -17,6 +17,12 @@ enum AuthProviderType {
   APPLE
 }
 
+enum UserDetailsPrivacySetting {
+  NAME
+  EMAIL
+  PROFILE_PICTURE
+}
+
 enum NotificationSetting {
   NONE
   SECURITY
@@ -135,19 +141,21 @@ model User {
 
   // Settings:
 
+  /// If this account is recovered, what user details can we show to help users identify it's the right account:
+  userDetailsRecoveryPrivacy     UserDetailsPrivacySetting[]
   /// Receive email notifications for these types of notifications.
-  notificationsSetting           NotificationSetting   @default(SECURITY)
+  notificationsSetting           NotificationSetting         @default(SECURITY)
   /// Require 1 or more wallet signatures to recover this account.
-  recoveryWalletsRequiredSetting Int                   @default(1)
+  recoveryWalletsRequiredSetting Int                         @default(1)
   /// Only allow requests from these IPs.
-  ipFilterSetting                String[]              @db.VarChar(45)
+  ipFilterSetting                String[]                    @db.VarChar(45)
   /// If a request is rejected due to ipFilterSetting, include or hide the details in the error.
-  ipPrivacyFilterSetting         FilterPrivacySetting? @default(HIDE_DETAILS)
+  ipPrivacyFilterSetting         FilterPrivacySetting?       @default(HIDE_DETAILS)
   /// Only allow requests from these countries (based in IP). Countries will be stored as ISO 3166-1 alpha-2 codes, as returned by CloudFare
   /// (see https://cloudflare.com/cdn-cgi/trace).
-  countryFilterSetting           String[]              @db.VarChar(2)
+  countryFilterSetting           String[]                    @db.VarChar(2)
   /// If a request is rejected due to countryFilterSetting, include or hide the details in the error.
-  countryPrivacySetting          FilterPrivacySetting? @default(HIDE_DETAILS)
+  countryPrivacySetting          FilterPrivacySetting?       @default(HIDE_DETAILS)
 
   developer              Developer?
   authMethods            AuthMethod[]

@@ -1,9 +1,11 @@
 import { z } from "zod"
-import { WalletStatus } from '@prisma/client';
+import { User, UserDetailsPrivacySetting, WalletStatus } from '@prisma/client';
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { publicProcedure } from "@/server/trpc";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
+
+export type RecoverableAccount = Pick<User, "id"> & Partial<Pick<User, "name" | "email" | "profilePicture">>;
 
 export const FetchRecoverableAccounts = z.object({
   challengeId: z.string().uuid(),
@@ -39,8 +41,9 @@ export const fetchRecoverableAccounts = publicProcedure
         select: {
           id: true,
           name: true,
-          email: true, // TODO: Add privacy setting for this?
-          // TODO: Add picture?
+          email: true,
+          profilePicture: true,
+          userDetailsRecoveryPrivacy: true,
           wallets: {
             select: {
               publicKey: true,
@@ -94,7 +97,27 @@ export const fetchRecoverableAccounts = publicProcedure
       });
     }
 
+    const filteredRecoverableAccounts = recoverableAccounts.map((recoverableAccount) => {
+      const {
+        id,
+        name,
+        email,
+        profilePicture,
+        userDetailsRecoveryPrivacy,
+      } = recoverableAccount;
+
+      const filteredRecoverableAccount: RecoverableAccount = {
+        id,
+      };
+
+      if (userDetailsRecoveryPrivacy.includes(UserDetailsPrivacySetting.NAME)) filteredRecoverableAccount.name = name;
+      if (userDetailsRecoveryPrivacy.includes(UserDetailsPrivacySetting.EMAIL)) filteredRecoverableAccount.email = email;
+      if (userDetailsRecoveryPrivacy.includes(UserDetailsPrivacySetting.PROFILE_PICTURE)) filteredRecoverableAccount.profilePicture = profilePicture;
+
+      return filteredRecoverableAccount;
+    });
+
     return {
-      recoverableAccounts,
+      recoverableAccounts: filteredRecoverableAccounts,
     };
   });

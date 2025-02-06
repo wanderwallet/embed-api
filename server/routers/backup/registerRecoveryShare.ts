@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 import { BackupUtils } from "@/server/utils/backup/backup.utils";
-import { getShareHashValidator, getSharePublicKeyValidator, getShareValidator, validateShares } from "@/server/utils/share/share.validators";
+import { getShareHashValidator, getSharePublicKeyValidator, getShareValidator, validateShare } from "@/server/utils/share/share.validators";
 
 export const RegisterRecoveryShareInputSchema = z.object({
   walletId: z.string().uuid(),
@@ -37,7 +37,7 @@ export const registerRecoveryShare = protectedProcedure
       });
     }
 
-    if (validateShares(userWallet.chain, input.recoveryAuthShare).length > 0) {
+    if (validateShare(userWallet.chain, input.recoveryAuthShare).length > 0) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: ErrorMessages.INVALID_SHARE,
