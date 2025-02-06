@@ -41,17 +41,17 @@ function getChallengeRawData({
   ].filter(Boolean).join("|");
 }
 
-const CHALLENGE_CLIENT_VERSION: ChallengeClientVersion = "v1";
+const CHALLENGE_CLIENT_VERSION = "v1" as const satisfies ChallengeClientVersion;
 
-const IMPORT_KEY_ALGORITHM: RsaHashedImportParams = {
+const IMPORT_KEY_ALGORITHM = {
   name: "RSA-PSS",
   hash: "SHA-256",
-};
+} as const satisfies RsaHashedImportParams;
 
-const SIGN_ALGORITHM: RsaPssParams  = {
+const SIGN_ALGORITHM  = {
   name: "RSA-PSS",
   saltLength: 32,
-};
+} as const satisfies RsaPssParams;
 
 async function solveChallenge({
   challenge,

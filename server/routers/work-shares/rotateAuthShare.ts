@@ -5,13 +5,14 @@ import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
+import { getShareHashValidator, getSharePublicKeyValidator, getShareValidator } from "@/server/utils/share/share.validators";
 
 export const RotateAuthShareSchema = z.object({
-  walletId: z.string(),
-  authShare: z.string(), // TODO: Validate length/format
-  deviceShareHash: z.string(), // TODO: Validate length/format
-  deviceSharePublicKey: z.string(), // TODO: Validate length/format
-  challengeSolution: z.string(),
+  walletId: z.string().uuid(),
+  authShare: getShareValidator(),
+  deviceShareHash: getShareHashValidator(),
+  deviceSharePublicKey: getSharePublicKeyValidator(),
+  challengeSolution: z.string(), // Format validation implicit in `verifyChallenge()`.
 });
 
 export const rotateAuthShare = protectedProcedure

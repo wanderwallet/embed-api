@@ -72,6 +72,15 @@ export async function verifyChallenge({
 
     const expectedSolution = await challengeClient.solveChallenge({ challenge, session, shareHash });
 
+    // The length of the solution, excluding the version prefix, should be:
+    //
+    // - 44 characters (String.length) when using a hash.
+    // - 512 bytes (ArrayBuffer.byteLength) when using a signature from a 4096 modulusLength RSA.
+    // - 256 bytes (ArrayBuffer.byteLength) when using a signature from a 2048 modulusLength RSA.
+    // - ...
+    //
+    // However, there's no need to validate that, as we'll be comparing the whole value anyways.
+
     return expectedSolution === solution;
   } catch (err) {
     console.warn(`Unexpected challenge validation error =`, err);

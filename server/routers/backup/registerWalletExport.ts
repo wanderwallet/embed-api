@@ -7,7 +7,7 @@ import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-
 
 export const RegisterWalletExportInputSchema = z.object({
   type: z.nativeEnum(ExportType),
-  walletId: z.string(),
+  walletId: z.string().uuid(),
 });
 
 export const generateAuthShareChallenge = protectedProcedure

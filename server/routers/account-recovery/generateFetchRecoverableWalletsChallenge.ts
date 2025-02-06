@@ -3,10 +3,15 @@ import { Chain } from '@prisma/client';
 import { publicProcedure } from "@/server/trpc";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
+import { validateWallet } from "@/server/utils/wallet/wallet.validators";
 
 export const GenerateFetchRecoverableAccountsChallenge = z.object({
   chain: z.nativeEnum(Chain),
   address: z.string(), // TODO: Add proper validation
+}).superRefine(async (data, ctx) => {
+  // `chain` and `address` format match:
+  const walletIssues = await validateWallet(data.chain, data.address);
+  walletIssues.forEach(ctx.addIssue);
 });
 
 // Note this is `publicProcedure`!

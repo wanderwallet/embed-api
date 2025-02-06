@@ -3,7 +3,7 @@ import { z } from "zod"
 import { WalletIdentifierType } from "@prisma/client";
 
 export const UpdateWalletInfoInputSchema = z.object({
-  walletId: z.string(),
+  walletId: z.string().uuid(),
   identifierTypeSetting: z.nativeEnum(WalletIdentifierType).optional(),
   aliasSetting: z.string().optional(),
   descriptionSetting: z.string().optional(),

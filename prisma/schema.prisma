@@ -254,8 +254,8 @@ model Wallet {
   updatedAt DateTime     @updatedAt()
   chain     Chain
   address   String       @db.VarChar(255)
-  /// Can (not must) be empty for READONLY wallets. B64 string.
-  publicKey String?      @db.VarChar(255)
+  /// Can (not must) be empty for READONLY wallets. B64 string. 1024 just to be safe (e.g. Arweave wallet.owner = 683 characters).
+  publicKey String?      @db.VarChar(1024)
 
   // Settings:
 
@@ -403,12 +403,12 @@ model WorkKeyShare {
   sharesRotatedAt  DateTime @default(now())
   rotationWarnings Int      @default(0)
 
-  authShare            String
-  deviceShareHash      String @db.VarChar(255)
-  deviceSharePublicKey String
-
-  // TODO: Use the Session relation instead.
-  // deviceNonce String @db.VarChar(255)
+  /// Yes, Arweave private keys are humongous, 3168 characters as base64, so 4096 just to be safe.
+  authShare            String @db.VarChar(4096)
+  /// SHA-256 hash => 32 bytes signature => 20 characters in base64
+  deviceShareHash      String @db.VarChar(20)
+  /// RSA-PSS with a 4096 modulusLength => 550 bytes public key as SPKI => 736 characters in base64. 1024 just to be safe.
+  deviceSharePublicKey String @db.VarChar(1024)
 
   walletActivations WalletActivation[]
 
@@ -434,9 +434,12 @@ model RecoveryKeyShare {
   id        String   @id @default(uuid())
   createdAt DateTime @default(now())
 
+  /// Yes, Arweave private keys are humongous, 3168 characters as base64, so 4096 just to be safe.
   recoveryAuthShare            String
-  recoveryBackupShareHash      String @db.VarChar(255)
-  recoveryBackupSharePublicKey String
+  /// SHA-256 hash => 32 bytes signature => 20 characters in base64
+  recoveryBackupShareHash      String @db.VarChar(20)
+  /// RSA-PSS with a 4096 modulusLength => 550 bytes public key as SPKI => 736 characters in base64. 1024 just to be safe.
+  recoveryBackupSharePublicKey String @db.VarChar(1024)
 
   walletRecoveries WalletRecovery[]
 
@@ -454,11 +457,7 @@ model RecoveryKeyShare {
   @@map("RecoveryKeyShares")
 }
 
-/// TODO: Document the flow and what/how is being signed/hashed for each of them.
-/// ACTIVATION =
-/// SHARE_RECOVERY =
-/// SHARE_ROTATION =
-/// ACCOUNT_RECOVERY =
+/// See `challenge.utils.ts` and `challenge-client-v1.ts` for details on how the challenges are generated and validated.
 model Challenge {
   id        String           @id @default(uuid())
   type      ChallengeType

@@ -5,7 +5,7 @@ import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 
 export const UpdateWalletRecoveryInputSchema = z.object({
-  walletId: z.string(),
+  walletId: z.string().uuid(),
   canRecoverAccountSetting: z.boolean(),
 });
 

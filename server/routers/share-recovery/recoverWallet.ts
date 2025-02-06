@@ -7,12 +7,13 @@ import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 import { BackupUtils } from "@/server/utils/backup/backup.utils";
 import { Config } from "@/server/utils/config/config.constants";
+import { getShareHashValidator } from "@/server/utils/share/share.validators";
 
 export const RecoverWalletSchema = z.object({
-  walletId: z.string(),
-  recoveryBackupShareHash: z.string(), // TODO: Validate length/format
+  walletId: z.string().uuid(),
+  recoveryBackupShareHash: getShareHashValidator(),
   recoveryFileServerSignature: z.string(), // TODO: Validate length/format
-  challengeSolution: z.string(),
+  challengeSolution: z.string(), // Format validation implicit in `verifyChallenge()`.
 });
 
 export const recoverWallet = protectedProcedure

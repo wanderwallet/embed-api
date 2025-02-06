@@ -8,8 +8,8 @@ import { Config } from "@/server/utils/config/config.constants";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 
 export const ActivateWalletSchema = z.object({
-  walletId: z.string(),
-  challengeSolution: z.string(),
+  walletId: z.string().uuid(),
+  challengeSolution: z.string(), // Format validation implicit in `verifyChallenge()`.
 });
 
 export const activateWallet = protectedProcedure

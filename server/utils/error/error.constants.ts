@@ -10,6 +10,7 @@ export const ErrorMessages = {
 
   // Shares:
   WORK_SHARE_NOT_FOUND: `Work share not found.`,
+  INVALID_SHARE: `Invalid share.`,
 
   // Challenge:
   CHALLENGE_NOT_FOUND: `Challenge not found. It might have been resolved already, or it might have expired.`,

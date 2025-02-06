@@ -5,11 +5,16 @@ import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
+import { validateWallet } from "@/server/utils/wallet/wallet.validators";
 
 export const GenerateAccountRecoveryChallengeInputSchema = z.object({
   chain: z.nativeEnum(Chain),
   address: z.string(), // TODO: Add proper validation
-  userId: z.string()
+  userId: z.string().uuid(),
+}).superRefine(async (data, ctx) => {
+  // `chain` and `address` format match:
+  const walletIssues = await validateWallet(data.chain, data.address);
+  walletIssues.forEach(ctx.addIssue);
 });
 
 // Note this is `publicProcedure`!

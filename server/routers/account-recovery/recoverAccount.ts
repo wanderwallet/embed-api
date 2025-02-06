@@ -7,8 +7,8 @@ import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 
 export const RecoverAccountSchema = z.object({
-  userId: z.string(),
-  challengeSolution: z.string(),
+  userId: z.string().uuid(),
+  challengeSolution: z.string(), // Format validation implicit in `verifyChallenge()`.
 });
 
 // Note this is `publicProcedure`!

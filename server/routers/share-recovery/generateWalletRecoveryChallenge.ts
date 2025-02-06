@@ -8,7 +8,7 @@ import { Config } from "@/server/utils/config/config.constants";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 
 export const GenerateWalletRecoveryChallengeInputSchema = z.object({
-  walletId: z.string()
+  walletId: z.string().uuid(),
 });
 
 export const generateWalletRecoveryChallenge = protectedProcedure

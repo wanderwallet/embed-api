@@ -5,6 +5,7 @@ import { maskWalletAddress } from "@/server/utils/wallet/wallet.utils";
 import { validateWallet } from "@/server/utils/wallet/wallet.validators";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
+import { getShareValidator, getShareHashValidator, getSharePublicKeyValidator, validateShare } from "@/server/utils/share/share.validators";
 
 export const CreatePrivateWalletInputSchema = z.object({
   status: z.enum([WalletStatus.ENABLED, WalletStatus.DISABLED]),
@@ -20,13 +21,17 @@ export const CreatePrivateWalletInputSchema = z.object({
   }),
 
   // WorkKeyShare:
-  authShare: z.string(), // TODO: Validate length/format
-  deviceShareHash: z.string(), // TODO: Validate length/format
-  deviceSharePublicKey: z.string(), // TODO: Validate length/format
+  authShare: getShareValidator(),
+  deviceShareHash: getShareHashValidator(),
+  deviceSharePublicKey: getSharePublicKeyValidator(),
 }).superRefine(async (data, ctx) => {
   // `chain`, `address` and `publicKey` match:
   const walletIssues = await validateWallet(data.chain, data.address);
   walletIssues.forEach(ctx.addIssue);
+
+  // `authShare` has the right format according to the length of the keys on a specific `chain`:
+  const shareIssues = validateShare(data.chain, data.authShare);
+  shareIssues.forEach(ctx.addIssue);
 });
 
 export const createPrivateWallet = protectedProcedure

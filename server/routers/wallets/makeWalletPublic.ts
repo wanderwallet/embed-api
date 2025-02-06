@@ -7,7 +7,7 @@ import { validateWallet } from "@/server/utils/wallet/wallet.validators";
 import { maskWalletAddress } from "@/server/utils/wallet/wallet.utils";
 
 export const MakeWalletPublicInputSchema = z.object({
-  walletId: z.string(),
+  walletId: z.string().uuid(),
   walletPrivacySetting: z.literal(WalletPrivacySetting.PUBLIC),
   chain: z.nativeEnum(Chain),
   address: z.string(),

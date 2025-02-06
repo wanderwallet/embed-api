@@ -4,15 +4,16 @@ import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 import { BackupUtils } from "@/server/utils/backup/backup.utils";
+import { getShareHashValidator, getSharePublicKeyValidator, getShareValidator, validateShares } from "@/server/utils/share/share.validators";
 
 export const RegisterRecoveryShareInputSchema = z.object({
-  walletId: z.string(),
-  recoveryAuthShare: z.string(), // TODO: Validate length/format
-  recoveryBackupShareHash: z.string(), // TODO: Validate length/format
-  recoveryBackupSharePublicKey: z.string(), // TODO: Validate length/format
+  walletId: z.string().uuid(),
+  recoveryAuthShare: getShareValidator(),
+  recoveryBackupShareHash: getShareHashValidator(),
+  recoveryBackupSharePublicKey: getSharePublicKeyValidator(),
 });
 
-export const generateAuthShareChallenge = protectedProcedure
+export const registerRecoveryShare = protectedProcedure
   .input(RegisterRecoveryShareInputSchema)
   .mutation(async ({ input, ctx }) => {
     // It is faster to make this query outside the transaction and await it inside, but if the transaction fails, this
@@ -22,7 +23,7 @@ export const generateAuthShareChallenge = protectedProcedure
 
     // Make sure the user is the owner of the wallet (because of the RecoveryKeyShare relation below):
     const userWallet = await ctx.prisma.wallet.findFirst({
-      select: { id: true },
+      select: { id: true, chain: true },
       where: {
         id: input.walletId,
         userId: ctx.user.id,
@@ -33,6 +34,13 @@ export const generateAuthShareChallenge = protectedProcedure
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.WALLET_NOT_FOUND,
+      });
+    }
+
+    if (validateShares(userWallet.chain, input.recoveryAuthShare).length > 0) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: ErrorMessages.INVALID_SHARE,
       });
     }
 

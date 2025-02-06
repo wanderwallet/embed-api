@@ -6,7 +6,7 @@ import { publicProcedure } from "@/server/trpc";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 
 export const FetchRecoverableAccounts = z.object({
-  challengeId: z.string(),
+  challengeId: z.string().uuid(),
   challengeSolution: z.string(),
 });
 

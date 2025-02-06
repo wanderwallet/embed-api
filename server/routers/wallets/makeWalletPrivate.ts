@@ -6,7 +6,7 @@ import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 
 export const MakeWalletPrivateInputSchema = z.object({
-  walletId: z.string(),
+  walletId: z.string().uuid(),
   walletPrivacySetting: z.literal(WalletPrivacySetting.PRIVATE),
 });
 
