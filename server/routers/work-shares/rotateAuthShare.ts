@@ -36,8 +36,6 @@ export const rotateAuthShare = protectedProcedure
       },
     });
 
-    // TODO: Should all procedures update Session info if data has changed?
-
     if (!challenge) {
       // Just try again.
 

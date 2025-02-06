@@ -21,8 +21,6 @@ export const recoverAccount = publicProcedure
 
     const now = Date.now();
 
-    // TODO: Should all procedures update Session info if data has changed?
-
     const challenge = await ctx.prisma.challenge.findFirst({
       where: {
         userId: input.userId,

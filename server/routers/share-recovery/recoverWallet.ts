@@ -41,8 +41,6 @@ export const recoverWallet = protectedProcedure
       },
     });
 
-    // TODO: Should all procedures update Session info if data has changed?
-
     const [
       challenge,
       recoveryKeyShare,

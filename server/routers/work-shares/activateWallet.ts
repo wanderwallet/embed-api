@@ -40,8 +40,6 @@ export const activateWallet = protectedProcedure
       },
     });
 
-    // TODO: Should all procedures update Session info if data has changed?
-
     const [
       challenge,
       workKeyShare,
