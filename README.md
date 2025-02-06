@@ -61,10 +61,10 @@ We can probably remove/reset those records every month and only keep aggregated 
 ## SDK API:
 
 **Authentication:**
-- authenticate
-- refreshSession
-- fakeAuthenticate
-- fakeRefreshSession
+- ❌ authenticate
+- ❌ refreshSession
+- ❌ fakeAuthenticate
+- ❌ fakeRefreshSession
 
 **Wallets:**
 - ✅ fetchWallets
@@ -99,30 +99,6 @@ We can probably remove/reset those records every month and only keep aggregated 
 - ✅ fetchRecoverableAccounts
 - ✅ generateAccountRecoveryChallenge
 - ✅ recoverAccount
-
-**TODO:**
-- ✅ Delete challenges even if validation fails.
-- ✅ Update `canBeRecovered` in `registerRecoveryShare` and `registerWalletExport`.
-- ✅ Make sure `activateWallet` only allows it for enabled wallets?
-- ✅ Add `aliasSetting` to `Wallet`.
-- ✅ Add missing `authShare` to `createWallet()`.
-- ✅ Remove `SECRET` in `WalletPrivacySetting`.
-- ✅ Split `updateWallet` into individual procedures.
-- ✅ Split `createWallet` into individual procedures.
-- ✅ Validate `publicKey` matches `address`.
-- ✅ Create `WalletUsageStatus` enum.
-- ✅ Log activation and recovery attempts.
-- ✅ Create / connect `DeviceAndLocation`.
-- ✅ Implement challenge creation & validation logic.
-- ✅ Add all missing ENV variables to `config.constants.ts`.
-- ✅ Update backup generation and validation to include server signatures.
-- ✅ Rename unique indexes and adjust them.
-- ✅ Properly validate share, share hash and share public key format.
-
-- Validate share length according to chain in `registerRecoveryShare` too.
-
-- Log suspicious activity and de-auth user in that case (failed activations, recoveries, challenges...).
-- Review / clean up TODOs in this PR.
 
 **Needed for Developer Portal:**
 
