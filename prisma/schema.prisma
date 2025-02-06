@@ -470,6 +470,7 @@ model Challenge {
   id        String           @id @default(uuid())
   type      ChallengeType
   purpose   ChallengePurpose
+  /// We use a 128 byte buffer, which translates to 172 characters in base64, so 255 to be safe.
   value     String           @db.VarChar(255)
   version   String           @db.VarChar(50)
   createdAt DateTime         @default(now())

@@ -8,7 +8,7 @@ export function isAnonChallenge(challenge: Challenge | AnonChallenge): challenge
 }
 
 export function generateChangeValue() {
-  return Buffer.from(crypto.getRandomValues(new Uint8Array(512))).toString(
+  return Buffer.from(crypto.getRandomValues(new Uint8Array(Config.CHALLENGE_BUFFER_SIZE))).toString(
     "base64"
   );
 }

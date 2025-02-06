@@ -53,7 +53,7 @@ export const generateWalletRecoveryChallenge = protectedProcedure
     const challengeUpsertData = {
       type: Config.CHALLENGE_TYPE,
       purpose: ChallengePurpose.SHARE_RECOVERY,
-      value: challengeValue, // TODO: Update schema size if needed...
+      value: challengeValue,
       version: Config.CHALLENGE_VERSION,
 
       // Relations:

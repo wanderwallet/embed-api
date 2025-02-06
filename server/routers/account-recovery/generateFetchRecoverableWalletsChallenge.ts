@@ -29,7 +29,7 @@ export const generateFetchRecoverableWalletsChallenge = publicProcedure
 
     const fetchRecoverableWalletsChallenge = await ctx.prisma.anonChallenge.create({
       data: {
-        value: challengeValue, // TODO: Update schema size if needed...
+        value: challengeValue,
         version: Config.CHALLENGE_VERSION,
         chain: input.chain,
         address: input.address,

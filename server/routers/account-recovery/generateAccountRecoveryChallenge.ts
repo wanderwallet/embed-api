@@ -48,7 +48,7 @@ export const generateAccountRecoveryChallenge = publicProcedure
     const challengeUpsertData = {
       type: Config.CHALLENGE_TYPE,
       purpose: ChallengePurpose.ACCOUNT_RECOVERY,
-      value: challengeValue, // TODO: Update schema size if needed...
+      value: challengeValue,
       version: Config.CHALLENGE_VERSION,
 
       // Relations:
