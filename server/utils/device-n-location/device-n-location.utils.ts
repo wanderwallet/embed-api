@@ -17,7 +17,7 @@ export function getDeviceAndLocationId(
       id: true,
     },
     where: {
-      userDevices: {
+      userDevice: {
         userId: ctx.user.id,
         deviceNonce: ctx.session.deviceNonce,
         ip: ctx.session.ip,

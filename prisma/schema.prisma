@@ -120,8 +120,6 @@ model AuthMethod {
   authenticationAttempts AuthenticationAttempt[]
 
   @@unique([userId, providerId], name: "userAuthentication")
-  @@index([providerId])
-  @@index([lastUsedAt])
   @@map("AuthMethods")
 }
 
@@ -328,9 +326,8 @@ model Wallet {
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
   deviceAndLocationId String
 
-  @@unique([userId, status, chain, address], name: "userWallet")
-  @@index([canRecoverAccountSetting, status, chain, address])
-  @@index([createdAt])
+  @@unique([userId, chain, address], name: "userWallet")
+  @@index([canRecoverAccountSetting, chain, address])
   @@map("Wallets")
 }
 
@@ -351,6 +348,7 @@ model WalletActivation {
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
   deviceAndLocationId String
 
+  @@index([userId])
   @@index([activatedAt])
   @@map("WalletActivations")
 }
@@ -426,8 +424,7 @@ model WorkKeyShare {
   /// This unique constraint means that if the users loses the deviceShare but, for whatever reason, not the
   /// device nonce, after requesting the recoveryAuthShare and sending the new authShare and deviceShareHash, this will
   /// replace the previous one (as deviceNonce is the same):
-  @@unique([userId, sessionId, walletId], name: "deviceWorkShares")
-  @@index([sharesRotatedAt])
+  @@unique([userId, sessionId, walletId], name: "userSessionWorkShare")
   @@map("WorkKeyShares")
 }
 
@@ -453,7 +450,7 @@ model RecoveryKeyShare {
   deviceAndLocationId String
 
   @@unique([userId, recoveryBackupShareHash])
-  @@index([createdAt])
+  @@index([userId, createdAt])
   @@map("RecoveryKeyShares")
 }
 
@@ -520,9 +517,7 @@ model DeviceAndLocation {
   application   Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
   applicationId String?
 
-  @@unique([userId, deviceNonce, ip, userAgent], name: "userDevices")
-  @@index([deviceNonce])
-  @@index([ip])
+  @@unique([userId, deviceNonce, ip, userAgent], name: "userDevice")
   @@index([createdAt])
   @@map("DevicesAndLocations")
 }
@@ -549,10 +544,8 @@ model Session {
 
   /// Note how here we don't include ip and userAgent, as we only want to keep one session per user-device, so if the IP
   /// or the userAgent change on the same device, we simply update the session info.
-  @@unique([userId, deviceNonce], name: "userSessions")
+  @@unique([userId, deviceNonce], name: "userSession")
   @@index([providerSessionId])
-  @@index([deviceNonce])
-  @@index([ip])
   @@index([updatedAt])
   @@map("Sessions")
 }
@@ -572,5 +565,6 @@ model AuthenticationAttempt {
   deviceAndLocationId String
 
   @@index([userId])
+  @@index([createdAt])
   @@map("LoginAttempts")
 }

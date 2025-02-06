@@ -76,7 +76,7 @@ export const rotateAuthShare = protectedProcedure
     await ctx.prisma.$transaction(async (tx) => {
       const rotateWorkKeySharePromise = tx.workKeyShare.update({
         where: {
-          deviceWorkShares: {
+          userSessionWorkShare: {
             userId: ctx.user.id,
             sessionId: ctx.session.id,
             walletId: input.walletId,

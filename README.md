@@ -116,8 +116,8 @@ We can probably remove/reset those records every month and only keep aggregated 
 - ✅ Implement challenge creation & validation logic.
 - ✅ Add all missing ENV variables to `config.constants.ts`.
 - ✅ Update backup generation and validation to include server signatures.
+- ✅ Rename unique indexes and adjust them.
 
-- Add "Index" or "unique" postfix to indexes.
 - Properly validate share, share hash and share public key format (remove `// TODO: Validate length/format`).
 - Log suspicious activity and de-auth user in that case (failed activations, recoveries, challenges...).
 - Review / clean up TODOs in this PR.
