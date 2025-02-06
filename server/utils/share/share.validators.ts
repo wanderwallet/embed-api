@@ -12,7 +12,7 @@ export function getShareValidator() {
 }
 
 /**
- * We generate a SHA-256 hash that generates a 32 bytes signature => 20 characters in base64.
+ * We generate a SHA-256 hash => 32 bytes => 20 characters in base64.
  */
 export function getShareHashValidator() {
   return z.string().length(20);

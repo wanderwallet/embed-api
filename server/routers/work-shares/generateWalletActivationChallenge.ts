@@ -53,7 +53,7 @@ export const generateWalletActivationChallenge = protectedProcedure
     const challengeUpsertData = {
       type: Config.CHALLENGE_TYPE,
       purpose: ChallengePurpose.ACTIVATION,
-      value: challengeValue, // TODO: Update schema size if needed...
+      value: challengeValue,
       version: Config.CHALLENGE_VERSION,
 
       // Relations:

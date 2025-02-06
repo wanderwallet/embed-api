@@ -12,7 +12,7 @@ import { getShareHashValidator } from "@/server/utils/share/share.validators";
 export const RecoverWalletSchema = z.object({
   walletId: z.string().uuid(),
   recoveryBackupShareHash: getShareHashValidator(),
-  recoveryFileServerSignature: z.string(), // TODO: Validate length/format
+  recoveryFileServerSignature: z.string().length(684), // RSA 4096 signature => 512 bytes => 684 characters in base64
   challengeSolution: z.string(), // Format validation implicit in `verifyChallenge()`.
 });
 
