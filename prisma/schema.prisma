@@ -17,6 +17,12 @@ enum AuthProviderType {
   APPLE
 }
 
+enum UserDetailsPrivacySetting {
+  NAME
+  EMAIL
+  PROFILE_PICTURE
+}
+
 enum NotificationSetting {
   NONE
   SECURITY
@@ -39,15 +45,26 @@ enum Chain {
 }
 
 enum WalletStatus {
+  /// The wallet can be activated and used normally.
   ENABLED
+
+  /// The wallet cannot be activated without first changing its status to ENABLED, but shares stay in the DB. They can
+  /// also be used for account recovery if they are not PRIVATE.
   DISABLED
-  WATCH_ONLY
+
+  /// READONLY wallets don't have shares stored in the DB (when changing the walletStatus to READONLY, they'll be
+  /// deleted, if they existed).
+  READONLY
+
+  /// LOST wallets don't have shares stored in the DB (when changing the walletStatus to LOST, they'll be deleted, if
+  /// they existed).
   LOST
 }
 
 enum WalletPrivacySetting {
-  SECRET
+  /// Only the last 4 characters of `address` are stored. `publicKey` is not stored.
   PRIVATE
+  /// The whole `address` and `publicKey` are stored.
   PUBLIC
 }
 
@@ -55,6 +72,22 @@ enum WalletIdentifierType {
   ALIAS
   ANS
   PNS
+}
+
+enum WalletSourceType {
+  IMPORTED
+  GENERATED
+}
+
+enum WalletSourceFrom {
+  SEEDPHRASE
+  KEYFILE
+  BINARY
+}
+
+enum WalletUsageStatus {
+  SUCCESSFUL
+  FAILED
 }
 
 enum ExportType {
@@ -72,7 +105,6 @@ enum ChallengePurpose {
   SHARE_RECOVERY
   SHARE_ROTATION
   ACCOUNT_RECOVERY
-  ACCOUNT_RECOVERY_CONFIRMATION
 }
 
 // TODO: Document index usages.
@@ -89,49 +121,54 @@ model AuthMethod {
   lastUsedAt    DateTime         @default(now())
   unlinkedAt    DateTime?
 
-  user         User           @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       String
-  LoginAttempt LoginAttempt[]
+  user                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId                 String
+  authenticationAttempts AuthenticationAttempt[]
 
   @@unique([userId, providerId], name: "userAuthentication")
-  @@index([providerId])
-  @@index([lastUsedAt])
   @@map("AuthMethods")
 }
 
 model User {
-  id        String     @id @default(uuid())
-  name      String?    @db.VarChar(100)
-  email     String?    @db.VarChar(255)
-  developer Developer?
+  id             String    @id @default(uuid())
+  name           String?   @db.VarChar(100)
+  email          String?   @db.VarChar(255)
+  profilePicture String?   @db.VarChar(255)
+  jwkSecret      String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt()
+  recoveredAt    DateTime?
 
   // Settings:
 
+  /// If this account is recovered, what user details can we show to help users identify it's the right account:
+  userDetailsRecoveryPrivacy     UserDetailsPrivacySetting[]
   /// Receive email notifications for these types of notifications.
-  notificationsSetting           NotificationSetting   @default(SECURITY)
+  notificationsSetting           NotificationSetting         @default(SECURITY)
   /// Require 1 or more wallet signatures to recover this account.
-  recoveryWalletsRequiredSetting Int                   @default(1)
+  recoveryWalletsRequiredSetting Int                         @default(1)
   /// Only allow requests from these IPs.
-  ipFilterSetting                String?               @db.VarChar(255)
+  ipFilterSetting                String[]                    @db.VarChar(45)
   /// If a request is rejected due to ipFilterSetting, include or hide the details in the error.
-  ipPrivacyFilterSetting         FilterPrivacySetting? @default(HIDE_DETAILS)
+  ipPrivacyFilterSetting         FilterPrivacySetting?       @default(HIDE_DETAILS)
   /// Only allow requests from these countries (based in IP). Countries will be stored as ISO 3166-1 alpha-2 codes, as returned by CloudFare
   /// (see https://cloudflare.com/cdn-cgi/trace).
-  countryFilterSetting           String[]              @db.VarChar(2)
+  countryFilterSetting           String[]                    @db.VarChar(2)
   /// If a request is rejected due to countryFilterSetting, include or hide the details in the error.
-  countryPrivacySetting          FilterPrivacySetting? @default(HIDE_DETAILS)
+  countryPrivacySetting          FilterPrivacySetting?       @default(HIDE_DETAILS)
 
-  authMethods         AuthMethod[]
-  wallets             Wallet[]
-  walletActivations   WalletActivation[]
-  walletRecoveries    WalletRecovery[]
-  walletExports       WalletExport[]
-  workKeyShares       WorkKeyShare[]
-  recoveryKeyShares   RecoveryKeyShare[]
-  challenges          Challenge[]
-  devicesAndLocations DeviceAndLocation[]
-  session             Session[]
-  LoginAttempt        LoginAttempt[]
+  developer              Developer?
+  authMethods            AuthMethod[]
+  wallets                Wallet[]
+  walletActivations      WalletActivation[]
+  walletRecoveries       WalletRecovery[]
+  walletExports          WalletExport[]
+  workKeyShares          WorkKeyShare[]
+  recoveryKeyShares      RecoveryKeyShare[]
+  challenges             Challenge[]
+  devicesAndLocations    DeviceAndLocation[]
+  sessions               Session[]
+  authenticationAttempts AuthenticationAttempt[]
 
   @@index([email])
   @@map("Users")
@@ -143,7 +180,7 @@ model Developer {
   planStartedAt String   @default("free") @db.VarChar(50)
   apiKey        String   @unique @db.VarChar(255)
   createdAt     DateTime @default(now())
-  updatedAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt()
 
   // Billing Information:
   name        String?
@@ -195,10 +232,11 @@ model Bill {
 }
 
 model Application {
-  id        String   @id @default(uuid())
-  domains   String[] @db.VarChar(255)
-  createdAt DateTime @default(now())
-  updatedAt DateTime @default(now())
+  id          String   @id @default(uuid())
+  description String?  @db.VarChar(255)
+  domains     String[] @db.VarChar(255) // TODO: Consider separating domains to add tags/label to them (e.g. staging, etc.)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt()
 
   /// Different customization options developers can set in their apps:
   // TODO: Document its shape once defined.
@@ -207,6 +245,8 @@ model Application {
   DeviceAndLocation DeviceAndLocation[]
   Session           Session[]
 
+  // TODO: We might want to change this so that Applications can be shared to more than one Developer? But probably
+  // later, and consider adding teams at that point. Or replace Developer with Team.
   developer   Developer @relation(fields: [developerId], references: [id], onDelete: Cascade)
   developerId String
 
@@ -216,55 +256,60 @@ model Application {
 
 model Wallet {
   id        String       @id @default(uuid())
-  /// This must be set to WATCH_ONLY if publicKey is not set.
+  /// This must be set to READONLY if publicKey is not set.
   status    WalletStatus @default(ENABLED)
   createdAt DateTime     @default(now())
-  updatedAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt()
   chain     Chain
   address   String       @db.VarChar(255)
-  /// Can (not must) be empty for watch-only wallets.
-  publicKey String?      @db.VarChar(255)
+  /// Can (not must) be empty for READONLY wallets. B64 string. 1024 just to be safe (e.g. Arweave wallet.owner = 683 characters).
+  publicKey String?      @db.VarChar(1024)
 
   // Settings:
 
   /// Preferred way to visually present this wallet.
   identifierTypeSetting          WalletIdentifierType @default(ALIAS)
+  /// Custom name/alias the user can attach to this wallet.
+  aliasSetting                   String?              @db.VarChar(64)
   /// Custom description/note the user can attach to this wallet.
   descriptionSetting             String?              @db.VarChar(500)
   /// Custom tags the user can attach to this wallet.
-  tagsSetting                    String[]             @db.VarChar(50)
+  tagsSetting                    String[]             @db.VarChar(32)
   /// New wallets will prompt the user to backup/export it, but users can disable these reminders (per wallet).
-  doNotAskAgainSetting           Boolean              @default(true)
+  doNotAskAgainSetting           Boolean              @default(false)
   /// Send the address, only last 4 characters of the address or no address at all when wallets are retrieved.
   walletPrivacySetting           WalletPrivacySetting @default(PUBLIC)
   /// Users will be able to disable wallets as recovery options. This must be set to false if publicKey is not set.
-  canRecoverAccountSetting       Boolean              @default(true)
+  canRecoverAccountSetting       Boolean              @default(false)
   /// Set to true after the user has exported a seedphrase, private key or recovery file.
   canBeRecovered                 Boolean              @default(false)
   /// Require 1 or more authentication tokens to activate this wallet.
-  activationAuthsRequiredSetting Int                  @default(1)
+  activationAuthsRequiredSetting Int                  @default(0)
   /// Require 1 or more authentication tokens to backup this wallet (get a recovery share).
-  backupAuthsRequiredSetting     Int                  @default(1)
+  backupAuthsRequiredSetting     Int                  @default(0)
   /// Require 1 or more authentication tokens to recover this wallet.
-  recoveryAuthsRequiredSetting   Int                  @default(1)
+  recoveryAuthsRequiredSetting   Int                  @default(0)
 
   /// Includes cached information about how to identify this wallet:
   ///
   /// {
-  ///   alias: string;
+  ///   ens: string;
+  ///   ensResolution: any;
   ///   ans: string;
   ///   ansResolution: any;
   ///   pns: string;
   ///   pnsResolution: any;
+  ///   ...
+  ///   etc. (for other chains)
   /// }
-  info Json
+  info Json?
 
   /// Information about the origin/source of this wallet:
   /// {
   ///   type "imported" | "generated",
   ///   from: "seedphrase" | "keyfile" | "binary"
   /// }
-  source Json
+  source Json?
 
   // Stats:
   lastActivatedAt  DateTime? // Can be computed from `WalletActivation`
@@ -289,17 +334,15 @@ model Wallet {
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
   deviceAndLocationId String
 
-  @@unique([userId, address, chain], name: "userWallet")
-  @@index([address])
-  @@index([chain])
-  @@index([status])
-  @@index([createdAt])
+  @@unique([userId, chain, address], name: "userWallet")
+  @@index([canRecoverAccountSetting, chain, address])
   @@map("Wallets")
 }
 
 model WalletActivation {
-  id          String   @id @default(uuid())
-  activatedAt DateTime @default(now())
+  id          String            @id @default(uuid())
+  status      WalletUsageStatus
+  activatedAt DateTime          @default(now())
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
@@ -307,19 +350,21 @@ model WalletActivation {
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
 
-  workKeyShare   WorkKeyShare @relation(fields: [workKeyShareId], references: [id], onDelete: Cascade)
-  workKeyShareId String
+  workKeyShare   WorkKeyShare? @relation(fields: [workKeyShareId], references: [id], onDelete: Cascade)
+  workKeyShareId String?
 
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
   deviceAndLocationId String
 
+  @@index([userId])
   @@index([activatedAt])
   @@map("WalletActivations")
 }
 
 model WalletRecovery {
-  id          String   @id @default(uuid())
-  recoveredAt DateTime @default(now())
+  id          String            @id @default(uuid())
+  status      WalletUsageStatus
+  recoveredAt DateTime          @default(now())
 
   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String
@@ -327,8 +372,8 @@ model WalletRecovery {
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
 
-  recoveryKeyShare   RecoveryKeyShare @relation(fields: [recoveryKeyShareId], references: [id], onDelete: Cascade)
-  recoveryKeyShareId String
+  recoveryKeyShare   RecoveryKeyShare? @relation(fields: [recoveryKeyShareId], references: [id], onDelete: Cascade)
+  recoveryKeyShareId String?
 
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
   deviceAndLocationId String
@@ -362,16 +407,16 @@ model WalletExport {
 /// might be closed, but the deviceNonce and deviceShare stay on the device).
 model WorkKeyShare {
   id               String   @id @default(uuid())
-  // TODO: Replace with ENUM once we know what status are possible:
-  status           String   @db.VarChar(50)
   createdAt        DateTime @default(now())
   sharesRotatedAt  DateTime @default(now())
   rotationWarnings Int      @default(0)
 
-  authShare            String
-  deviceShareHash      String @db.VarChar(255)
-  deviceSharePublicKey String
-  deviceNonce          String @db.VarChar(255)
+  /// Yes, Arweave private keys are humongous, 3168 characters as base64, so 4096 just to be safe.
+  authShare            String @db.VarChar(4096)
+  /// SHA-256 hash => 32 bytes signature => 20 characters in base64
+  deviceShareHash      String @db.VarChar(20)
+  /// RSA-PSS with a 4096 modulusLength => 550 bytes public key as SPKI => 736 characters in base64. 1024 just to be safe.
+  deviceSharePublicKey String @db.VarChar(1024)
 
   walletActivations WalletActivation[]
 
@@ -387,9 +432,7 @@ model WorkKeyShare {
   /// This unique constraint means that if the users loses the deviceShare but, for whatever reason, not the
   /// device nonce, after requesting the recoveryAuthShare and sending the new authShare and deviceShareHash, this will
   /// replace the previous one (as deviceNonce is the same):
-  @@unique([userId, deviceNonce, walletId], name: "deviceWorkShares")
-  @@index([status])
-  @@index([sharesRotatedAt])
+  @@unique([userId, sessionId, walletId], name: "userSessionWorkShare")
   @@map("WorkKeyShares")
 }
 
@@ -397,13 +440,14 @@ model WorkKeyShare {
 /// as a file), and are not rotated.
 model RecoveryKeyShare {
   id        String   @id @default(uuid())
-  // TODO: Replace with ENUM once we know what status are possible:
-  status    String   @db.VarChar(50)
   createdAt DateTime @default(now())
 
+  /// Yes, Arweave private keys are humongous, 3168 characters as base64, so 4096 just to be safe.
   recoveryAuthShare            String
-  recoveryBackupShareHash      String @db.VarChar(255)
-  recoveryBackupSharePublicKey String
+  /// SHA-256 hash => 32 bytes signature => 20 characters in base64
+  recoveryBackupShareHash      String @db.VarChar(20)
+  /// RSA-PSS with a 4096 modulusLength => 550 bytes public key as SPKI => 736 characters in base64. 1024 just to be safe.
+  recoveryBackupSharePublicKey String @db.VarChar(1024)
 
   walletRecoveries WalletRecovery[]
 
@@ -416,37 +460,43 @@ model RecoveryKeyShare {
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
   deviceAndLocationId String
 
-  @@index([userId])
-  @@index([status])
-  @@index([createdAt])
+  @@unique([userId, recoveryBackupShareHash])
+  @@index([userId, createdAt])
   @@map("RecoveryKeyShares")
 }
 
-/// TODO: Document the flow and what/how is being signed/hashed for each of them.
-/// ACTIVATION =
-/// SHARE_RECOVERY =
-/// SHARE_ROTATION =
-/// ACCOUNT_RECOVERY =
-/// ACCOUNT_RECOVERY_CONFIRMATION =
+/// See `challenge.utils.ts` and `challenge-client-v1.ts` for details on how the challenges are generated and validated.
 model Challenge {
-  id       String           @id @default(uuid())
-  type     ChallengeType
-  purpose  ChallengePurpose
-  value    String           @db.VarChar(255)
-  version  String           @db.VarChar(50)
-  issuedAt DateTime         @default(now())
+  id        String           @id @default(uuid())
+  type      ChallengeType
+  purpose   ChallengePurpose
+  /// We use a 128 byte buffer, which translates to 172 characters in base64, so 255 to be safe.
+  value     String           @db.VarChar(255)
+  version   String           @db.VarChar(50)
+  createdAt DateTime         @default(now())
 
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String?
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId String
 
-  wallet   Wallet? @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  walletId String?
+  wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  walletId String
 
-  /// Each user would have up to 5 challenges active at a time (one of each type). Those of the same type will be
+  /// Each user would have up to 4 challenges active at a time (one of each type). Those of the same type will be
   /// overridden.
-  @@unique([userId, type], name: "userChallenges")
-  @@index([issuedAt])
+  @@unique([userId, purpose], name: "userChallenges")
   @@map("Challenges")
+}
+
+/// Used in `generateFetchRecoverableAccountsChallenge()`
+model AnonChallenge {
+  id        String   @id @default(uuid())
+  value     String   @db.VarChar(255)
+  version   String   @db.VarChar(50)
+  createdAt DateTime @default(now())
+  chain     Chain
+  address   String   @db.VarChar(255)
+
+  @@map("AnonChallenges")
 }
 
 /// A DeviceAndLocation item tells us where did a specific event (the entity this item is linked to) happened. The unique constraint on
@@ -462,12 +512,12 @@ model DeviceAndLocation {
   countryCode String   @db.VarChar(2)
   userAgent   String
 
-  wallets           Wallet[]
-  walletActivations WalletActivation[]
-  walletRecoveries  WalletRecovery[]
-  walletExports     WalletExport[]
-  recoveryKeyShares RecoveryKeyShare[]
-  loginAttempts     LoginAttempt[]
+  wallets                Wallet[]
+  walletActivations      WalletActivation[]
+  walletRecoveries       WalletRecovery[]
+  walletExports          WalletExport[]
+  recoveryKeyShares      RecoveryKeyShare[]
+  authenticationAttempts AuthenticationAttempt[]
 
   user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId String?
@@ -475,23 +525,23 @@ model DeviceAndLocation {
   application   Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
   applicationId String?
 
-  @@unique([userId, deviceNonce, ip, userAgent], name: "userDevices")
-  @@index([deviceNonce])
-  @@index([ip])
+  @@unique([userId, deviceNonce, ip, userAgent], name: "userDevice")
   @@index([createdAt])
   @@map("DevicesAndLocations")
 }
 
-/// A Session represents an active session. The unique constraint on userId-deviceNonce makes sure we only have one session on a given device, and forces as to 
+/// A Session represents an active session. The unique constraint on userId-deviceNonce makes sure we only have one session on a given device, and forces as to
 /// maintain ip and userAgent updated.
 model Session {
   id                String   @id @default(uuid())
   providerSessionId String   @db.VarChar(255)
   createdAt         DateTime @default(now())
-  updatedAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt()
   deviceNonce       String   @db.VarChar(255)
   // IPv6 or IPv4-mapped address
   ip                String   @db.VarChar(45)
+  /// ISO 3166-1 alpha-2 code
+  countryCode       String   @db.VarChar(2)
   userAgent         String   @db.VarChar(500)
 
   applications  Application[]
@@ -502,15 +552,13 @@ model Session {
 
   /// Note how here we don't include ip and userAgent, as we only want to keep one session per user-device, so if the IP
   /// or the userAgent change on the same device, we simply update the session info.
-  @@unique([userId, deviceNonce], name: "userSessions")
+  @@unique([userId, deviceNonce], name: "userSession")
   @@index([providerSessionId])
-  @@index([deviceNonce])
-  @@index([ip])
   @@index([updatedAt])
   @@map("Sessions")
 }
 
-model LoginAttempt {
+model AuthenticationAttempt {
   id              String   @id @default(uuid())
   rejectionReason String   @db.VarChar(255)
   createdAt       DateTime @default(now())
@@ -525,5 +573,6 @@ model LoginAttempt {
   deviceAndLocationId String
 
   @@index([userId])
+  @@index([createdAt])
   @@map("LoginAttempts")
 }
