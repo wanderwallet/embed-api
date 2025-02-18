@@ -36,8 +36,5 @@
     "prisma": "6.2.1",
     "ts-node": "^10.9.2",
     "typescript": "^5"
-  },
-  "resolutions": {
-    "arbundles/arweave": "^1.13.0"
   }
 }
