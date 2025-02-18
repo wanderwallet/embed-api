@@ -10,7 +10,7 @@ export const RegisterWalletExportInputSchema = z.object({
   walletId: z.string().uuid(),
 });
 
-export const generateAuthShareChallenge = protectedProcedure
+export const registerWalletExport = protectedProcedure
   .input(RegisterWalletExportInputSchema)
   .mutation(async ({ input, ctx }) => {
     // It is faster to make this query outside the transaction and await it inside, but if the transaction fails, this
