@@ -46,7 +46,7 @@ export const recoverAccount = publicProcedure
       shareHash: null,
       now,
       solution: input.challengeSolution,
-      publicKey: challenge.wallet.publicKey || null,
+      publicKey: challenge.wallet?.publicKey || null,
     });
 
     // TODO: Add an account recovery attempt limit?
@@ -83,9 +83,11 @@ export const recoverAccount = publicProcedure
       }).then(() => {
         // TODO: Create Session, AuthMethod, JWT... just like with signUps.
 
-        return tx.authMethod.create({
-          data: { },
-        });
+        // return tx.authMethod.create({
+        //   data: { },
+        // });
+
+        return Promise.resolve(null);
       })
 
       const deleteChallengePromise = tx.challenge.delete({
