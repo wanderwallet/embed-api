@@ -1,9 +1,13 @@
-import {
-  getUser,
-  signOut,
-  supabase,
-} from "../lib/supabaseClient";
+import { supabase } from "../lib/supabaseClient";
 import { TRPCError } from "@trpc/server";
+
+export async function getUser() {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  return user
+}
 
 export async function loginWithGoogle(authProviderType: string) {
   if (authProviderType !== "GOOGLE") {

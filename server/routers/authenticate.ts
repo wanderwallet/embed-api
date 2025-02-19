@@ -1,16 +1,15 @@
 import { publicProcedure, protectedProcedure } from "../trpc"
-import {getUser} from '../../lib/supabaseClient'
-import { loginWithGoogle, handleGoogleCallback, logoutUser, refreshSession } from "../../services/auth"
+import { loginWithGoogle, handleGoogleCallback, logoutUser, refreshSession, getUser } from "../../services/auth"
 import { z } from "zod"
 
 enum AuthProviderType {
-    PASSKEYS = "PASSKEYS",
-    EMAIL_N_PASSWORD = "EMAIL_N_PASSWORD",
-    GOOGLE = "GOOGLE",
-    FACEBOOK = "FACEBOOK",
-    X = "X",
-    APPLE = "APPLE",
-  }
+  PASSKEYS = "PASSKEYS",
+  EMAIL_N_PASSWORD = "EMAIL_N_PASSWORD",
+  GOOGLE = "GOOGLE",
+  FACEBOOK = "FACEBOOK",
+  X = "X",
+  APPLE = "APPLE",
+}
 
 export const authenticateRouter = {
   authenticate: publicProcedure
