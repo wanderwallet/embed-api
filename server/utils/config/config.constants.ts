@@ -186,7 +186,7 @@ export function initConfig() {
     console.error("\n\nConfig / EVN errors:\n");
 
     errors.forEach((error) => {
-      console.error(`- ${ error.message }`);
+      console.error(`- ${ error.message } at (${ error.path }) `);
     });
 
     console.error("");
