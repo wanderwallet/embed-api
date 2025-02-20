@@ -15,6 +15,8 @@ function getBaseUrl() {
   return `http://localhost:${process.env.PORT ?? 3000}`
 }
 
+let token: string | null = null;;
+
 export const trpc = createTRPCNext<AppRouter>({
   config() {
     return {
@@ -22,7 +24,6 @@ export const trpc = createTRPCNext<AppRouter>({
         httpBatchLink({
           url: `${getBaseUrl()}/api/trpc`,
           headers() {
-            const token = localStorage.getItem("supabase.auth.token")
             return token
               ? {
                   authorization: `Bearer ${token}`,
@@ -36,3 +37,6 @@ export const trpc = createTRPCNext<AppRouter>({
   ssr: false,
 })
 
+export function setAuthToken(nextToken: string | null) {
+  token = nextToken || null;
+}

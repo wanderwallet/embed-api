@@ -1,6 +1,6 @@
-import { inferAsyncReturnType } from "@trpc/server"
+import { inferAsyncReturnType, TRPCError } from "@trpc/server"
 import { PrismaClient, Session } from "@prisma/client";
-import { supabase } from "@/lib/supabaseClient";
+import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 
 interface User {
   id: string;
@@ -19,6 +19,7 @@ export async function createContext({ req }: { req: Request }) {
   //
   // - See https://supabase.com/docs/guides/auth/sessions
   // - See https://github.com/orgs/supabase/discussions/14708
+  // - See https://supabase.com/docs/guides/auth/managing-user-data
 
   async function getUserFromHeader(): Promise<User | null> {
     const authHeader = req.headers.get("authorization");
@@ -27,6 +28,8 @@ export async function createContext({ req }: { req: Request }) {
       const token = authHeader.split(" ")[1];
 
       if (token) {
+        const supabase = await createServerClient();
+
         const {
           data: { user },
           error,
@@ -34,6 +37,11 @@ export async function createContext({ req }: { req: Request }) {
 
         if (error) {
           console.error("Error verifying token:", error)
+
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: error.message || "Invalid or expired session",
+          });
         }
 
         return user;

@@ -1,5 +1,8 @@
+import { ensureIsServer } from "@/server/utils/env/env.utils";
 import { ChallengeType } from "@prisma/client";
 import { EnumLike, z, ZodError } from "zod";
+
+ensureIsServer("config.constants.ts");
 
 export function getEnvStringValidator(key: string) {
   return z
@@ -52,21 +55,21 @@ export function getEnvPublicRSAKeyValidator(key: string) {
 
 export function initConfig() {
   // Database (from Vercel > Storage > Supabase)
-  const POSTGRES_URL = process.env.POSTGRES_URL;
-  const POSTGRES_PRISMA_URL = process.env.POSTGRES_PRISMA_URL;
-  const POSTGRES_URL_NON_POOLING = process.env.POSTGRES_URL_NON_POOLING;
-  const POSTGRES_USER = process.env.POSTGRES_USER;
-  const POSTGRES_PASSWORD = process.env.POSTGRES_PASSWORD;
-  const POSTGRES_DATABASE = process.env.POSTGRES_DATABASE;
-  const POSTGRES_HOST = process.env.POSTGRES_HOST;
+  const POSTGRES_URL = process.env.POSTGRES_URL || process.env.DEV_POSTGRES_URL;
+  const POSTGRES_PRISMA_URL = process.env.POSTGRES_PRISMA_URL || process.env.DEV_POSTGRES_PRISMA_URL;
+  const POSTGRES_URL_NON_POOLING = process.env.POSTGRES_URL_NON_POOLING || process.env.DEV_POSTGRES_URL_NON_POOLING;
+  const POSTGRES_USER = process.env.POSTGRES_USER || process.env.DEV_POSTGRES_USER;
+  const POSTGRES_PASSWORD = process.env.POSTGRES_PASSWORD || process.env.DEV_POSTGRES_PASSWORD;
+  const POSTGRES_DATABASE = process.env.POSTGRES_DATABASE || process.env.DEV_POSTGRES_DATABASE;
+  const POSTGRES_HOST = process.env.POSTGRES_HOST || process.env.DEV_POSTGRES_HOST;
 
   // Supabase (from Vercel > Storage > Supabase)
-  const NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  const SUPABASE_URL = process.env.SUPABASE_URL;
-  const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
-  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  const SUPABASE_JWT_SECRET = process.env.SUPABASE_JWT_SECRET;
+  const NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.DEV_NEXT_PUBLIC_SUPABASE_URL;
+  const NEXT_PUBLIC_SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || process.env.DEV_NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const SUPABASE_URL = process.env.SUPABASE_URL || process.env.DEV_SUPABASE_URL;
+  const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY || process.env.DEV_SUPABASE_ANON_KEY;
+  const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.DEV_SUPABASE_SERVICE_ROLE_KEY;
+  const SUPABASE_JWT_SECRET = process.env.SUPABASE_JWT_SECRET || process.env.DEV_SUPABASE_JWT_SECRET;
 
   // Challenges:
   const CHALLENGE_TYPE = process.env.CHALLENGE_TYPE as ChallengeType;

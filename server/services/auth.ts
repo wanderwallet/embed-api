@@ -1,7 +1,9 @@
-import { supabase } from "../lib/supabaseClient";
+import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import { TRPCError } from "@trpc/server";
 
 export async function getUser() {
+  const supabase = await createServerClient();
+
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -16,6 +18,8 @@ export async function loginWithGoogle(authProviderType: string) {
       message: "Invalid auth provider type",
     })
   }
+
+  const supabase = await createServerClient();
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
@@ -42,29 +46,11 @@ export async function loginWithGoogle(authProviderType: string) {
   return data.url
 }
 
-export async function handleGoogleCallback() {
-  const user = await getUser();
-  if (!user) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Google authentication failed",
-    });
-  }
-  return user;
-}
-
-export async function validateSession() {
-  const user = await getUser();
-  if (!user) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Invalid or expired session",
-    });
-  }
-  return user;
-}
-
 export async function refreshSession() {
+  // TODO: This doesn't do anything. It should be syncing our own Session entity, unless we use triggers.
+
+  const supabase = await createServerClient();
+
   const { data, error } = await supabase.auth.refreshSession();
 
   if (error) {
@@ -93,10 +79,16 @@ export async function refreshSession() {
 }
 
 export async function logoutUser() {
+  // TODO: This doesn't do anything. It should be syncing our own Session entity, unless we use triggers.
+
+  const supabase = await createServerClient();
+
   const { error } = await supabase.auth.signOut()
+
   if (error) {
     console.error("Error during logout:", error)
     throw error
   }
+
   return { success: true }
 }

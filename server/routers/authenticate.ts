@@ -1,5 +1,5 @@
 import { publicProcedure, protectedProcedure } from "../trpc"
-import { loginWithGoogle, handleGoogleCallback, logoutUser, refreshSession, getUser } from "../../services/auth"
+import { loginWithGoogle, logoutUser, refreshSession, getUser } from "../services/auth"
 import { z } from "zod"
 
 enum AuthProviderType {
@@ -12,6 +12,13 @@ enum AuthProviderType {
 }
 
 export const authenticateRouter = {
+  debugSession: protectedProcedure.query(async ({ ctx }) => {
+    return {
+      user: ctx.user,
+      session: ctx.session,
+    }
+  }),
+
   authenticate: publicProcedure
   .input(z.object({ authProviderType: z.string() }))
   .mutation(async ({input}) => {
@@ -23,11 +30,6 @@ export const authenticateRouter = {
     }
 
     return { url: url }
-  }),
-
-  handleGoogleCallback: publicProcedure.query(async () => {
-    const user = await handleGoogleCallback()
-    return { user }
   }),
 
   getUser: protectedProcedure.query(async () => {

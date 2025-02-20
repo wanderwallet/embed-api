@@ -1,6 +1,11 @@
-import { supabase } from "../lib/supabaseClient";
+/*
+import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
+
+// TODO: Functions in this file are not used.
 
 export async function createUser(email: string, password: string) {
+  const supabase = await createServerClient();
+
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
@@ -19,6 +24,8 @@ export async function createUser(email: string, password: string) {
 }
 
 export async function findUserByEmail(email: string) {
+  const supabase = await createServerClient();
+
   const { data, error } = await supabase
     .from("Users")
     .select("*")
@@ -35,6 +42,8 @@ export async function createSession(
   ip: string,
   userAgent: string
 ) {
+  const supabase = await createServerClient();
+
   const { data, error } = await supabase
     .from("Sessions")
     .insert([
@@ -51,3 +60,4 @@ export async function createSession(
   if (error) throw error;
   return data[0];
 }
+*/
