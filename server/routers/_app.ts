@@ -1,5 +1,4 @@
-import { publicProcedure, protectedProcedure, router } from "../trpc"
-import { signJWT } from "../auth"
+import { router } from "../trpc"
 import { fetchRecoverableAccounts } from "@/server/routers/account-recovery/fetchRecoverableAccounts"
 import { generateAccountRecoveryChallenge } from "@/server/routers/account-recovery/generateAccountRecoveryChallenge"
 import { generateFetchRecoverableAccountsChallenge } from "@/server/routers/account-recovery/generateFetchRecoverableWalletsChallenge"
@@ -22,18 +21,11 @@ import { activateWallet } from "@/server/routers/work-shares/activateWallet"
 import { generateWalletActivationChallenge } from "@/server/routers/work-shares/generateWalletActivationChallenge"
 import { rotateAuthShare } from "@/server/routers/work-shares/rotateAuthShare"
 import { registerWalletExport } from "@/server/routers/backup/registerWalletExport"
+import { authenticateRouter } from "@/server/routers/authenticate"
 // import { supabase } from '@/utils/supabaseClient';
 
 export const appRouter = router({
-
-  authenticate: publicProcedure.mutation(async () => {
-    const token = await signJWT({ userId: "123" }) // TODO: replace with actual user data
-    return { token }
-  }),
-
-  protectedRoute: protectedProcedure.query(() => {
-    return { message: "This is a protected route" } // TODO: remove, just an example for protected route
-  }),
+  ...authenticateRouter,
 
   // Wallets:
   fetchWallets,
@@ -72,5 +64,4 @@ export const appRouter = router({
   recoverAccount,
 })
 
-export type AppRouter = typeof appRouter
-
+export type AppRouter = typeof appRouter;

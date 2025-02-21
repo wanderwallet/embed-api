@@ -1,6 +1,6 @@
-import { inferAsyncReturnType } from "@trpc/server"
-import { verifyJWT } from "./auth"
+import { inferAsyncReturnType, TRPCError } from "@trpc/server"
 import { PrismaClient, Session } from "@prisma/client";
+import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 
 interface User {
   id: string;
@@ -19,20 +19,36 @@ export async function createContext({ req }: { req: Request }) {
   //
   // - See https://supabase.com/docs/guides/auth/sessions
   // - See https://github.com/orgs/supabase/discussions/14708
+  // - See https://supabase.com/docs/guides/auth/managing-user-data
 
   async function getUserFromHeader(): Promise<User | null> {
-    if (req.headers.get("authorization")) {
-      const token = req.headers.get("authorization")?.split("")[1]
+    const authHeader = req.headers.get("authorization");
+
+    if (authHeader) {
+      const token = authHeader.split(" ")[1];
+
       if (token) {
-        try {
-          const verified = await verifyJWT(token)
-          return verified satisfies User;
-        } catch {
-          return null
+        const supabase = await createServerClient();
+
+        const {
+          data: { user },
+          error,
+        } = await supabase.auth.getUser(token)
+
+        if (error) {
+          console.error("Error verifying token:", error)
+
+          throw new TRPCError({
+            code: "UNAUTHORIZED",
+            message: error.message || "Invalid or expired session",
+          });
         }
+
+        return user;
       }
     }
-    return null
+
+    return null;
   }
 
   const user = await getUserFromHeader();

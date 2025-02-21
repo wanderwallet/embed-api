@@ -5,10 +5,35 @@ const IMPORT_KEY_ALGORITHM: RsaHashedImportParams = {
   hash: "SHA-256",
 };
 
+const GENERATE_KEY_ALGORITHM: RsaHashedKeyGenParams = {
+  ...IMPORT_KEY_ALGORITHM,
+  modulusLength: 4096,
+  publicExponent: new Uint8Array([1, 0, 1]),
+}
+
 const SIGN_ALGORITHM: RsaPssParams  = {
   name: "RSA-PSS",
   saltLength: 32,
 };
+
+export async function generateRecoveryFileKeyPair() {
+  const keyPair = await crypto.subtle.generateKey(
+    GENERATE_KEY_ALGORITHM,
+    true,
+    ["sign"],
+  );
+
+  const privateKeyBuffer = await crypto.subtle.exportKey("pkcs8", keyPair.privateKey);
+  const privateKey = Buffer.from(privateKeyBuffer).toString("base64");
+
+  const publicKeyBuffer = await crypto.subtle.exportKey("spki", keyPair.publicKey);
+  const publicKey = Buffer.from(publicKeyBuffer).toString("base64");
+
+  return {
+    privateKey,
+    publicKey,
+  }
+}
 
 export interface RecoveryFileData {
   walletId: string;
