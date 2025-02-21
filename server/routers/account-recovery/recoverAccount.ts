@@ -67,7 +67,7 @@ export const recoverAccount = publicProcedure
     const userDetails = await ctx.prisma.$transaction(async (tx) => {
       const dateNow = new Date();
 
-      const registerAccountRecoveryPromise = tx.shadowUser.update({
+      const registerAccountRecoveryPromise = tx.userProfile.update({
         where: {
           supId: challenge.userId,
         },

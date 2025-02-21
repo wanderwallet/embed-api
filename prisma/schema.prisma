@@ -130,11 +130,11 @@ enum ChallengePurpose {
  * }
  */
 
-/// ShadowUsers are created/updated automatically using users are inserted/updated on auth.users, but some other fields
+/// UserProfiles are created/updated automatically using users are inserted/updated on auth.users, but some other fields
 /// such as the user preferences (except for `ipFilterSetting` and `countryFilterSetting`, which are easier to use when
 /// stored in `auth.users.user_metadata`), or some extra fields like `recoveredAt`.
 /// Having this entity also makes it easier to delete other entities in cascade when a user is deleted.
-model ShadowUser {
+model UserProfile {
   // Fields synced automatically from `auth.users`:
 
   supId    String  @id @default(uuid())
@@ -185,7 +185,7 @@ model ShadowUser {
   sessions               Session[]
   authenticationAttempts AuthenticationAttempt[]
 
-  @@map("ShadowUsers")
+  @@map("UserProfiles")
 }
 
 model Developer {
@@ -206,7 +206,7 @@ model Developer {
   applications Application[]
   bills        Bill[]
 
-  shadowUser ShadowUser @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId     String     @unique
 
   @@index([apiKey])
@@ -342,7 +342,7 @@ model Wallet {
   recoveryKeyShares RecoveryKeyShare[]
   challenges        Challenge[]
 
-  shadowUser ShadowUser @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId     String
 
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
@@ -358,7 +358,7 @@ model WalletActivation {
   status      WalletUsageStatus
   activatedAt DateTime          @default(now())
 
-  shadowUser ShadowUser @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId     String
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
@@ -380,7 +380,7 @@ model WalletRecovery {
   status      WalletUsageStatus
   recoveredAt DateTime          @default(now())
 
-  shadowUser ShadowUser @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId     String
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
@@ -402,7 +402,7 @@ model WalletExport {
   type       ExportType
   exportedAt DateTime   @default(now())
 
-  shadowUser ShadowUser @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId     String
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
@@ -434,7 +434,7 @@ model WorkKeyShare {
 
   walletActivations WalletActivation[]
 
-  shadowUser ShadowUser @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId     String
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
@@ -465,7 +465,7 @@ model RecoveryKeyShare {
 
   walletRecoveries WalletRecovery[]
 
-  shadowUser ShadowUser @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId     String
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
@@ -489,7 +489,7 @@ model Challenge {
   version   String           @db.VarChar(50)
   createdAt DateTime         @default(now())
 
-  shadowUser ShadowUser @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId     String
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
@@ -533,7 +533,7 @@ model DeviceAndLocation {
   recoveryKeyShares      RecoveryKeyShare[]
   authenticationAttempts AuthenticationAttempt[]
 
-  shadowUser ShadowUser? @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  UserProfile UserProfile? @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId     String?
 
   application   Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
@@ -561,7 +561,7 @@ model Session {
   applications  Application[]
   workKeyShares WorkKeyShare[]
 
-  shadowUser ShadowUser? @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  UserProfile UserProfile? @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId     String?
 
   /// Note how here we don't include ip and userAgent, as we only want to keep one session per user-device, so if the IP
@@ -580,7 +580,7 @@ model AuthenticationAttempt {
   /// No supIdentity here as this is a reference to auth.users
   supIdentityId String?
 
-  shadowUser ShadowUser @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId     String
 
   // authMethod   AuthMethod? @relation(fields: [authMethodId], references: [id], onDelete: SetNull)

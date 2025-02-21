@@ -27,28 +27,22 @@ export async function createContext({ req }: { req: Request }) {
       } = await supabase.auth.getUser(token);
 
       if (error) {
-        console.error("Error verifying session:", error)
+        console.error("Error verifying session:", error);
 
-        throw new TRPCError({
-          code: "UNAUTHORIZED",
-          message: "Invalid or expired session",
-        });
+        // Note that we don't throw an error from here as tRPC will not automatically send a reply to the user. Instead,
+        // the it is `protectedProcedure` who checks if `user` is set (it is not if there was an error), and send an
+        // error back to the user.
+      } else {
+        user = data.user;
+
+        // TODO: Doesn't seem to work with tRPC:
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        // const ip = (req as any).connection?.remoteAddress;
+        // console.log("IP =", ip);
+
+        // TODO: Get `data.user.user_metadata.ipFilterSetting` and `data.user.user_metadata.countryFilterSetting` and
+        // check if they are defined and, if so, if they pass.
       }
-
-      // TODO: Doesn't seem to work with tRPC:
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      // const ip = (req as any).connection?.remoteAddress;
-      // console.log("IP =", ip);
-
-      // TODO: Get `data.user.user_metadata.ipFilterSetting` and `data.user.user_metadata.countryFilterSetting` and
-      // check if they are defined and, if so, if they pass.
-
-      user = data.user;
-    } else {
-      throw new TRPCError({
-        code: "UNAUTHORIZED",
-        message: "Missing auth token",
-      });
     }
   }
 

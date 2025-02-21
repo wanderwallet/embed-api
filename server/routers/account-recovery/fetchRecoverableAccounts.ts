@@ -43,7 +43,7 @@ export const fetchRecoverableAccounts = publicProcedure
     const [
       recoverableAccounts
     ] = await ctx.prisma.$transaction(async (tx) => {
-      const recoverableAccountsPromise = tx.shadowUser.findMany({
+      const recoverableAccountsPromise = tx.userProfile.findMany({
         select: {
           supId: true,
           supEmail: true,
