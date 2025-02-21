@@ -1,11 +1,17 @@
 import { z } from "zod"
-import { User, UserDetailsPrivacySetting, WalletStatus } from '@prisma/client';
+import { UserDetailsPrivacySetting, WalletStatus } from '@prisma/client';
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { publicProcedure } from "@/server/trpc";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 
-export type RecoverableAccount = Pick<User, "id"> & Partial<Pick<User, "name" | "email" | "profilePicture">>;
+export interface RecoverableAccount {
+  userId: string;
+  name: string | null;
+  email: string | null;
+  phone: string | null;
+  picture: string | null;
+}
 
 export const FetchRecoverableAccounts = z.object({
   challengeId: z.string().uuid(),
@@ -37,12 +43,15 @@ export const fetchRecoverableAccounts = publicProcedure
     const [
       recoverableAccounts
     ] = await ctx.prisma.$transaction(async (tx) => {
-      const recoverableAccountsPromise = tx.user.findMany({
+      const recoverableAccountsPromise = tx.userProfile.findMany({
         select: {
-          id: true,
+          supId: true,
+          supEmail: true,
+          supPhone: true,
           name: true,
           email: true,
-          profilePicture: true,
+          phone: true,
+          picture: true,
           userDetailsRecoveryPrivacy: true,
           wallets: {
             select: {
@@ -99,20 +108,23 @@ export const fetchRecoverableAccounts = publicProcedure
 
     const filteredRecoverableAccounts = recoverableAccounts.map((recoverableAccount) => {
       const {
-        id,
+        supId,
+        supEmail,
+        supPhone,
         name,
         email,
-        profilePicture,
+        phone,
+        picture,
         userDetailsRecoveryPrivacy,
       } = recoverableAccount;
 
       const filteredRecoverableAccount: RecoverableAccount = {
-        id,
+        userId: supId,
+        name: userDetailsRecoveryPrivacy.includes(UserDetailsPrivacySetting.NAME) ? name : null,
+        email: userDetailsRecoveryPrivacy.includes(UserDetailsPrivacySetting.EMAIL) ? (email || supEmail) : null,
+        phone: userDetailsRecoveryPrivacy.includes(UserDetailsPrivacySetting.PHONE) ? (phone || supPhone) : null,
+        picture: userDetailsRecoveryPrivacy.includes(UserDetailsPrivacySetting.PICTURE) ? picture : null,
       };
-
-      if (userDetailsRecoveryPrivacy.includes(UserDetailsPrivacySetting.NAME)) filteredRecoverableAccount.name = name;
-      if (userDetailsRecoveryPrivacy.includes(UserDetailsPrivacySetting.EMAIL)) filteredRecoverableAccount.email = email;
-      if (userDetailsRecoveryPrivacy.includes(UserDetailsPrivacySetting.PROFILE_PICTURE)) filteredRecoverableAccount.profilePicture = profilePicture;
 
       return filteredRecoverableAccount;
     });
