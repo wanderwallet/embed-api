@@ -67,28 +67,17 @@ export const recoverAccount = publicProcedure
     const userDetails = await ctx.prisma.$transaction(async (tx) => {
       const dateNow = new Date();
 
-      const registerAccountRecoveryPromise = tx.user.update({
+      const registerAccountRecoveryPromise = tx.shadowUser.update({
         where: {
-          id: challenge.userId,
+          supId: challenge.userId,
         },
         data: {
           recoveredAt: dateNow,
         },
       });
 
-      const recreateAuthMethodsPromise = tx.authMethod.deleteMany({
-        where: {
-          userId: challenge.userId,
-        }
-      }).then(() => {
-        // TODO: Create Session, AuthMethod, JWT... just like with signUps.
-
-        // return tx.authMethod.create({
-        //   data: { },
-        // });
-
-        return Promise.resolve(null);
-      })
+      // TODO: Use supabase.auth.unlinkIdentity / supabase.auth.linkIdentity to link the new authentication to the
+      // existing user.
 
       const deleteChallengePromise = tx.challenge.delete({
         where: { id: challenge.id },
@@ -96,7 +85,6 @@ export const recoverAccount = publicProcedure
 
       return Promise.resolve([
         registerAccountRecoveryPromise,
-        recreateAuthMethodsPromise,
         deleteChallengePromise,
       ]);
     });

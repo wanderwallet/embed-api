@@ -31,9 +31,9 @@ export async function createServerClient() {
         },
       },
       auth: {
-          autoRefreshToken: true,
-          persistSession: true,
-          detectSessionInUrl: true,
+          autoRefreshToken: false,
+          persistSession: false,
+          detectSessionInUrl: false,
         },
       },
   );

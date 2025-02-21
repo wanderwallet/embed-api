@@ -17,6 +17,14 @@ function getBaseUrl() {
 
 let token: string | null = null;;
 
+export function getAuthToken() {
+  return token;
+}
+
+export function setAuthToken(nextToken: string | null) {
+  token = nextToken || null;
+}
+
 export const trpc = createTRPCNext<AppRouter>({
   config() {
     return {
@@ -35,8 +43,4 @@ export const trpc = createTRPCNext<AppRouter>({
     }
   },
   ssr: false,
-})
-
-export function setAuthToken(nextToken: string | null) {
-  token = nextToken || null;
-}
+});

@@ -20,7 +20,8 @@ enum AuthProviderType {
 enum UserDetailsPrivacySetting {
   NAME
   EMAIL
-  PROFILE_PICTURE
+  PHONE
+  PICTURE
 }
 
 enum NotificationSetting {
@@ -109,35 +110,47 @@ enum ChallengePurpose {
 
 // TODO: Document index usages.
 
-model AuthMethod {
-  id            String           @id @default(uuid())
-  /// Auth providers typically create a new "user" for each different authentication method, so we keep its ID here.
-  /// This is typically stored in the `sub` property of an ID Token (e.g. Auth0).
-  providerId    String           @db.VarChar(255)
-  providerType  AuthProviderType
-  /// This can be an email for EMAIL, a profile handler for social networks or some kind of device ID for passkeys.
-  providerLabel String           @db.VarChar(255)
-  linkedAt      DateTime         @default(now())
-  lastUsedAt    DateTime         @default(now())
-  unlinkedAt    DateTime?
+/**
+ * model AuthMethod {
+ * id            String           @id @default(uuid())
+ * /// Auth providers typically create a new "user" for each different authentication method, so we keep its ID here.
+ * /// This is typically stored in the `sub` property of an ID Token (e.g. Auth0).
+ * providerId    String           @db.VarChar(255)
+ * providerType  AuthProviderType
+ * /// This can be an email for EMAIL, a profile handler for social networks or some kind of device ID for passkeys.
+ * providerLabel String           @db.VarChar(255)
+ * linkedAt      DateTime         @default(now())
+ * lastUsedAt    DateTime         @default(now())
+ * unlinkedAt    DateTime?
+ * user                   User                    @relation(fields: [userId], references: [supId], onDelete: Cascade)
+ * userId                 String
+ * authenticationAttempts AuthenticationAttempt[]
+ * @@unique([userId, providerId], name: "userAuthentication")
+ * @@map("AuthMethods")
+ * }
+ */
 
-  user                   User                    @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId                 String
-  authenticationAttempts AuthenticationAttempt[]
+/// ShadowUsers are created/updated automatically using users are inserted/updated on auth.users, but some other fields
+/// such as the user preferences (except for `ipFilterSetting` and `countryFilterSetting`, which are easier to use when
+/// stored in `auth.users.user_metadata`), or some extra fields like `recoveredAt`.
+/// Having this entity also makes it easier to delete other entities in cascade when a user is deleted.
+model ShadowUser {
+  // Fields synced automatically from `auth.users`:
 
-  @@unique([userId, providerId], name: "userAuthentication")
-  @@map("AuthMethods")
-}
+  supId    String  @id @default(uuid())
+  supEmail String? @db.VarChar(255)
+  supPhone String? @db.VarChar(255)
 
-model User {
-  id             String    @id @default(uuid())
-  name           String?   @db.VarChar(100)
-  email          String?   @db.VarChar(255)
-  profilePicture String?   @db.VarChar(255)
-  jwkSecret      String
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt()
-  recoveredAt    DateTime?
+  // Custom fields:
+  // `name`, `email`, `phone` and `picture` initially come from `auth.users`.
+
+  name        String?   @db.VarChar(100)
+  email       String?   @db.VarChar(255)
+  phone       String?   @db.VarChar(255)
+  picture     String?   @db.VarChar(255)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt()
+  recoveredAt DateTime?
 
   // Settings:
 
@@ -148,17 +161,19 @@ model User {
   /// Require 1 or more wallet signatures to recover this account.
   recoveryWalletsRequiredSetting Int                         @default(1)
   /// Only allow requests from these IPs.
-  ipFilterSetting                String[]                    @db.VarChar(45)
+  // TODO: This field should be duplicated in `user_metadata` to avoid making one more DB query if not needed.
+  // ipFilterSetting                String[]                    @db.VarChar(45)
   /// If a request is rejected due to ipFilterSetting, include or hide the details in the error.
   ipPrivacyFilterSetting         FilterPrivacySetting?       @default(HIDE_DETAILS)
   /// Only allow requests from these countries (based in IP). Countries will be stored as ISO 3166-1 alpha-2 codes, as returned by CloudFare
   /// (see https://cloudflare.com/cdn-cgi/trace).
-  countryFilterSetting           String[]                    @db.VarChar(2)
+  // TODO: This field should be duplicated in `user_metadata` to avoid making one more DB query if not needed.
+  // countryFilterSetting           String[]                    @db.VarChar(2)
   /// If a request is rejected due to countryFilterSetting, include or hide the details in the error.
   countryPrivacySetting          FilterPrivacySetting?       @default(HIDE_DETAILS)
 
   developer              Developer?
-  authMethods            AuthMethod[]
+  // authMethods            AuthMethod[]
   wallets                Wallet[]
   walletActivations      WalletActivation[]
   walletRecoveries       WalletRecovery[]
@@ -170,8 +185,7 @@ model User {
   sessions               Session[]
   authenticationAttempts AuthenticationAttempt[]
 
-  @@index([email])
-  @@map("Users")
+  @@map("ShadowUsers")
 }
 
 model Developer {
@@ -192,8 +206,8 @@ model Developer {
   applications Application[]
   bills        Bill[]
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String @unique
+  shadowUser ShadowUser @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userId     String     @unique
 
   @@index([apiKey])
   @@map("Developers")
@@ -328,8 +342,8 @@ model Wallet {
   recoveryKeyShares RecoveryKeyShare[]
   challenges        Challenge[]
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
+  shadowUser ShadowUser @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userId     String
 
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
   deviceAndLocationId String
@@ -344,8 +358,8 @@ model WalletActivation {
   status      WalletUsageStatus
   activatedAt DateTime          @default(now())
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
+  shadowUser ShadowUser @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userId     String
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
@@ -366,8 +380,8 @@ model WalletRecovery {
   status      WalletUsageStatus
   recoveredAt DateTime          @default(now())
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
+  shadowUser ShadowUser @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userId     String
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
@@ -388,8 +402,8 @@ model WalletExport {
   type       ExportType
   exportedAt DateTime   @default(now())
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
+  shadowUser ShadowUser @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userId     String
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
@@ -420,8 +434,8 @@ model WorkKeyShare {
 
   walletActivations WalletActivation[]
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
+  shadowUser ShadowUser @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userId     String
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
@@ -451,8 +465,8 @@ model RecoveryKeyShare {
 
   walletRecoveries WalletRecovery[]
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
+  shadowUser ShadowUser @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userId     String
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
@@ -475,8 +489,8 @@ model Challenge {
   version   String           @db.VarChar(50)
   createdAt DateTime         @default(now())
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
+  shadowUser ShadowUser @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userId     String
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
@@ -519,8 +533,8 @@ model DeviceAndLocation {
   recoveryKeyShares      RecoveryKeyShare[]
   authenticationAttempts AuthenticationAttempt[]
 
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String?
+  shadowUser ShadowUser? @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userId     String?
 
   application   Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
   applicationId String?
@@ -547,8 +561,8 @@ model Session {
   applications  Application[]
   workKeyShares WorkKeyShare[]
 
-  user   User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String?
+  shadowUser ShadowUser? @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userId     String?
 
   /// Note how here we don't include ip and userAgent, as we only want to keep one session per user-device, so if the IP
   /// or the userAgent change on the same device, we simply update the session info.
@@ -563,11 +577,14 @@ model AuthenticationAttempt {
   rejectionReason String   @db.VarChar(255)
   createdAt       DateTime @default(now())
 
-  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId String
+  /// No supIdentity here as this is a reference to auth.users
+  supIdentityId String?
 
-  authMethod   AuthMethod? @relation(fields: [authMethodId], references: [id], onDelete: SetNull)
-  authMethodId String?
+  shadowUser ShadowUser @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userId     String
+
+  // authMethod   AuthMethod? @relation(fields: [authMethodId], references: [id], onDelete: SetNull)
+  // authMethodId String?
 
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
   deviceAndLocationId String

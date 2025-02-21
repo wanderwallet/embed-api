@@ -1,6 +1,7 @@
 "use client"
 
-import { trpc } from "@/client/utils/trpc/trpc-client-client"
+import { getAuthToken, trpc } from "@/client/utils/trpc/trpc-client-client"
+import { jwtDecode } from "jwt-decode";
 
 export function ProtectedApiInteraction() {
   const { data, isLoading, error } = trpc.debugSession.useQuery()
@@ -17,7 +18,14 @@ export function ProtectedApiInteraction() {
     <div className="max-w-md mx-auto mt-10">
       {data && (
         <div className="bg-gray-100 p-4 rounded-md">
-          <pre>{JSON.stringify(data, null, "  ")}</pre>
+          <h3>JWT Token</h3>
+          <pre>{JSON.stringify(jwtDecode(getAuthToken() || ""), null, "  ")}</pre>
+
+          <h3>auth.users</h3>
+          <pre>{JSON.stringify(data.user, null, "  ")}</pre>
+
+          <h3>Session</h3>
+          <pre>{JSON.stringify(data.session, null, "  ")}</pre>
         </div>
       )}
     </div>
