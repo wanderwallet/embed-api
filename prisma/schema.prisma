@@ -207,7 +207,7 @@ model Developer {
   bills        Bill[]
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId     String     @unique
+  userId      String      @unique
 
   @@index([apiKey])
   @@map("Developers")
@@ -343,7 +343,7 @@ model Wallet {
   challenges        Challenge[]
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId     String
+  userId      String
 
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
   deviceAndLocationId String
@@ -359,7 +359,7 @@ model WalletActivation {
   activatedAt DateTime          @default(now())
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId     String
+  userId      String
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
@@ -381,7 +381,7 @@ model WalletRecovery {
   recoveredAt DateTime          @default(now())
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId     String
+  userId      String
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
@@ -403,7 +403,7 @@ model WalletExport {
   exportedAt DateTime   @default(now())
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId     String
+  userId      String
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
@@ -435,13 +435,13 @@ model WorkKeyShare {
   walletActivations WalletActivation[]
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId     String
+  userId      String
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
 
   session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  sessionId String
+  sessionId String  @db.Uuid
 
   /// This unique constraint means that if the users loses the deviceShare but, for whatever reason, not the
   /// device nonce, after requesting the recoveryAuthShare and sending the new authShare and deviceShareHash, this will
@@ -466,7 +466,7 @@ model RecoveryKeyShare {
   walletRecoveries WalletRecovery[]
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId     String
+  userId      String
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
@@ -490,7 +490,7 @@ model Challenge {
   createdAt DateTime         @default(now())
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId     String
+  userId      String
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String
@@ -521,7 +521,7 @@ model DeviceAndLocation {
   createdAt   DateTime @default(now())
   deviceNonce String   @db.VarChar(255)
   /// IPv6 or IPv4-mapped address
-  ip          String   @db.VarChar(45)
+  ip          String   @db.Inet
   /// ISO 3166-1 alpha-2 code
   countryCode String   @db.VarChar(2)
   userAgent   String
@@ -534,7 +534,7 @@ model DeviceAndLocation {
   authenticationAttempts AuthenticationAttempt[]
 
   UserProfile UserProfile? @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId     String?
+  userId      String?
 
   application   Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
   applicationId String?
@@ -544,30 +544,29 @@ model DeviceAndLocation {
   @@map("DevicesAndLocations")
 }
 
+/// Sessions are created/updated automatically using sessions are inserted/updated on auth.sessions.
 /// A Session represents an active session. The unique constraint on userId-deviceNonce makes sure we only have one session on a given device, and forces as to
 /// maintain ip and userAgent updated.
 model Session {
-  id                String   @id @default(uuid())
-  providerSessionId String   @db.VarChar(255)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt()
-  deviceNonce       String   @db.VarChar(255)
+  id          String   @id @default(uuid()) @db.Uuid
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt()
+  deviceNonce String?  @db.VarChar(255)
   // IPv6 or IPv4-mapped address
-  ip                String   @db.VarChar(45)
+  ip          String   @db.Inet
   /// ISO 3166-1 alpha-2 code
-  countryCode       String   @db.VarChar(2)
-  userAgent         String   @db.VarChar(500)
+  countryCode String?  @db.VarChar(2)
+  userAgent   String   @db.VarChar(500)
 
   applications  Application[]
   workKeyShares WorkKeyShare[]
 
-  UserProfile UserProfile? @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId     String?
+  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userId      String
 
   /// Note how here we don't include ip and userAgent, as we only want to keep one session per user-device, so if the IP
   /// or the userAgent change on the same device, we simply update the session info.
   @@unique([userId, deviceNonce], name: "userSession")
-  @@index([providerSessionId])
   @@index([updatedAt])
   @@map("Sessions")
 }
@@ -581,7 +580,7 @@ model AuthenticationAttempt {
   supIdentityId String?
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId     String
+  userId      String
 
   // authMethod   AuthMethod? @relation(fields: [authMethodId], references: [id], onDelete: SetNull)
   // authMethodId String?

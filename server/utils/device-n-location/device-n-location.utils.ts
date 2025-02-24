@@ -12,26 +12,28 @@ export function getDeviceAndLocationId(
 
   // TODO: Get ip, countryCode, userAgent, applicationId...
 
-  return prismaClient.deviceAndLocation.upsert({
-    select: {
-      id: true,
-    },
-    where: {
-      userDevice: {
-        userId: ctx.user.id,
-        deviceNonce: ctx.session.deviceNonce,
-        ip: ctx.session.ip,
-        userAgent: ctx.session.userAgent,
+  return prismaClient.deviceAndLocation
+    .upsert({
+      select: {
+        id: true,
       },
-    },
-    create: {
-      deviceNonce: ctx.session.deviceNonce,
-      ip: ctx.session.ip,
-      countryCode: "",
-      userAgent: ctx.session.userAgent,
-      userId: ctx.user.id,
-      applicationId: "",
-    },
-    update: {},
-  }).then(result => result.id);
+      where: {
+        userDevice: {
+          userId: ctx.user.id,
+          deviceNonce: ctx.session.deviceNonce!,
+          ip: ctx.session.ip,
+          userAgent: ctx.session.userAgent,
+        },
+      },
+      create: {
+        deviceNonce: ctx.session.deviceNonce!,
+        ip: ctx.session.ip,
+        countryCode: "",
+        userAgent: ctx.session.userAgent,
+        userId: ctx.user.id,
+        applicationId: "",
+      },
+      update: {},
+    })
+    .then((result) => result.id);
 }
