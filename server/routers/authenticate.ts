@@ -45,7 +45,7 @@ export const authenticateRouter = {
     return { success: true, message: "Logged out successfully" }
   }),
 
-  refreshSession: protectedProcedure.query(async () => {
+  refreshSession: protectedProcedure.mutation(async () => {
     const { session, user } = await refreshSession()
     return {
       message: "Session refreshed successfully.",
