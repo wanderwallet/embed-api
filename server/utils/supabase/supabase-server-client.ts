@@ -31,11 +31,7 @@ export async function createServerClient(userAgent?: string) {
           }
         },
       },
-      global: {
-        headers: {
-          "User-Agent": userAgent || "node",
-        },
-      },
+      ...(userAgent && { global: { headers: { "User-Agent": userAgent } } }),
       auth: {
         autoRefreshToken: false,
         persistSession: false,
