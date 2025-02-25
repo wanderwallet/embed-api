@@ -8,7 +8,7 @@ DECLARE
   claims jsonb;
   session_id uuid;
   session_data public."Sessions"%ROWTYPE;
-  auth_session_data auth.sessions%ROWTYPE;
+  auth_session_data record;
 BEGIN
   -- Extract original claims and session_id
   claims := event->'claims';

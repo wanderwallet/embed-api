@@ -48,14 +48,12 @@ export async function createContext({ req }: { req: Request }) {
   }
 
   try {
-    const sessionData = await getAndUpdateSession(supabase, token, {
+    const sessionData = await getAndUpdateSession(token, {
       userAgent,
       deviceNonce,
       ip,
       countryCode,
     });
-
-    if (!sessionData) return createEmptyContext();
 
     // TODO: Get `data.user.user_metadata.ipFilterSetting` and `data.user.user_metadata.countryFilterSetting` and
     // check if they are defined and, if so, if they pass.
@@ -72,13 +70,12 @@ export async function createContext({ req }: { req: Request }) {
 }
 
 async function getAndUpdateSession(
-  supabase: Awaited<ReturnType<typeof createServerClient>>,
   token: string,
-  updates: Partial<Session>
-): Promise<Session | null> {
-  let { sub: userId, session_id: sessionId, sessionData } = decodeJwt(token);
+  updates: Pick<Session, "userAgent" | "deviceNonce" | "ip" | "countryCode">
+): Promise<Session> {
+  const { sub: userId, session_id: sessionId, sessionData } = decodeJwt(token);
 
-  const sessionUpdates: Partial<Session> = {};
+  const sessionUpdates: Partial<typeof updates> = {};
   if (updates.userAgent && sessionData.userAgent !== updates.userAgent) {
     sessionUpdates.userAgent = updates.userAgent;
   }
@@ -94,24 +91,12 @@ async function getAndUpdateSession(
 
   if (Object.keys(sessionUpdates).length > 0) {
     console.log("Updating session:", sessionUpdates);
-    await prisma.session
+    prisma.session
       .update({
         where: { id: sessionId },
         data: sessionUpdates,
       })
       .catch((error) => console.error("Error updating session:", error));
-
-    const { data, error } = await supabase.auth.refreshSession();
-    if (error) return null;
-
-    const accessToken = data?.session?.access_token;
-    if (!accessToken) return null;
-
-    ({
-      sub: userId,
-      session_id: sessionId,
-      sessionData,
-    } = decodeJwt(accessToken));
   }
 
   return {
@@ -119,14 +104,14 @@ async function getAndUpdateSession(
     id: sessionId,
     ...sessionData,
     ...sessionUpdates,
-  } as Session;
+  } satisfies Session;
 }
 
 function decodeJwt(token: string) {
   return jwtDecode(token) as {
     sub: string;
     session_id: string;
-    sessionData: Partial<Session>;
+    sessionData: Omit<Session, "id" | "userId">;
   };
 }
 

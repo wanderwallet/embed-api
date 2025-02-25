@@ -20,13 +20,13 @@ export function getDeviceAndLocationId(
       where: {
         userDevice: {
           userId: ctx.user.id,
-          deviceNonce: ctx.session.deviceNonce!,
+          deviceNonce: ctx.session.deviceNonce,
           ip: ctx.session.ip,
           userAgent: ctx.session.userAgent,
         },
       },
       create: {
-        deviceNonce: ctx.session.deviceNonce!,
+        deviceNonce: ctx.session.deviceNonce,
         ip: ctx.session.ip,
         countryCode: "",
         userAgent: ctx.session.userAgent,

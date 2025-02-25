@@ -195,7 +195,7 @@ CREATE TABLE "WorkKeyShares" (
     "deviceSharePublicKey" VARCHAR(1024) NOT NULL,
     "userId" TEXT NOT NULL,
     "walletId" TEXT NOT NULL,
-    "sessionId" TEXT NOT NULL,
+    "sessionId" UUID NOT NULL,
 
     CONSTRAINT "WorkKeyShares_pkey" PRIMARY KEY ("id")
 );
@@ -245,7 +245,7 @@ CREATE TABLE "DevicesAndLocations" (
     "id" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deviceNonce" VARCHAR(255) NOT NULL,
-    "ip" VARCHAR(45) NOT NULL,
+    "ip" INET NOT NULL,
     "countryCode" VARCHAR(2) NOT NULL,
     "userAgent" TEXT NOT NULL,
     "userId" TEXT,
@@ -256,15 +256,14 @@ CREATE TABLE "DevicesAndLocations" (
 
 -- CreateTable
 CREATE TABLE "Sessions" (
-    "id" TEXT NOT NULL,
-    "providerSessionId" VARCHAR(255) NOT NULL,
+    "id" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "deviceNonce" VARCHAR(255) NOT NULL,
-    "ip" VARCHAR(45) NOT NULL,
-    "countryCode" VARCHAR(2) NOT NULL,
+    "deviceNonce" VARCHAR(255) NOT NULL DEFAULT '',
+    "ip" INET NOT NULL,
+    "countryCode" VARCHAR(2) NOT NULL DEFAULT '',
     "userAgent" VARCHAR(500) NOT NULL,
-    "userId" TEXT,
+    "userId" TEXT NOT NULL,
 
     CONSTRAINT "Sessions_pkey" PRIMARY KEY ("id")
 );
@@ -284,7 +283,7 @@ CREATE TABLE "LoginAttempts" (
 -- CreateTable
 CREATE TABLE "_ApplicationToSession" (
     "A" TEXT NOT NULL,
-    "B" TEXT NOT NULL,
+    "B" UUID NOT NULL,
 
     CONSTRAINT "_ApplicationToSession_AB_pkey" PRIMARY KEY ("A","B")
 );
@@ -345,9 +344,6 @@ CREATE INDEX "DevicesAndLocations_createdAt_idx" ON "DevicesAndLocations"("creat
 
 -- CreateIndex
 CREATE UNIQUE INDEX "DevicesAndLocations_userId_deviceNonce_ip_userAgent_key" ON "DevicesAndLocations"("userId", "deviceNonce", "ip", "userAgent");
-
--- CreateIndex
-CREATE INDEX "Sessions_providerSessionId_idx" ON "Sessions"("providerSessionId");
 
 -- CreateIndex
 CREATE INDEX "Sessions_updatedAt_idx" ON "Sessions"("updatedAt");

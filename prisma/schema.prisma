@@ -551,11 +551,11 @@ model Session {
   id          String   @id @default(uuid()) @db.Uuid
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt()
-  deviceNonce String?  @db.VarChar(255)
+  deviceNonce String   @default("") @db.VarChar(255)
   // IPv6 or IPv4-mapped address
   ip          String   @db.Inet
   /// ISO 3166-1 alpha-2 code
-  countryCode String?  @db.VarChar(2)
+  countryCode String   @default("") @db.VarChar(2)
   userAgent   String   @db.VarChar(500)
 
   applications  Application[]
