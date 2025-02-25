@@ -1,68 +1,66 @@
-import { protectedProcedure, router } from "../trpc";
-import { authenticateRouter } from "./authenticate";
+import { router } from "../trpc"
+import { fetchRecoverableAccounts } from "@/server/routers/account-recovery/fetchRecoverableAccounts"
+import { generateAccountRecoveryChallenge } from "@/server/routers/account-recovery/generateAccountRecoveryChallenge"
+import { generateFetchRecoverableAccountsChallenge } from "@/server/routers/account-recovery/generateFetchRecoverableWalletsChallenge"
+import { recoverAccount } from "@/server/routers/account-recovery/recoverAccount"
+import { registerRecoveryShare } from "@/server/routers/backup/registerRecoveryShare"
+import { generateWalletRecoveryChallenge } from "@/server/routers/share-recovery/generateWalletRecoveryChallenge"
+import { recoverWallet } from "@/server/routers/share-recovery/recoverWallet"
+import { createPrivateWallet } from "@/server/routers/wallets/createPrivateWallet"
+import { createPublicWallet } from "@/server/routers/wallets/createPublicWallet"
+import { createReadOnlyWallet } from "@/server/routers/wallets/createReadOnlyWallet"
+import { deleteWallet } from "@/server/routers/wallets/deleteWallet"
+import { doNotAskAgainForBackup } from "@/server/routers/wallets/doNotAskAgainForBackup"
+import { fetchWallets } from "@/server/routers/wallets/fetchWallets"
+import { makeWalletPrivate } from "@/server/routers/wallets/makeWalletPrivate"
+import { makeWalletPublic } from "@/server/routers/wallets/makeWalletPublic"
+import { updateWalletInfo } from "@/server/routers/wallets/updateWalletInfo"
+import { updateWalletRecovery } from "@/server/routers/wallets/updateWalletRecovery"
+import { updateWalletStatus } from "@/server/routers/wallets/updateWalletStatus"
+import { activateWallet } from "@/server/routers/work-shares/activateWallet"
+import { generateWalletActivationChallenge } from "@/server/routers/work-shares/generateWalletActivationChallenge"
+import { rotateAuthShare } from "@/server/routers/work-shares/rotateAuthShare"
+import { registerWalletExport } from "@/server/routers/backup/registerWalletExport"
+import { authenticateRouter } from "@/server/routers/authenticate"
 
 export const appRouter = router({
   ...authenticateRouter,
-  // TODO: remove this as this is just an example
-  protectedRoute: protectedProcedure.query(async ({ ctx }) => {
-    return {
-      message: `Hello, authenticated user with ID: ${ctx.user.id}`,
-      timestamp: new Date().toISOString(),
-    };
-  }),
-  // fakeAuthenticate: protectedProcedure.query(() => {
-  //   return { message: "Fake user authenticated successfully." };
-  // }),
-  // fakeRefreshSession: protectedProcedure
-  //   .input(z.enum(["alice", "bob"]))
-  //   .query(({ input }) => {
-  //     return { message: `Session refreshed for fake user: ${input}` };
-  //   }),
-  // fetchWallets: protectedProcedure.query(() => {
-  //   return { wallets: [] };
-  // }),
-  // createWallet: protectedProcedure.input(z.object({ userId: z.string(), chain: z.string() })).mutation(({ input }) => {
-  //   return { message: 'Wallet created successfully.', wallet: input };
-  // }),
-  // updateWallet: protectedProcedure.input(z.object({ id: z.string(), data: z.object({}).optional() })).mutation(({ input }) => {
-  //   return { message: `Wallet with ID ${input.id} updated successfully.` };
-  // }),
-  // deleteWallet: protectedProcedure.input(z.string()).mutation(({ input }) => {
-  //   return { message: `Wallet with ID ${input} deleted successfully.` };
-  // }),
-  // generateAuthShareChallenge: protectedProcedure.input(z.string()).mutation(({ input }) => {
-  //   return { challenge: `Challenge for wallet ${input}` };
-  // }),
-  // activateWallet: protectedProcedure.input(z.string()).mutation(({ input }) => {
-  //   return { message: `Wallet with ID ${input} activated successfully.` };
-  // }),
-  // rotateAuthShare: protectedProcedure.input(z.string()).query(({ input }) => {
-  //   return { message: `Authentication share for wallet ${input} rotated successfully.` };
-  // }),
-  // registerRecoveryShare: protectedProcedure.input(z.string()).mutation(({ input }) => {
-  //   return { message: `Recovery share registered for wallet ${input}` };
-  // }),
-  // registerWalletExport: protectedProcedure.input(z.string()).mutation(({ input }) => {
-  //   return { message: `Wallet export registered for wallet ${input}` };
-  // }),
-  // generateShareRecoveryChallenge: protectedProcedure.input(z.string()).mutation(({ input }) => {
-  //   return { challenge: `Share recovery challenge for wallet ${input}` };
-  // }),
-  // recoverWallet: protectedProcedure.input(z.string()).mutation(({ input }) => {
-  //   return { message: `Wallet with ID ${input} recovered successfully.` };
-  // }),
-  // generateWalletRecoveryChallenge: protectedProcedure.input(z.string()).mutation(({ input }) => {
-  //   return { challenge: `Account recovery challenge for wallet ${input}` };
-  // }),
-  // fetchRecoverableAccounts: protectedProcedure.input(z.string()).query(({ input }) => {
-  //   return { accounts: [`Recoverable account for wallet ${input}`] };
-  // }),
-  // generateAccountRecoveryChallenge: protectedProcedure.input(z.string()).mutation(({ input }) => {
-  //   return { challenge: `Account recovery confirmation challenge for wallet ${input}` };
-  // }),
-  // recoverAccount: protectedProcedure.input(z.string()).mutation(({ input }) => {
-  //   return { message: `Account with ID ${input} recovered successfully.` };
-  // }),
-});
+
+  // Wallets:
+  fetchWallets,
+  doNotAskAgainForBackup,
+
+  // Wallets - Create wallet:
+  createPublicWallet,
+  createPrivateWallet,
+  createReadOnlyWallet,
+
+ // Wallets - Update wallet:
+  makeWalletPrivate,
+  makeWalletPublic,
+  updateWalletInfo,
+  updateWalletRecovery,
+  updateWalletStatus,
+  deleteWallet,
+
+  // Work Shares:
+  generateWalletActivationChallenge,
+  activateWallet,
+  rotateAuthShare,
+
+  // Backup:
+  registerRecoveryShare,
+  registerWalletExport,
+
+  // Share Recovery:
+  generateWalletRecoveryChallenge,
+  recoverWallet,
+
+  // Account Recovery:
+  generateFetchRecoverableAccountsChallenge,
+  fetchRecoverableAccounts,
+  generateAccountRecoveryChallenge,
+  recoverAccount,
+})
 
 export type AppRouter = typeof appRouter;

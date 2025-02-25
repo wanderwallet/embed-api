@@ -2,7 +2,7 @@
 
 import { useEffect } from "react"
 import { useRouter } from "next/navigation"
-import { supabase } from "../../../../lib/supabaseClient"
+import { supabase } from "../../../../client/utils/supabase/supabase-client-client"
 
 export default function AuthCallbackPage() {
   const router = useRouter()

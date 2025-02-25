@@ -2,7 +2,7 @@ import {
   generateAuthenticationOptions,
   verifyAuthenticationResponse,
 } from "@simplewebauthn/server";
-import { getUser, supabase } from "../lib/supabaseClient";
+import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import { TRPCError } from "@trpc/server";
 import { relyingPartyID, relyingPartyOrigin } from "./webauthnConfig";
 
@@ -16,6 +16,8 @@ export async function startAuthenticateWithPasskeys(
       message: "Invalid auth provider type",
     });
   }
+
+  const supabase = await createServerClient();
 
   // Retrieve user's credentials
   const { data: credentials, error } = await supabase
@@ -70,6 +72,8 @@ export async function verifyAuthenticateWithPasskeys(
     });
   }
 
+  const supabase = await createServerClient();
+
   // retrieve the challenge
   const { data: challenge, error: challengeError } = await supabase
     .from("Challenges")
@@ -121,6 +125,16 @@ export async function verifyAuthenticateWithPasskeys(
 
   return { verified: true };
 }
+export async function getUser() {
+  const supabase = await createServerClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  return user
+}
+
 export async function loginWithGoogle(authProviderType: string) {
   if (authProviderType !== "GOOGLE") {
     throw new TRPCError({
@@ -128,6 +142,8 @@ export async function loginWithGoogle(authProviderType: string) {
       message: "Invalid auth provider type",
     });
   }
+
+  const supabase = await createServerClient();
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
@@ -177,6 +193,10 @@ export async function validateSession() {
   return user;
 }
 export async function refreshSession() {
+  // TODO: This doesn't do anything. It should be syncing our own Session entity, unless we use triggers.
+
+  const supabase = await createServerClient();
+
   const { data, error } = await supabase.auth.refreshSession();
 
   if (error) {
@@ -204,10 +224,16 @@ export async function refreshSession() {
   return { user, session: data.session };
 }
 export async function logoutUser() {
-  const { error } = await supabase.auth.signOut();
+  // TODO: This doesn't do anything. It should be syncing our own Session entity, unless we use triggers.
+
+  const supabase = await createServerClient();
+
+  const { error } = await supabase.auth.signOut()
+
   if (error) {
     console.error("Error during logout:", error);
     throw error;
   }
-  return { success: true };
+
+  return { success: true }
 }
