@@ -160,6 +160,17 @@ model UserProfile {
   supEmail String? @db.VarChar(255)
   supPhone String? @db.VarChar(255)
 
+  // Custom fields:
+  // `name`, `email`, `phone` and `picture` initially come from `auth.users`.
+
+  name        String?   @db.VarChar(100)
+  email       String?   @db.VarChar(255)
+  phone       String?   @db.VarChar(255)
+  picture     String?   @db.VarChar(255)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt()
+  recoveredAt DateTime?
+
   // Settings:
 
   /// If this account is recovered, what user details can we show to help users identify it's the right account:
