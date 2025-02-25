@@ -1,5 +1,5 @@
 // Cache IP info for 5 minutes
-let IP_CACHE = { ip: "", country: "", timestamp: 0 };
+let IP_CACHE = { ip: "", countryCode: "", timestamp: 0 };
 const CACHE_TTL = 5 * 60 * 1000;
 
 export async function getIpInfo() {
@@ -16,8 +16,8 @@ export async function getIpInfo() {
     if (!response.ok) return null;
 
     const { ip, country } = await response.json();
-    IP_CACHE = { ip, country, timestamp: Date.now() };
-    return { ip, country };
+    IP_CACHE = { ip, countryCode: country, timestamp: Date.now() };
+    return { ip, countryCode: country };
   } catch {
     return null;
   }
@@ -34,7 +34,7 @@ export function getClientIp(req: Request): string {
   );
 }
 
-export function getClientCountry(req: Request): string {
+export function getClientCountryCode(req: Request): string {
   const headers = req.headers;
 
   return (

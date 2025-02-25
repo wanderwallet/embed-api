@@ -1,9 +1,13 @@
-import { inferAsyncReturnType, TRPCError } from "@trpc/server";
+import { inferAsyncReturnType } from "@trpc/server";
 import { Session } from "@prisma/client";
 import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import { jwtDecode } from "jwt-decode";
 import { prisma } from "./utils/prisma/prisma-client";
-import { getClientCountry, getClientIp, getIpInfo } from "./utils/ip/ip.utils";
+import {
+  getClientCountryCode,
+  getClientIp,
+  getIpInfo,
+} from "./utils/ip/ip.utils";
 
 export async function createContext({ req }: { req: Request }) {
   const authHeader = req.headers.get("authorization");
@@ -34,26 +38,24 @@ export async function createContext({ req }: { req: Request }) {
 
   const user = data.user;
   let ip = getClientIp(req);
-  let country = getClientCountry(req);
+  let countryCode = getClientCountryCode(req);
 
   if (process.env.NODE_ENV === "development") {
     const ipInfo = await getIpInfo();
     if (ipInfo) {
-      ip = ipInfo.ip;
-      country = ipInfo.country;
+      ({ ip, countryCode } = ipInfo);
     }
   }
 
   try {
-    const { session_id: sessionId } = jwtDecode(token) as {
-      session_id: string;
-    };
-    const sessionData = await getAndUpdateSession(sessionId, {
+    const sessionData = await getAndUpdateSession(supabase, token, {
       userAgent,
       deviceNonce,
       ip,
-      country,
+      countryCode,
     });
+
+    if (!sessionData) return createEmptyContext();
 
     // TODO: Get `data.user.user_metadata.ipFilterSetting` and `data.user.user_metadata.countryFilterSetting` and
     // check if they are defined and, if so, if they pass.
@@ -70,24 +72,11 @@ export async function createContext({ req }: { req: Request }) {
 }
 
 async function getAndUpdateSession(
-  sessionId: string,
-  updates: {
-    userAgent: string;
-    deviceNonce: string;
-    ip: string;
-    country: string;
-  }
+  supabase: Awaited<ReturnType<typeof createServerClient>>,
+  token: string,
+  updates: Partial<Session>
 ): Promise<Session | null> {
-  const sessionData = await prisma.session.findUnique({
-    where: { id: sessionId },
-  });
-
-  if (!sessionData) {
-    throw new TRPCError({
-      code: "UNAUTHORIZED",
-      message: "Session not found",
-    });
-  }
+  let { sub: userId, session_id: sessionId, sessionData } = decodeJwt(token);
 
   const sessionUpdates: Partial<Session> = {};
   if (updates.userAgent && sessionData.userAgent !== updates.userAgent) {
@@ -99,23 +88,46 @@ async function getAndUpdateSession(
   if (updates.ip && sessionData.ip !== updates.ip) {
     sessionUpdates.ip = updates.ip;
   }
-  if (updates.country && sessionData.countryCode !== updates.country) {
-    sessionUpdates.countryCode = updates.country;
+  if (updates.countryCode && sessionData.countryCode !== updates.countryCode) {
+    sessionUpdates.countryCode = updates.countryCode;
   }
 
   if (Object.keys(sessionUpdates).length > 0) {
     console.log("Updating session:", sessionUpdates);
-    prisma.session
+    await prisma.session
       .update({
         where: { id: sessionId },
         data: sessionUpdates,
       })
-      .catch((error) => {
-        console.error("Error updating session:", error);
-      });
+      .catch((error) => console.error("Error updating session:", error));
+
+    const { data, error } = await supabase.auth.refreshSession();
+    if (error) return null;
+
+    const accessToken = data?.session?.access_token;
+    if (!accessToken) return null;
+
+    ({
+      sub: userId,
+      session_id: sessionId,
+      sessionData,
+    } = decodeJwt(accessToken));
   }
 
-  return { ...sessionData, ...sessionUpdates };
+  return {
+    userId,
+    id: sessionId,
+    ...sessionData,
+    ...sessionUpdates,
+  } as Session;
+}
+
+function decodeJwt(token: string) {
+  return jwtDecode(token) as {
+    sub: string;
+    session_id: string;
+    sessionData: Partial<Session>;
+  };
 }
 
 function createEmptyContext() {
