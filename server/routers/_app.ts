@@ -6,6 +6,7 @@ import { recoverAccount } from "@/server/routers/account-recovery/recoverAccount
 import { registerRecoveryShare } from "@/server/routers/backup/registerRecoveryShare"
 import { generateWalletRecoveryChallenge } from "@/server/routers/share-recovery/generateWalletRecoveryChallenge"
 import { recoverWallet } from "@/server/routers/share-recovery/recoverWallet"
+import { registerAuthShare } from "@/server/routers/share-recovery/registerAuthShare"
 import { createPrivateWallet } from "@/server/routers/wallets/createPrivateWallet"
 import { createPublicWallet } from "@/server/routers/wallets/createPublicWallet"
 import { createReadOnlyWallet } from "@/server/routers/wallets/createReadOnlyWallet"
@@ -56,6 +57,7 @@ export const appRouter = router({
   // Share Recovery:
   generateWalletRecoveryChallenge,
   recoverWallet,
+  registerAuthShare,
 
   // Account Recovery:
   generateFetchRecoverableAccountsChallenge,
