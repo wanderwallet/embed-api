@@ -13,19 +13,19 @@ export function createTRPCClient({
   let authToken: string | null = null;
   let deviceNonce = "";
 
-  function getAuthToken() {
+  function getAuthTokenHeader() {
     return authToken;
   }
 
-  function setAuthToken(nextAuthToken: string | null) {
+  function setAuthTokenHeader(nextAuthToken: string | null) {
     authToken = nextAuthToken || null;
   }
 
-  function getDeviceNonce() {
+  function getDeviceNonceHeader() {
     return deviceNonce;
   }
 
-  function setDeviceNonce(nextDeviceNonce: string) {
+  function setDeviceNonceHeader(nextDeviceNonce: string) {
     deviceNonce = nextDeviceNonce;
   }
 
@@ -51,9 +51,9 @@ export function createTRPCClient({
 
   return {
     client,
-    getAuthToken,
-    setAuthToken,
-    getDeviceNonce,
-    setDeviceNonce,
+    getAuthTokenHeader,
+    setAuthTokenHeader,
+    getDeviceNonceHeader,
+    setDeviceNonceHeader,
   };
 }
