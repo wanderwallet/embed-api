@@ -11,7 +11,7 @@ import {
   relyingPartyName,
   relyingPartyOrigin,
 } from "@/server/services/webauthnConfig";
-import { PrismaClient } from "@prisma/client";
+import { ChallengePurpose, ChallengeType, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
@@ -29,10 +29,11 @@ export const passkeysRoutes = {
       z.object({
         userId: z.string(),
         userEmail: z.string(),
+        walletId: z.string(),
       })
     )
     .mutation(async ({ input }) => {
-      const { userId, userEmail } = input;
+      const { userId, userEmail, walletId } = input;
 
       // Generate registration options
       const options = await generateRegistrationOptions({
@@ -51,12 +52,12 @@ export const passkeysRoutes = {
       // Store challenge in the database
       await prisma.challenge.create({
         data: {
-          type: "SIGNATURE",
-          purpose: "ACCOUNT_RECOVERY",
+          type: ChallengeType.SIGNATURE,
+          purpose: ChallengePurpose.AUTHENTICATION,
           value: options.challenge,
           version: "1.0",
           userId: userId,
-          walletId: "", // You'll need to handle this appropriately
+          walletId: walletId,
         },
       });
 
@@ -76,7 +77,7 @@ export const passkeysRoutes = {
       const challenge = await prisma.challenge.findFirst({
         where: {
           userId: userId,
-          purpose: "ACCOUNT_RECOVERY",
+          purpose: ChallengePurpose.ACCOUNT_RECOVERY,
         },
         orderBy: {
           createdAt: 'desc'
