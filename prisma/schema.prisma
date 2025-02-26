@@ -112,7 +112,7 @@ enum ChallengePurpose {
 
 /**
  * model AuthMethod {
- * id            String           @id @default(uuid())
+ * id            String           @id @default(uuid()) @db.Uuid
  * /// Auth providers typically create a new "user" for each different authentication method, so we keep its ID here.
  * /// This is typically stored in the `sub` property of an ID Token (e.g. Auth0).
  * providerId    String           @db.VarChar(255)
@@ -137,7 +137,7 @@ enum ChallengePurpose {
 model UserProfile {
   // Fields synced automatically from `auth.users`:
 
-  supId    String  @id @default(uuid())
+  supId    String  @id @default(uuid()) @db.Uuid
   supEmail String? @db.VarChar(255)
   supPhone String? @db.VarChar(255)
 
@@ -189,7 +189,7 @@ model UserProfile {
 }
 
 model Developer {
-  id            String   @id @default(uuid())
+  id            String   @id @default(uuid()) @db.Uuid
   plan          String   @default("free") @db.VarChar(50)
   planStartedAt String   @default("free") @db.VarChar(50)
   apiKey        String   @unique @db.VarChar(255)
@@ -207,14 +207,14 @@ model Developer {
   bills        Bill[]
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId      String      @unique
+  userId      String      @unique @db.Uuid
 
   @@index([apiKey])
   @@map("Developers")
 }
 
 model Bill {
-  id              String   @id @default(uuid())
+  id              String   @id @default(uuid()) @db.Uuid
   type            BillType
   createdAt       DateTime @default(now())
   /// Discount %, [0, 1) range.
@@ -239,14 +239,14 @@ model Bill {
   userOverrides Json
 
   developer   Developer @relation(fields: [developerId], references: [id], onDelete: Cascade)
-  developerId String
+  developerId String    @db.Uuid
 
   @@index([developerId])
   @@map("Bills")
 }
 
 model Application {
-  id          String   @id @default(uuid())
+  id          String   @id @default(uuid()) @db.Uuid
   description String?  @db.VarChar(255)
   domains     String[] @db.VarChar(255) // TODO: Consider separating domains to add tags/label to them (e.g. staging, etc.)
   createdAt   DateTime @default(now())
@@ -262,14 +262,14 @@ model Application {
   // TODO: We might want to change this so that Applications can be shared to more than one Developer? But probably
   // later, and consider adding teams at that point. Or replace Developer with Team.
   developer   Developer @relation(fields: [developerId], references: [id], onDelete: Cascade)
-  developerId String
+  developerId String    @db.Uuid
 
   @@index([developerId])
   @@map("Applications")
 }
 
 model Wallet {
-  id        String       @id @default(uuid())
+  id        String       @id @default(uuid()) @db.Uuid
   /// This must be set to READONLY if publicKey is not set.
   status    WalletStatus @default(ENABLED)
   createdAt DateTime     @default(now())
@@ -343,10 +343,10 @@ model Wallet {
   challenges        Challenge[]
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId      String
+  userId      String      @db.Uuid
 
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
-  deviceAndLocationId String
+  deviceAndLocationId String            @db.Uuid
 
   @@unique([userId, chain, address], name: "userWallet")
   @@index([canRecoverAccountSetting, chain, address])
@@ -354,21 +354,21 @@ model Wallet {
 }
 
 model WalletActivation {
-  id          String            @id @default(uuid())
+  id          String            @id @default(uuid()) @db.Uuid
   status      WalletUsageStatus
   activatedAt DateTime          @default(now())
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId      String
+  userId      String      @db.Uuid
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  walletId String
+  walletId String @db.Uuid
 
   workKeyShare   WorkKeyShare? @relation(fields: [workKeyShareId], references: [id], onDelete: Cascade)
-  workKeyShareId String?
+  workKeyShareId String?       @db.Uuid
 
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
-  deviceAndLocationId String
+  deviceAndLocationId String            @db.Uuid
 
   @@index([userId])
   @@index([activatedAt])
@@ -376,21 +376,21 @@ model WalletActivation {
 }
 
 model WalletRecovery {
-  id          String            @id @default(uuid())
+  id          String            @id @default(uuid()) @db.Uuid
   status      WalletUsageStatus
   recoveredAt DateTime          @default(now())
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId      String
+  userId      String      @db.Uuid
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  walletId String
+  walletId String @db.Uuid
 
   recoveryKeyShare   RecoveryKeyShare? @relation(fields: [recoveryKeyShareId], references: [id], onDelete: Cascade)
-  recoveryKeyShareId String?
+  recoveryKeyShareId String?           @db.Uuid
 
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
-  deviceAndLocationId String
+  deviceAndLocationId String            @db.Uuid
 
   @@index([userId])
   @@index([recoveredAt])
@@ -398,18 +398,18 @@ model WalletRecovery {
 }
 
 model WalletExport {
-  id         String     @id @default(uuid())
+  id         String     @id @default(uuid()) @db.Uuid
   type       ExportType
   exportedAt DateTime   @default(now())
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId      String
+  userId      String      @db.Uuid
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  walletId String
+  walletId String @db.Uuid
 
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
-  deviceAndLocationId String
+  deviceAndLocationId String            @db.Uuid
 
   @@index([userId])
   @@index([exportedAt])
@@ -420,7 +420,7 @@ model WalletExport {
 /// regularly. This means a WorkKeyShare is linked to a specific deviceNonce, userId and walletId, and optionally to a Session (optionally because the session
 /// might be closed, but the deviceNonce and deviceShare stay on the device).
 model WorkKeyShare {
-  id               String   @id @default(uuid())
+  id               String   @id @default(uuid()) @db.Uuid
   createdAt        DateTime @default(now())
   sharesRotatedAt  DateTime @default(now())
   rotationWarnings Int      @default(0)
@@ -435,10 +435,10 @@ model WorkKeyShare {
   walletActivations WalletActivation[]
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId      String
+  userId      String      @db.Uuid
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  walletId String
+  walletId String @db.Uuid
 
   session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
   sessionId String  @db.Uuid
@@ -453,7 +453,7 @@ model WorkKeyShare {
 /// RecoveryKeyShares are rarely/occasionally used to reconstruct users' private keys on any device by combining them with their recoveryBackupShare (downloaded
 /// as a file), and are not rotated.
 model RecoveryKeyShare {
-  id        String   @id @default(uuid())
+  id        String   @id @default(uuid()) @db.Uuid
   createdAt DateTime @default(now())
 
   /// Yes, Arweave private keys are humongous, 3168 characters as base64, so 4096 just to be safe.
@@ -466,13 +466,13 @@ model RecoveryKeyShare {
   walletRecoveries WalletRecovery[]
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId      String
+  userId      String      @db.Uuid
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  walletId String
+  walletId String @db.Uuid
 
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
-  deviceAndLocationId String
+  deviceAndLocationId String            @db.Uuid
 
   @@unique([userId, recoveryBackupShareHash])
   @@index([userId, createdAt])
@@ -481,7 +481,7 @@ model RecoveryKeyShare {
 
 /// See `challenge.utils.ts` and `challenge-client-v1.ts` for details on how the challenges are generated and validated.
 model Challenge {
-  id        String           @id @default(uuid())
+  id        String           @id @default(uuid()) @db.Uuid
   type      ChallengeType
   purpose   ChallengePurpose
   /// We use a 128 byte buffer, which translates to 172 characters in base64, so 255 to be safe.
@@ -490,10 +490,10 @@ model Challenge {
   createdAt DateTime         @default(now())
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId      String
+  userId      String      @db.Uuid
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
-  walletId String
+  walletId String @db.Uuid
 
   /// Each user would have up to 4 challenges active at a time (one of each type). Those of the same type will be
   /// overridden.
@@ -503,7 +503,7 @@ model Challenge {
 
 /// Used in `generateFetchRecoverableAccountsChallenge()`
 model AnonChallenge {
-  id        String   @id @default(uuid())
+  id        String   @id @default(uuid()) @db.Uuid
   value     String   @db.VarChar(255)
   version   String   @db.VarChar(50)
   createdAt DateTime @default(now())
@@ -517,7 +517,7 @@ model AnonChallenge {
 /// userId-deviceNonce-ip-userAgent is used to make sure we reuse DeviceAndLocation rows when nothing has changed. Note this entity is not meant to be updated
 /// when any of those fields change (in contrast to `Session`).
 model DeviceAndLocation {
-  id          String   @id @default(uuid())
+  id          String   @id @default(uuid()) @db.Uuid
   createdAt   DateTime @default(now())
   deviceNonce String   @db.VarChar(255)
   /// IPv6 or IPv4-mapped address
@@ -534,10 +534,10 @@ model DeviceAndLocation {
   authenticationAttempts AuthenticationAttempt[]
 
   UserProfile UserProfile? @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId      String?
+  userId      String?      @db.Uuid
 
   application   Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
-  applicationId String?
+  applicationId String?      @db.Uuid
 
   @@unique([userId, deviceNonce, ip, userAgent], name: "userDevice")
   @@index([createdAt])
@@ -562,7 +562,7 @@ model Session {
   workKeyShares WorkKeyShare[]
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId      String
+  userId      String      @db.Uuid
 
   /// Note how here we don't include ip and userAgent, as we only want to keep one session per user-device, so if the IP
   /// or the userAgent change on the same device, we simply update the session info.
@@ -572,7 +572,7 @@ model Session {
 }
 
 model AuthenticationAttempt {
-  id              String   @id @default(uuid())
+  id              String   @id @default(uuid()) @db.Uuid
   rejectionReason String   @db.VarChar(255)
   createdAt       DateTime @default(now())
 
@@ -580,13 +580,13 @@ model AuthenticationAttempt {
   supIdentityId String?
 
   UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId      String
+  userId      String      @db.Uuid
 
   // authMethod   AuthMethod? @relation(fields: [authMethodId], references: [id], onDelete: SetNull)
   // authMethodId String?
 
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
-  deviceAndLocationId String
+  deviceAndLocationId String            @db.Uuid
 
   @@index([userId])
   @@index([createdAt])
