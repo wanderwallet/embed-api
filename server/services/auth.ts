@@ -5,6 +5,78 @@ import {
 import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import { TRPCError } from "@trpc/server";
 import { relyingPartyID, relyingPartyOrigin } from "./webauthnConfig";
+import { Challenge, ChallengePurpose, ChallengeType, PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
+
+export async function createChallenge(userId: string, walletId: string = "", challenge: string) {
+  return prisma.challenge.create({
+    data: {
+      type: ChallengeType.SIGNATURE,
+      purpose: ChallengePurpose.AUTHENTICATION,
+      value: challenge,
+      version: "1.0",
+      userId: userId,
+      walletId: walletId,
+    },
+  });
+}
+
+export async function getLatestChallenge(userId: string) {
+  return prisma.challenge.findFirst({
+    where: {
+      userId: userId,
+      type: ChallengeType.SIGNATURE,
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
+  });
+}
+
+export async function validateChallenge(challenge: Challenge | null) {
+  if (!challenge) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Challenge not found" });
+  }
+
+  // Validate challenge expiration (30 minutes for passkeys)
+  const currentTime = new Date();
+  const challengeCreatedAt = new Date(challenge.createdAt);
+  const timeDifferenceMs = currentTime.getTime() - challengeCreatedAt.getTime();
+  const passkeyChallengeExpirationMs = 30 * 60 * 1000; // 30 minutes in milliseconds
+  
+  if (timeDifferenceMs > passkeyChallengeExpirationMs) {
+    // Delete expired challenge
+    await prisma.challenge.delete({
+      where: {
+        id: challenge.id,
+      },
+    });
+    
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Challenge has expired. Please try again.",
+    });
+  }
+
+  return challenge;
+}
+
+export async function deleteChallenge(challengeId: string) {
+  return prisma.challenge.delete({
+    where: {
+      id: challengeId,
+    },
+  });
+}
+
+export function uint8ArrayToString(array: Uint8Array): string {
+  return Buffer.from(array).toString();
+}
+
+export function stringToUint8Array(str: string): Uint8Array {
+  return Buffer.from(str);
+}
 
 // ************ Passkeys Auth Functions
 
@@ -19,16 +91,17 @@ export async function startAuthenticateWithPasskeys(
     });
   }
 
-  const supabase = await createServerClient();
+  // Retrieve user's passkeys
+  const passkeys = await prisma.passkey.findMany({
+    where: {
+      userId: userId,
+    },
+    select: {
+      credentialId: true,
+    },
+  });
 
-  // Retrieve user's credentials
-  const { data: credentials, error } = await supabase
-    .from("AuthMethods")
-    .select("provider_id")
-    .eq("user_id", userId)
-    .eq("provider_type", "PASSKEYS");
-
-  if (error || !credentials?.length) {
+  if (!passkeys.length) {
     throw new TRPCError({
       code: "NOT_FOUND",
       message: "No passkeys found for user",
@@ -37,30 +110,19 @@ export async function startAuthenticateWithPasskeys(
 
   const options = await generateAuthenticationOptions({
     rpID: relyingPartyID,
-    allowCredentials: credentials.map((cred) => ({
-      id: cred.provider_id,
+    allowCredentials: passkeys.map((passkey) => ({
+      id: passkey.credentialId,
       type: "public-key",
     })),
     userVerification: "preferred",
   });
 
-  // Store the challenge
-  const { error: challengeError } = await supabase.from("Challenges").insert({
-    type: "SIGNATURE",
-    purpose: "ACTIVATION",
-    value: options.challenge,
-    user_id: userId,
-  });
-
-  if (challengeError) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: challengeError.message,
-    });
-  }
+  // Use the new utility function
+  await createChallenge(userId, "", options.challenge);
 
   return options;
 }
+
 export async function verifyAuthenticateWithPasskeys(
   authProviderType: string,
   userId: string,
@@ -74,59 +136,60 @@ export async function verifyAuthenticateWithPasskeys(
     });
   }
 
-  const supabase = await createServerClient();
+  // Use the new utility functions
+  const challenge = await getLatestChallenge(userId);
+  await validateChallenge(challenge);
 
-  // retrieve the challenge
-  const { data: challenge, error: challengeError } = await supabase
-    .from("Challenges")
-    .select("*")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false })
-    .limit(1)
-    .single();
+  // Retrieve the matching passkey
+  const passkey = await prisma.passkey.findFirst({
+    where: {
+      userId: userId,
+      credentialId: assertionResponse.id,
+    },
+  });
 
-  if (challengeError || !challenge) {
+  if (!passkey) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Passkey not found" });
+  }
+
+  if (!challenge) {
     throw new TRPCError({ code: "NOT_FOUND", message: "Challenge not found" });
   }
 
-  // retrieve the matching credential
-  const { data: credential, error: credentialError } = await supabase
-    .from("AuthMethods")
-    .select("*")
-    .eq("user_id", userId)
-    .eq("provider_id", assertionResponse.id)
-    .single();
-
-  if (credentialError || !credential) {
-    throw new TRPCError({ code: "NOT_FOUND", message: "Credential not found" });
-  }
-
+  // Convert the passkey to the format expected by verifyAuthenticationResponse
   const verification = await verifyAuthenticationResponse({
     response: assertionResponse,
     expectedChallenge: challenge.value,
     expectedOrigin: relyingPartyOrigin,
     expectedRPID: relyingPartyID,
-    credential,
+    credential: {
+      id: passkey.credentialId,
+      publicKey: Buffer.from(passkey.publicKey, 'base64'), 
+      counter: passkey.signCount,
+    },
   });
 
   if (!verification.verified) {
     throw new TRPCError({ code: "FORBIDDEN", message: "Verification failed" });
   }
 
-  // update the credential
-  await supabase
-    .from("AuthMethods")
-    .update({
-      sign_count: verification.authenticationInfo.newCounter,
-      last_used_at: new Date(),
-    })
-    .eq("id", credential.id);
+  // Update the passkey
+  await prisma.passkey.update({
+    where: {
+      id: passkey.id,
+    },
+    data: {
+      signCount: verification.authenticationInfo.newCounter,
+      lastUsedAt: new Date(),
+    },
+  });
 
-  // delete the challenge
-  await supabase.from("Challenges").delete().eq("id", challenge.id);
+  // Delete the challenge
+  await deleteChallenge(challenge.id);
 
   return { verified: true };
 }
+
 export async function getUser() {
   const supabase = await createServerClient();
 
@@ -174,6 +237,7 @@ export async function loginWithGoogle(authProviderType: string) {
 
   return data.url;
 }
+
 export async function handleGoogleCallback() {
   const user = await getUser();
   if (!user) {
@@ -185,8 +249,6 @@ export async function handleGoogleCallback() {
   return user;
 }
 
-// ************ Session Related Functions
-
 export async function validateSession() {
   const user = await getUser();
   if (!user) {
@@ -197,6 +259,7 @@ export async function validateSession() {
   }
   return user;
 }
+
 export async function refreshSession() {
   // TODO: This doesn't do anything. It should be syncing our own Session entity, unless we use triggers.
 
@@ -228,6 +291,7 @@ export async function refreshSession() {
 
   return { user, session: data.session };
 }
+
 export async function logoutUser() {
   // TODO: This doesn't do anything. It should be syncing our own Session entity, unless we use triggers.
 
