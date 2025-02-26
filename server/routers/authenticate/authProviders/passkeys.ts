@@ -3,7 +3,6 @@ import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
 } from "@simplewebauthn/server";
-import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "@/server/trpc";
@@ -12,6 +11,9 @@ import {
   relyingPartyName,
   relyingPartyOrigin,
 } from "@/server/services/webauthnConfig";
+import { PrismaClient } from "@prisma/client";
+
+const prisma = new PrismaClient();
 
 function stringToUint8Array(str: string): Uint8Array {
   return new TextEncoder().encode(str);
@@ -42,22 +44,17 @@ export const passkeysRoutes = {
         },
       });
 
-      const supabase = await createServerClient();
-
       // Store challenge in the database
-      const { error } = await supabase.from("Challenges").insert({
-        type: "SIGNATURE",
-        purpose: "ACCOUNT_RECOVERY",
-        value: options.challenge,
-        user_id: userId,
+      await prisma.challenge.create({
+        data: {
+          type: "SIGNATURE",
+          purpose: "ACCOUNT_RECOVERY",
+          value: options.challenge,
+          version: "1.0",
+          userId: userId,
+          walletId: "", // You'll need to handle this appropriately
+        },
       });
-
-      if (error) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: error.message,
-        });
-      }
 
       return options;
     }),
@@ -71,18 +68,18 @@ export const passkeysRoutes = {
     .mutation(async ({ input }) => {
       const { userId, attestationResponse } = input;
 
-      const supabase = await createServerClient();
-
       // Retrieve the challenge
-      const { data: challenge, error: challengeError } = await supabase
-        .from("Challenges")
-        .select("*")
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false })
-        .limit(1)
-        .single();
+      const challenge = await prisma.challenge.findFirst({
+        where: {
+          userId: userId,
+          purpose: "ACCOUNT_RECOVERY",
+        },
+        orderBy: {
+          createdAt: 'desc'
+        }
+      });
 
-      if (challengeError || !challenge) {
+      if (!challenge) {
         throw new TRPCError({
           code: "NOT_FOUND",
           message: "Challenge not found",
@@ -97,32 +94,30 @@ export const passkeysRoutes = {
         expectedRPID: relyingPartyID,
       });
 
-      if (!verification.verified) {
+      if (!verification.verified || !verification.registrationInfo) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message: "Verification failed",
         });
       }
 
-      // Save the credential
-      const { error: saveError } = await supabase.from("AuthMethods").insert({
-        user_id: userId,
-        provider_id: verification.registrationInfo?.credential.id,
-        public_key: verification.registrationInfo?.credential.publicKey,
-        sign_count: verification.registrationInfo?.credential.counter,
-        provider_label: `Passkey created ${new Date().toLocaleString()}`,
-        provider_type: "PASSKEYS",
+      // Save the credential to the new Passkey table
+      await prisma.passkey.create({
+        data: {
+          credentialId: verification.registrationInfo.credential.id,
+          publicKey: new TextDecoder().decode(verification.registrationInfo.credential.publicKey),
+          signCount: verification.registrationInfo.credential.counter,
+          label: `Passkey created ${new Date().toLocaleString()}`,
+          userId: userId,
+        },
       });
 
-      if (saveError) {
-        throw new TRPCError({
-          code: "INTERNAL_SERVER_ERROR",
-          message: saveError.message,
-        });
-      }
-
       // Delete the challenge
-      await supabase.from("Challenges").delete().eq("id", challenge.id);
+      await prisma.challenge.delete({
+        where: {
+          id: challenge.id,
+        },
+      });
 
       return { verified: true };
     }),

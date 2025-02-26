@@ -1,4 +1,4 @@
-import { inferAsyncReturnType, TRPCError } from "@trpc/server"
+import { inferAsyncReturnType } from "@trpc/server"
 import { PrismaClient, Session } from "@prisma/client";
 import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import type { User } from "@supabase/supabase-js";

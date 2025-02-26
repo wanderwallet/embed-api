@@ -1,11 +1,11 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
-// TODO: Uncomment this once we have a way to generate the ERD diagram on vercel.
+// TODO: Uncomment and run locally to generate ERD.  Will not work on Vercel.
 // generator erd {
 //   provider = "prisma-erd-generator"
 // }
+
+generator client {
+  provider = "prisma-client-js"
+}
 
 datasource db {
   provider  = "postgresql"
@@ -113,42 +113,27 @@ enum ChallengePurpose {
   ACCOUNT_RECOVERY
 }
 
-enum WebAuthnDeviceType {
-  SINGLE_DEVICE
-  MULTI_DEVICE
-}
-
-enum WebAuthnBackupState {
-  NOT_BACKED_UP
-  BACKED_UP
-}
-
-// TODO: Indexes need to be added manually.
 // TODO: Document index usages.
 
-// model AuthMethod {
-//   id            String           @id @default(uuid())
-//   providerId    String           @db.VarChar(255) // Can store passkey credential ID for passkeys
-//   providerType  AuthProviderType
-//   providerLabel String           @db.VarChar(255) // Friendly name for the passkey
-//   publicKey     Bytes?           // Public key for passkeys
-//   aaguid        String?          @db.VarChar(255) @default("00000000-0000-0000-0000-000000000000") // Authenticator ID
-//   signCount     Int?             // Used for replay protection
-//   transports    String[]      // List of transports (e.g., "usb", "ble")
-//   deviceType    WebAuthnDeviceType @default(SINGLE_DEVICE) // Type of device used
-//   backupState   WebAuthnBackupState @default(NOT_BACKED_UP) // Backup state
-//   linkedAt      DateTime         @default(now())
-//   lastUsedAt    DateTime         @default(now())
-//   unlinkedAt    DateTime?
-
-//   user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-//   userId String
-
-//   @@unique([userId, providerId], name: "userAuthentication")
-//   @@index([providerId])
-//   @@index([lastUsedAt])
-//   @@map("AuthMethods")
-// }
+/**
+ * model AuthMethod {
+ * id            String           @id @default(uuid())
+ * /// Auth providers typically create a new "user" for each different authentication method, so we keep its ID here.
+ * /// This is typically stored in the `sub` property of an ID Token (e.g. Auth0).
+ * providerId    String           @db.VarChar(255)
+ * providerType  AuthProviderType
+ * /// This can be an email for EMAIL, a profile handler for social networks or some kind of device ID for passkeys.
+ * providerLabel String           @db.VarChar(255)
+ * linkedAt      DateTime         @default(now())
+ * lastUsedAt    DateTime         @default(now())
+ * unlinkedAt    DateTime?
+ * user                   User                    @relation(fields: [userId], references: [supId], onDelete: Cascade)
+ * userId                 String
+ * authenticationAttempts AuthenticationAttempt[]
+ * @@unique([userId, providerId], name: "userAuthentication")
+ * @@map("AuthMethods")
+ * }
+ */
 
 /// UserProfiles are created/updated automatically using users are inserted/updated on auth.users, but some other fields
 /// such as the user preferences (except for `ipFilterSetting` and `countryFilterSetting`, which are easier to use when
@@ -204,6 +189,7 @@ model UserProfile {
   devicesAndLocations    DeviceAndLocation[]
   sessions               Session[]
   authenticationAttempts AuthenticationAttempt[]
+  passkeys               Passkey[]
 
   @@map("UserProfiles")
 }
@@ -612,4 +598,20 @@ model AuthenticationAttempt {
   @@index([userId])
   @@index([createdAt])
   @@map("LoginAttempts")
+}
+
+model Passkey {
+  id            String   @id @default(uuid())
+  credentialId  String   @db.VarChar(255)
+  publicKey     String   @db.VarChar(1024)
+  signCount     Int      @default(0)
+  label         String   @db.VarChar(255)
+  createdAt     DateTime @default(now())
+  lastUsedAt    DateTime @default(now())
+
+  UserProfile   UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userId        String
+
+  @@unique([userId, credentialId], name: "userPasskey")
+  @@map("Passkeys")
 }
