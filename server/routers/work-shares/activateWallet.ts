@@ -6,6 +6,7 @@ import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils, generateChangeValue } from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
+import { DbWallet } from "@/index";
 
 export const ActivateWalletSchema = z.object({
   walletId: z.string().uuid(),
@@ -124,7 +125,8 @@ export const activateWallet = protectedProcedure
     const shouldRotate = now - workKeyShare.sharesRotatedAt.getTime() >= Config.SHARE_ACTIVE_TTL_MS;
 
     const [
-      rotationChallenge
+      rotationChallenge,
+      wallet,
     ] = await ctx.prisma.$transaction(async (tx) => {
       const deviceAndLocationId = await deviceAndLocationIdPromise;
       const dateNow = new Date();
@@ -151,15 +153,6 @@ export const activateWallet = protectedProcedure
         update: challengeUpsertData,
       }) : null;
 
-      const updateRotationWarningPromise = shouldRotate ? tx.workKeyShare.update({
-        where: {
-          id: workKeyShare.id,
-        },
-        data: {
-          rotationWarnings: { increment: 1 },
-        }
-      }) : null;
-
       const updateWalletStatsPromise = tx.wallet.update({
         where: {
           id: workKeyShare.walletId,
@@ -169,6 +162,15 @@ export const activateWallet = protectedProcedure
           totalActivations: { increment: 1 },
         },
       });
+
+      const updateRotationWarningPromise = shouldRotate ? tx.workKeyShare.update({
+        where: {
+          id: workKeyShare.id,
+        },
+        data: {
+          rotationWarnings: { increment: 1 },
+        }
+      }) : null;
 
       // TODO: How to limit the # of activations per user?
       const registerWalletActivationPromise = tx.walletActivation.create({
@@ -185,16 +187,17 @@ export const activateWallet = protectedProcedure
         where: { id: challenge.id },
       });
 
-      return Promise.resolve([
+      return Promise.all([
         rotationChallengePromise,
-        updateRotationWarningPromise,
         updateWalletStatsPromise,
+        updateRotationWarningPromise,
         registerWalletActivationPromise,
         deleteChallengePromise,
       ]);
     });
 
     return {
+      wallet: wallet as DbWallet,
       authShare: workKeyShare.authShare,
       rotationChallenge,
     };

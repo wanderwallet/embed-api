@@ -6,6 +6,7 @@ import { validateWallet } from "@/server/utils/wallet/wallet.validators";
 import { InputJsonValue } from "@prisma/client/runtime/library";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 import { getShareValidator, getShareHashValidator, getSharePublicKeyValidator, validateShare } from "@/server/utils/share/share.validators";
+import { DbWallet } from "@/dist";
 
 export const CreatePrivateWalletInputSchema = z.object({
   status: z.enum([WalletStatus.ENABLED, WalletStatus.DISABLED]),
@@ -73,6 +74,6 @@ export const createPrivateWallet = protectedProcedure
     });
 
     return {
-      wallet,
+      wallet: wallet as DbWallet,
     };
   });

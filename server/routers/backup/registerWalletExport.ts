@@ -4,6 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ExportType } from "@prisma/client";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
+import { DbWallet } from "@/index";
 
 export const RegisterWalletExportInputSchema = z.object({
   type: z.nativeEnum(ExportType),
@@ -34,7 +35,9 @@ export const registerWalletExport = protectedProcedure
       });
     }
 
-    await ctx.prisma.$transaction(async (tx) => {
+    const [
+      wallet,
+    ] = await ctx.prisma.$transaction(async (tx) => {
       const deviceAndLocationId = await deviceAndLocationIdPromise;
       const dateNow = new Date();
 
@@ -67,5 +70,7 @@ export const registerWalletExport = protectedProcedure
       ]);
     });
 
-    return {};
+    return {
+      wallet: wallet as DbWallet,
+    };
   });

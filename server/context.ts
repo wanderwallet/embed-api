@@ -66,8 +66,8 @@ export async function createContext({ req }: { req: Request }) {
   const session: Session = {
     id: "",
     providerSessionId: "",
-    createdAt: new Date(),
-    updatedAt: new Date(),
+    createdAt: new Date(0),
+    updatedAt: new Date(0),
     deviceNonce: "",
     ip: "",
     countryCode: "",

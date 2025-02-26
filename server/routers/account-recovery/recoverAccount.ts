@@ -83,7 +83,7 @@ export const recoverAccount = publicProcedure
         where: { id: challenge.id },
       });
 
-      return Promise.resolve([
+      return Promise.all([
         registerAccountRecoveryPromise,
         deleteChallengePromise,
       ]);

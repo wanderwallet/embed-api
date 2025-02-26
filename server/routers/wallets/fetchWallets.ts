@@ -1,3 +1,4 @@
+import { DbWallet } from "@/index";
 import { protectedProcedure } from "@/server/trpc"
 import { maskWalletAddress } from "@/server/utils/wallet/wallet.utils";
 import { WalletPrivacySetting } from "@prisma/client";
@@ -24,6 +25,6 @@ export const fetchWallets = protectedProcedure
     ));
 
     return {
-      wallets,
+      wallets: wallets as DbWallet[],
     };
   });

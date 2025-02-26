@@ -45,10 +45,47 @@ export const trpc = createTRPCNext<AppRouter>({
   ssr: false,
 });
 
-export const trpcVanilla = createTRPCProxyClient<AppRouter>({
-  links: [
-    httpBatchLink({
-      url: `${getBaseUrl()}/api/trpc`,
-    }),
-  ],
-});
+export interface CreateTRPCClientOptions {
+  baseURL?: string;
+  trpcURL?: string;
+}
+
+export function createTRPCClient({
+  baseURL,
+  trpcURL,
+}: CreateTRPCClientOptions) {
+  let authToken: string | null = null;;
+
+  function getAuthToken() {
+    return authToken;
+  }
+
+  function setAuthToken(nextAuthToken: string | null) {
+    authToken = nextAuthToken || null;
+  }
+
+  const url = trpcURL || (baseURL ? `${baseURL}/api/trpc` : "");
+
+  if (!url) throw new Error("No `baseURL` or `trpcURL` provided.");
+
+  const client = createTRPCProxyClient<AppRouter>({
+    links: [
+      httpBatchLink({
+        url,
+        headers() {
+          return token
+            ? {
+                authorization: `Bearer ${authToken}`,
+              }
+            : {}
+        },
+      }),
+    ],
+  });
+
+  return {
+    client,
+    getAuthToken,
+    setAuthToken,
+  };
+}

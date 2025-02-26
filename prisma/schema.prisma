@@ -320,8 +320,8 @@ model Wallet {
 
   /// Information about the origin/source of this wallet:
   /// {
-  ///   type "imported" | "generated",
-  ///   from: "seedphrase" | "keyfile" | "binary"
+  ///   type "IMPORTED" | "GENERATED",
+  ///   from: "SEEDPHRASE" | "KEYFILE" | "BINARY"
   /// }
   source Json?
 

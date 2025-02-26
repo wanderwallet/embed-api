@@ -1,13 +1,14 @@
 import { protectedProcedure } from "@/server/trpc"
 import { z } from "zod"
-import { ChallengePurpose, WalletUsageStatus } from '@prisma/client';
+import { Challenge, ChallengePurpose, WalletUsageStatus } from '@prisma/client';
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
-import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
+import { ChallengeUtils, generateChangeValue } from "@/server/utils/challenge/challenge.utils";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 import { BackupUtils } from "@/server/utils/backup/backup.utils";
 import { Config } from "@/server/utils/config/config.constants";
 import { getShareHashValidator } from "@/server/utils/share/share.validators";
+import { DbWallet } from "@/index";
 
 export const RecoverWalletSchema = z.object({
   walletId: z.string().uuid(),
@@ -121,9 +122,34 @@ export const recoverWallet = protectedProcedure
       });
     }
 
-    await ctx.prisma.$transaction(async (tx) => {
+    const [
+      rotationChallenge,
+      wallet,
+    ] = await ctx.prisma.$transaction(async (tx) => {
       const deviceAndLocationId = await deviceAndLocationIdPromise;
       const dateNow = new Date();
+      const challengeValue = generateChangeValue();
+      const challengeUpsertData = {
+        type: Config.CHALLENGE_TYPE,
+        purpose: ChallengePurpose.SHARE_ROTATION,
+        value: challengeValue,
+        version: Config.CHALLENGE_VERSION,
+
+        // Relations:
+        userId: ctx.user.id,
+        walletId: ctx.user.id,
+      } as const satisfies Partial<Challenge>;
+
+      const rotationChallengePromise = tx.challenge.upsert({
+        where: {
+          userChallenges: {
+            userId: ctx.user.id,
+            purpose: ChallengePurpose.SHARE_ROTATION,
+          },
+        },
+        create: challengeUpsertData,
+        update: challengeUpsertData,
+      });
 
       const updateWalletStatsPromise = tx.wallet.update({
         where: {
@@ -136,7 +162,7 @@ export const recoverWallet = protectedProcedure
       });
 
       // TODO: How to limit the # of recoveries per user?
-      const registerWalletActivationPromise = tx.walletRecovery.create({
+      const registerWalletRecoveryPromise = tx.walletRecovery.create({
         data: {
           status: WalletUsageStatus.SUCCESSFUL,
           userId: ctx.user.id,
@@ -150,14 +176,17 @@ export const recoverWallet = protectedProcedure
         where: { id: challenge.id },
       });
 
-      return Promise.resolve([
+      return Promise.all([
+        rotationChallengePromise,
         updateWalletStatsPromise,
-        registerWalletActivationPromise,
+        registerWalletRecoveryPromise,
         deleteChallengePromise,
       ]);
     });
 
     return {
+      wallet: wallet as DbWallet,
       recoveryAuthShare: recoveryKeyShare.recoveryAuthShare,
+      rotationChallenge,
     };
   });

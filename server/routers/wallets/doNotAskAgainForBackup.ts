@@ -1,3 +1,4 @@
+import { DbWallet } from "@/index";
 import { protectedProcedure } from "@/server/trpc"
 import { z } from "zod"
 
@@ -19,6 +20,6 @@ export const doNotAskAgainForBackup = protectedProcedure
     });
 
     return {
-      wallet,
+      wallet: wallet as DbWallet,
     };
   });
