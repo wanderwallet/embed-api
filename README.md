@@ -93,6 +93,7 @@ We can probably remove/reset those records every month and only keep aggregated 
 **Share Recovery:**
 - ✅ generateWalletRecoveryChallenge
 - ✅ recoverWallet
+- ✅ registerAuthShare
 
 **Account Recovery:**
 - ✅ generateFetchRecoverableAccountsChallenge

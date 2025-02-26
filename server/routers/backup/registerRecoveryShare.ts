@@ -5,6 +5,7 @@ import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 import { BackupUtils } from "@/server/utils/backup/backup.utils";
 import { getShareHashValidator, getSharePublicKeyValidator, getShareValidator, validateShare } from "@/server/utils/share/share.validators";
+import { DbWallet } from "@/prisma/types/types";
 
 export const RegisterRecoveryShareInputSchema = z.object({
   walletId: z.string().uuid(),
@@ -44,7 +45,9 @@ export const registerRecoveryShare = protectedProcedure
       });
     }
 
-    await ctx.prisma.$transaction(async (tx) => {
+    const [
+      wallet
+    ] = await ctx.prisma.$transaction(async (tx) => {
       const deviceAndLocationId = await deviceAndLocationIdPromise;
       const dateNow = new Date();
 
@@ -85,7 +88,7 @@ export const registerRecoveryShare = protectedProcedure
     });
 
     return {
-      walletId: userWallet.id,
+      wallet: wallet as DbWallet,
       recoveryFileServerSignature,
     };
   });

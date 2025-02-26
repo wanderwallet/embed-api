@@ -1,13 +1,15 @@
 import { protectedProcedure } from "@/server/trpc"
 import { z } from "zod"
-import { ChallengePurpose } from '@prisma/client';
+import { ChallengePurpose, WalletUsageStatus } from '@prisma/client';
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
 import { getShareHashValidator, getSharePublicKeyValidator, getShareValidator } from "@/server/utils/share/share.validators";
+import { DbWallet } from "@/prisma/types/types";
+import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 
-export const RotateAuthShareSchema = z.object({
+export const RegisterAuthShareSchema = z.object({
   walletId: z.string().uuid(),
   authShare: getShareValidator(),
   deviceShareHash: getShareHashValidator(),
@@ -15,10 +17,17 @@ export const RotateAuthShareSchema = z.object({
   challengeSolution: z.string(), // Format validation implicit in `verifyChallenge()`.
 });
 
-export const rotateAuthShare = protectedProcedure
-  .input(RotateAuthShareSchema)
+export const registerAuthShare = protectedProcedure
+  .input(RegisterAuthShareSchema)
   .mutation(async ({ input, ctx }) => {
     const now = Date.now();
+    const deviceAndLocationIdPromise = getDeviceAndLocationId(ctx);
+
+    // TODO: If there were any other work shares on this device for this wallet, delete them.
+
+    // TODO: This wallet needs to be regenerated as well and the authShare updated. If this is not done after X
+    // "warnings", the Shards entry will be removed anyway.
+
 
     // This `SHARE_ROTATION` challenge will only exist if `activateWallet` created it automatically when
     // `shouldRotate = now - workKeyShare.sharesRotatedAt.getTime() >= Config.SHARE_ACTIVE_TTL_MS`, so we don't need to
@@ -72,8 +81,22 @@ export const rotateAuthShare = protectedProcedure
     const dateNow = new Date();
     const nextRotationAt = new Date(dateNow.getTime() + Config.SHARE_ACTIVE_TTL_MS);
 
-    await ctx.prisma.$transaction(async (tx) => {
-      const rotateWorkKeySharePromise = tx.workKeyShare.update({
+    const [
+      wallet
+    ] = await ctx.prisma.$transaction(async (tx) => {
+      const deviceAndLocationId = await deviceAndLocationIdPromise;
+
+      const updateWalletStatsPromise = tx.wallet.update({
+        where: {
+          id: input.walletId,
+        },
+        data: {
+          lastActivatedAt: dateNow,
+          totalActivations: { increment: 1 },
+        },
+      });
+
+      const rotateOrCreateWorkKeyShareAndRegisterWalletActivationPromise = tx.workKeyShare.update({
         where: {
           userSessionWorkShare: {
             userId: ctx.user.id,
@@ -88,6 +111,17 @@ export const rotateAuthShare = protectedProcedure
           deviceShareHash: input.deviceShareHash,
           deviceSharePublicKey: input.deviceSharePublicKey,
         }
+      }).then((workKeyShare) => {
+        // TODO: How to limit the # of activations per user?
+        return tx.walletActivation.create({
+          data: {
+            status: WalletUsageStatus.SUCCESSFUL,
+            userId: ctx.user.id,
+            walletId: input.walletId,
+            workKeyShareId: workKeyShare.id,
+            deviceAndLocationId,
+          },
+        });
       });
 
       const deleteChallengePromise = tx.challenge.delete({
@@ -95,12 +129,14 @@ export const rotateAuthShare = protectedProcedure
       });
 
       return Promise.all([
-        rotateWorkKeySharePromise,
+        updateWalletStatsPromise,
+        rotateOrCreateWorkKeyShareAndRegisterWalletActivationPromise,
         deleteChallengePromise,
       ]);
     });
 
     return {
+      wallet: wallet as DbWallet,
       nextRotationAt,
     };
   });
