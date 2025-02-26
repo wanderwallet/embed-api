@@ -9,7 +9,7 @@
     "db:migrate": "prisma migrate dev",
     "seed": "node -r ts-node/register --env-file=.env prisma/seed.ts",
     "db:postinstall": "prisma generate && prisma migrate deploy",
-    "postinstall": "prisma generate"
+    "postinstall": "npx prisma generate"
   },
   "dependencies": {
     "@prisma/client": "6.2.1",
