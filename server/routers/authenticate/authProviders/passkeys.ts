@@ -15,8 +15,12 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+function uint8ArrayToString(array: Uint8Array): string {
+  return Buffer.from(array).toString();
+}
+
 function stringToUint8Array(str: string): Uint8Array {
-  return new TextEncoder().encode(str);
+  return Buffer.from(str);
 }
 
 export const passkeysRoutes = {
@@ -105,7 +109,7 @@ export const passkeysRoutes = {
       await prisma.passkey.create({
         data: {
           credentialId: verification.registrationInfo.credential.id,
-          publicKey: new TextDecoder().decode(verification.registrationInfo.credential.publicKey),
+          publicKey: uint8ArrayToString(verification.registrationInfo.credential.publicKey),
           signCount: verification.registrationInfo.credential.counter,
           label: `Passkey created ${new Date().toLocaleString()}`,
           userId: userId,
