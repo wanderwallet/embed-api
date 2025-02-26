@@ -1,0 +1,7 @@
+{
+  "build": {
+    "env": {
+      "DISABLE_PRISMA_ERD": "true"
+    }
+  }
+}
