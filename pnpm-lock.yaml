@@ -56,6 +56,9 @@ dependencies:
   react-dom:
     specifier: ^18
     version: 18.3.1(react@18.3.1)
+  server:
+    specifier: link:@types/@simplewebauthn/server
+    version: link:@types/@simplewebauthn/server
   zod:
     specifier: ^3.24.1
     version: 3.24.2

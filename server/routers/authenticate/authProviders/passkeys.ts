@@ -3,7 +3,7 @@ import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
 } from "@simplewebauthn/server";
-import { supabase } from "@/lib/supabaseClient";
+import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { publicProcedure } from "@/server/trpc";
@@ -11,7 +11,7 @@ import {
   relyingPartyID,
   relyingPartyName,
   relyingPartyOrigin,
-} from "@/services/webauthnConfig";
+} from "@/server/services/webauthnConfig";
 
 function stringToUint8Array(str: string): Uint8Array {
   return new TextEncoder().encode(str);
@@ -42,6 +42,8 @@ export const passkeysRoutes = {
         },
       });
 
+      const supabase = await createServerClient();
+
       // Store challenge in the database
       const { error } = await supabase.from("Challenges").insert({
         type: "SIGNATURE",
@@ -68,6 +70,8 @@ export const passkeysRoutes = {
     )
     .mutation(async ({ input }) => {
       const { userId, attestationResponse } = input;
+
+      const supabase = await createServerClient();
 
       // Retrieve the challenge
       const { data: challenge, error: challengeError } = await supabase

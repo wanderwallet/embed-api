@@ -29,6 +29,7 @@
     "next": "14.2.16",
     "react": "^18",
     "react-dom": "^18",
+    "server": "link:@types/@simplewebauthn/server",
     "zod": "^3.24.1"
   },
   "devDependencies": {

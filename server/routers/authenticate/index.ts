@@ -1,12 +1,12 @@
 import { publicProcedure, protectedProcedure } from "../../trpc";
-import { getUser } from "../../../lib/supabaseClient";
+import { getUser } from "@/server/services/auth";
 import {
   loginWithGoogle,
   logoutUser,
   refreshSession,
   startAuthenticateWithPasskeys,
   verifyAuthenticateWithPasskeys,
-} from "../../../services/auth";
+} from "@/server/services/auth";
 import { z } from "zod";
 import { googleRoutes } from "./authProviders/google";
 
