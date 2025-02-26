@@ -1,12 +1,13 @@
 import { publicProcedure, protectedProcedure } from "../../trpc";
-import { getUser, supabase } from "../../../lib/supabaseClient";
+import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
+import { getUser } from "@/server/services/auth";
 import {
   loginWithGoogle,
   logoutUser,
   refreshSession,
   startAuthenticateWithPasskeys,
   verifyAuthenticateWithPasskeys,
-} from "../../../services/auth";
+} from "@/server/services/auth";
 import { z } from "zod";
 import { googleRoutes } from "./authProviders/google";
 
@@ -26,6 +27,7 @@ export const authenticateRouter = {
       z.object({ authProviderType: z.string(), options: z.any().optional() })
     )
     .mutation(async ({ input }) => {
+      const supabase = await createServerClient();
       let response;
       switch (input.authProviderType) {
         case AuthProviderType.GOOGLE:

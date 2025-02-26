@@ -1,6 +1,6 @@
 "use client"
 
-import { trpc } from "@/services/trpc"
+import { trpc } from "@/client/utils/trpc/trpc-client-client"
 
 function RootLayout({ children }: { children: React.ReactNode }) {
   return (

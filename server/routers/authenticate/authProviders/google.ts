@@ -1,5 +1,5 @@
 import { publicProcedure } from "@/server/trpc"
-import { handleGoogleCallback } from "@/services/auth"
+import { handleGoogleCallback } from "@/server/services/auth"
 
 export const googleRoutes = {
   handleGoogleCallback: publicProcedure.query(async () => {
