@@ -11,17 +11,17 @@ import {
   relyingPartyName,
   relyingPartyOrigin,
 } from "@/server/services/webauthnConfig";
-import { ChallengePurpose, ChallengeType, PrismaClient } from "@prisma/client";
+import { PrismaClient } from "@prisma/client";
+import { 
+  createChallenge, 
+  getLatestChallenge, 
+  validateChallenge, 
+  deleteChallenge,
+  stringToUint8Array,
+  uint8ArrayToString
+} from "@/server/services/auth";
 
 const prisma = new PrismaClient();
-
-function uint8ArrayToString(array: Uint8Array): string {
-  return Buffer.from(array).toString();
-}
-
-function stringToUint8Array(str: string): Uint8Array {
-  return Buffer.from(str);
-}
 
 export const passkeysRoutes = {
   startRegistration: publicProcedure
@@ -49,17 +49,8 @@ export const passkeysRoutes = {
         },
       });
 
-      // Store challenge in the database
-      await prisma.challenge.create({
-        data: {
-          type: ChallengeType.SIGNATURE,
-          purpose: ChallengePurpose.AUTHENTICATION,
-          value: options.challenge,
-          version: "1.0",
-          userId: userId,
-          walletId: walletId,
-        },
-      });
+      // Store challenge using the shared utility
+      await createChallenge(userId, walletId, options.challenge);
 
       return options;
     }),
@@ -73,57 +64,48 @@ export const passkeysRoutes = {
     .mutation(async ({ input }) => {
       const { userId, attestationResponse } = input;
 
-      // Retrieve the challenge
-      const challenge = await prisma.challenge.findFirst({
-        where: {
-          userId: userId,
-          purpose: ChallengePurpose.ACCOUNT_RECOVERY,
-        },
-        orderBy: {
-          createdAt: 'desc'
+      try {
+        // Get and validate the challenge using shared utilities
+        const challenge = await getLatestChallenge(userId);
+        await validateChallenge(challenge);
+
+        if (!challenge) {
+          throw new TRPCError({ code: "NOT_FOUND", message: "Challenge not found" });
         }
-      });
 
-      if (!challenge) {
-        throw new TRPCError({
-          code: "NOT_FOUND",
-          message: "Challenge not found",
+        // Verify the response
+        const verification = await verifyRegistrationResponse({
+          response: attestationResponse,
+          expectedChallenge: challenge.value,
+          expectedOrigin: relyingPartyOrigin,
+          expectedRPID: relyingPartyID,
         });
-      }
 
-      // Verify the response
-      const verification = await verifyRegistrationResponse({
-        response: attestationResponse,
-        expectedChallenge: challenge.value,
-        expectedOrigin: relyingPartyOrigin,
-        expectedRPID: relyingPartyID,
-      });
+        if (!verification.verified || !verification.registrationInfo) {
+          throw new TRPCError({
+            code: "FORBIDDEN",
+            message: "Verification failed",
+          });
+        }
 
-      if (!verification.verified || !verification.registrationInfo) {
-        throw new TRPCError({
-          code: "FORBIDDEN",
-          message: "Verification failed",
+        // Save the credential to Passkey table
+        await prisma.passkey.create({
+          data: {
+            credentialId: verification.registrationInfo.credential.id,
+            publicKey: uint8ArrayToString(verification.registrationInfo.credential.publicKey),
+            signCount: verification.registrationInfo.credential.counter,
+            label: `Passkey created ${new Date().toLocaleString()}`,
+            userId: userId,
+          },
         });
+
+        // Delete the challenge using shared utility
+        await deleteChallenge(challenge.id);
+
+        return { verified: true };
+      } catch (error) {
+        // Re-throw the error
+        throw error;
       }
-
-      // Save the credential to the new Passkey table
-      await prisma.passkey.create({
-        data: {
-          credentialId: verification.registrationInfo.credential.id,
-          publicKey: uint8ArrayToString(verification.registrationInfo.credential.publicKey),
-          signCount: verification.registrationInfo.credential.counter,
-          label: `Passkey created ${new Date().toLocaleString()}`,
-          userId: userId,
-        },
-      });
-
-      // Delete the challenge
-      await prisma.challenge.delete({
-        where: {
-          id: challenge.id,
-        },
-      });
-
-      return { verified: true };
     }),
 };

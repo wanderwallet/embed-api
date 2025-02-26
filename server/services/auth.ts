@@ -5,9 +5,78 @@ import {
 import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import { TRPCError } from "@trpc/server";
 import { relyingPartyID, relyingPartyOrigin } from "./webauthnConfig";
-import { PrismaClient } from "@prisma/client";
+import { Challenge, ChallengePurpose, ChallengeType, PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
+
+export async function createChallenge(userId: string, walletId: string = "", challenge: string) {
+  return prisma.challenge.create({
+    data: {
+      type: ChallengeType.SIGNATURE,
+      purpose: ChallengePurpose.AUTHENTICATION,
+      value: challenge,
+      version: "1.0",
+      userId: userId,
+      walletId: walletId,
+    },
+  });
+}
+
+export async function getLatestChallenge(userId: string) {
+  return prisma.challenge.findFirst({
+    where: {
+      userId: userId,
+      type: ChallengeType.SIGNATURE,
+    },
+    orderBy: {
+      createdAt: 'desc'
+    }
+  });
+}
+
+export async function validateChallenge(challenge: Challenge | null) {
+  if (!challenge) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Challenge not found" });
+  }
+
+  // Validate challenge expiration (30 minutes for passkeys)
+  const currentTime = new Date();
+  const challengeCreatedAt = new Date(challenge.createdAt);
+  const timeDifferenceMs = currentTime.getTime() - challengeCreatedAt.getTime();
+  const passkeyChallengeExpirationMs = 30 * 60 * 1000; // 30 minutes in milliseconds
+  
+  if (timeDifferenceMs > passkeyChallengeExpirationMs) {
+    // Delete expired challenge
+    await prisma.challenge.delete({
+      where: {
+        id: challenge.id,
+      },
+    });
+    
+    throw new TRPCError({
+      code: "FORBIDDEN",
+      message: "Challenge has expired. Please try again.",
+    });
+  }
+
+  return challenge;
+}
+
+export async function deleteChallenge(challengeId: string) {
+  return prisma.challenge.delete({
+    where: {
+      id: challengeId,
+    },
+  });
+}
+
+export function uint8ArrayToString(array: Uint8Array): string {
+  return Buffer.from(array).toString();
+}
+
+export function stringToUint8Array(str: string): Uint8Array {
+  return Buffer.from(str);
+}
 
 export async function startAuthenticateWithPasskeys(
   authProviderType: string,
@@ -46,17 +115,8 @@ export async function startAuthenticateWithPasskeys(
     userVerification: "preferred",
   });
 
-  // Store the challenge
-  await prisma.challenge.create({
-    data: {
-      type: "SIGNATURE",
-      purpose: "ACTIVATION",
-      value: options.challenge,
-      version: "1.0",
-      userId: userId,
-      walletId: "", // You'll need to handle this appropriately
-    },
-  });
+  // Use the new utility function
+  await createChallenge(userId, "", options.challenge);
 
   return options;
 }
@@ -74,20 +134,9 @@ export async function verifyAuthenticateWithPasskeys(
     });
   }
 
-  // Retrieve the challenge
-  const challenge = await prisma.challenge.findFirst({
-    where: {
-      userId: userId,
-      purpose: "ACTIVATION",
-    },
-    orderBy: {
-      createdAt: 'desc'
-    }
-  });
-
-  if (!challenge) {
-    throw new TRPCError({ code: "NOT_FOUND", message: "Challenge not found" });
-  }
+  // Use the new utility functions
+  const challenge = await getLatestChallenge(userId);
+  await validateChallenge(challenge);
 
   // Retrieve the matching passkey
   const passkey = await prisma.passkey.findFirst({
@@ -99,6 +148,10 @@ export async function verifyAuthenticateWithPasskeys(
 
   if (!passkey) {
     throw new TRPCError({ code: "NOT_FOUND", message: "Passkey not found" });
+  }
+
+  if (!challenge) {
+    throw new TRPCError({ code: "NOT_FOUND", message: "Challenge not found" });
   }
 
   // Convert the passkey to the format expected by verifyAuthenticationResponse
@@ -130,11 +183,7 @@ export async function verifyAuthenticateWithPasskeys(
   });
 
   // Delete the challenge
-  await prisma.challenge.delete({
-    where: {
-      id: challenge.id,
-    },
-  });
+  await deleteChallenge(challenge.id);
 
   return { verified: true };
 }

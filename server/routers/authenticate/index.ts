@@ -9,15 +9,7 @@ import {
 } from "@/server/services/auth";
 import { z } from "zod";
 import { googleRoutes } from "./authProviders/google";
-
-enum AuthProviderType {
-  PASSKEYS = "PASSKEYS",
-  EMAIL_N_PASSWORD = "EMAIL_N_PASSWORD",
-  GOOGLE = "GOOGLE",
-  FACEBOOK = "FACEBOOK",
-  X = "X",
-  APPLE = "APPLE",
-}
+import { AuthProviderType } from "@prisma/client";
 
 export const authenticateRouter = {
   ...googleRoutes,
