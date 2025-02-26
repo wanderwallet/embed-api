@@ -5,7 +5,7 @@ import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { validateWallet } from "@/server/utils/wallet/wallet.validators";
 import { maskWalletAddress } from "@/server/utils/wallet/wallet.utils";
-import { DbWallet } from "@/index";
+import { DbWallet } from "@/prisma/types/types";
 
 export const MakeWalletPublicInputSchema = z.object({
   walletId: z.string().uuid(),

@@ -6,7 +6,7 @@ import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
 import { getShareHashValidator, getSharePublicKeyValidator, getShareValidator } from "@/server/utils/share/share.validators";
-import { DbWallet } from "@/index";
+import { DbWallet } from "@/prisma/types/types";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 
 export const RegisterAuthShareSchema = z.object({

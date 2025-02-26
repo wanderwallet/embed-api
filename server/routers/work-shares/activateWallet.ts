@@ -6,7 +6,7 @@ import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils, generateChangeValue } from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
-import { DbWallet } from "@/index";
+import { DbWallet } from "@/prisma/types/types";
 
 export const ActivateWalletSchema = z.object({
   walletId: z.string().uuid(),

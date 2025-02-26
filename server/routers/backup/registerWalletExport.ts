@@ -4,7 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ExportType } from "@prisma/client";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
-import { DbWallet } from "@/index";
+import { DbWallet } from "@/prisma/types/types";
 
 export const RegisterWalletExportInputSchema = z.object({
   type: z.nativeEnum(ExportType),

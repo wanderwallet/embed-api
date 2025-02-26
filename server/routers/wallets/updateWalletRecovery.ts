@@ -3,7 +3,7 @@ import { z } from "zod"
 import { WalletPrivacySetting, WalletStatus } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
-import { DbWallet } from "@/index";
+import { DbWallet } from "@/prisma/types/types";
 
 export const UpdateWalletRecoveryInputSchema = z.object({
   walletId: z.string().uuid(),

@@ -1,7 +1,7 @@
 import { protectedProcedure } from "@/server/trpc"
 import { z } from "zod"
 import { WalletIdentifierType } from "@prisma/client";
-import { DbWallet } from "@/index";
+import { DbWallet } from "@/prisma/types/types";
 
 export const UpdateWalletInfoInputSchema = z.object({
   walletId: z.string().uuid(),

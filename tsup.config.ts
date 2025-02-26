@@ -8,7 +8,7 @@ export default defineConfig({
   sourcemap: true,
   clean: true,
   dts: true,
-  entry: ["./index.ts"],
+  entry: ["./sdk/index.ts"],
   ignoreWatch: ["./dist"],
   tsconfig: path.resolve(__dirname, "./tsconfig-sdk.json"),
 })

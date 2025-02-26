@@ -1,4 +1,4 @@
-import { DbWallet } from "@/index";
+import { DbWallet } from "@/prisma/types/types";
 import { protectedProcedure } from "@/server/trpc"
 import { z } from "zod"
 

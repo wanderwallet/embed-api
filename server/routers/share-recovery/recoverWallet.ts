@@ -8,7 +8,7 @@ import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-
 import { BackupUtils } from "@/server/utils/backup/backup.utils";
 import { Config } from "@/server/utils/config/config.constants";
 import { getShareHashValidator } from "@/server/utils/share/share.validators";
-import { DbWallet } from "@/index";
+import { DbWallet } from "@/prisma/types/types";
 
 export const RecoverWalletSchema = z.object({
   walletId: z.string().uuid(),
