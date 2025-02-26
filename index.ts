@@ -41,6 +41,6 @@ export type {
   User as SupabaseUser,
 } from "@supabase/supabase-js";
 
-export { createTRPCClient } from "@/client/utils/trpc/trpc-client-client";
+export { createTRPCClient } from "@/client/utils/trpc/trpc-client.utils";
 
 export { ChallengeClientV1 } from "@/server/utils/challenge/clients/challenge-client-v1";

@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react"
-import { setAuthToken, trpc } from "@/client/utils/trpc/trpc-client-client"
+import { setAuthToken, trpc } from "@/client/utils/trpc/trpc-client"
 import { supabase } from "@/client/utils/supabase/supabase-client-client"
 
 export function useAuth() {
