@@ -45,7 +45,7 @@ CREATE TYPE "ChallengePurpose" AS ENUM ('ACTIVATION', 'SHARE_RECOVERY', 'SHARE_R
 
 -- CreateTable
 CREATE TABLE "UserProfiles" (
-    "supId" TEXT NOT NULL,
+    "supId" UUID NOT NULL,
     "supEmail" VARCHAR(255),
     "supPhone" VARCHAR(255),
     "name" VARCHAR(100),
@@ -66,7 +66,7 @@ CREATE TABLE "UserProfiles" (
 
 -- CreateTable
 CREATE TABLE "Developers" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "plan" VARCHAR(50) NOT NULL DEFAULT 'free',
     "planStartedAt" VARCHAR(50) NOT NULL DEFAULT 'free',
     "apiKey" VARCHAR(255) NOT NULL,
@@ -76,14 +76,14 @@ CREATE TABLE "Developers" (
     "taxId" TEXT,
     "address" TEXT,
     "countryCode" VARCHAR(2),
-    "userId" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
 
     CONSTRAINT "Developers_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Bills" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "type" "BillType" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "discount" DOUBLE PRECISION NOT NULL,
@@ -92,27 +92,27 @@ CREATE TABLE "Bills" (
     "monthlySessions" INTEGER NOT NULL,
     "details" JSONB NOT NULL,
     "userOverrides" JSONB NOT NULL,
-    "developerId" TEXT NOT NULL,
+    "developerId" UUID NOT NULL,
 
     CONSTRAINT "Bills_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Applications" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "description" VARCHAR(255),
     "domains" VARCHAR(255)[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "settings" JSONB NOT NULL,
-    "developerId" TEXT NOT NULL,
+    "developerId" UUID NOT NULL,
 
     CONSTRAINT "Applications_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Wallets" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "status" "WalletStatus" NOT NULL DEFAULT 'ENABLED',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -140,61 +140,61 @@ CREATE TABLE "Wallets" (
     "totalBackups" INTEGER NOT NULL DEFAULT 0,
     "totalRecoveries" INTEGER NOT NULL DEFAULT 0,
     "totalExports" INTEGER NOT NULL DEFAULT 0,
-    "userId" TEXT NOT NULL,
-    "deviceAndLocationId" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
+    "deviceAndLocationId" UUID NOT NULL,
 
     CONSTRAINT "Wallets_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "WalletActivations" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "status" "WalletUsageStatus" NOT NULL,
     "activatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "userId" TEXT NOT NULL,
-    "walletId" TEXT NOT NULL,
-    "workKeyShareId" TEXT,
-    "deviceAndLocationId" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
+    "walletId" UUID NOT NULL,
+    "workKeyShareId" UUID,
+    "deviceAndLocationId" UUID NOT NULL,
 
     CONSTRAINT "WalletActivations_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "WalletRecoveries" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "status" "WalletUsageStatus" NOT NULL,
     "recoveredAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "userId" TEXT NOT NULL,
-    "walletId" TEXT NOT NULL,
-    "recoveryKeyShareId" TEXT,
-    "deviceAndLocationId" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
+    "walletId" UUID NOT NULL,
+    "recoveryKeyShareId" UUID,
+    "deviceAndLocationId" UUID NOT NULL,
 
     CONSTRAINT "WalletRecoveries_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "WalletExports" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "type" "ExportType" NOT NULL,
     "exportedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "userId" TEXT NOT NULL,
-    "walletId" TEXT NOT NULL,
-    "deviceAndLocationId" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
+    "walletId" UUID NOT NULL,
+    "deviceAndLocationId" UUID NOT NULL,
 
     CONSTRAINT "WalletExports_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "WorkKeyShares" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "sharesRotatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "rotationWarnings" INTEGER NOT NULL DEFAULT 0,
     "authShare" VARCHAR(4096) NOT NULL,
     "deviceShareHash" VARCHAR(20) NOT NULL,
     "deviceSharePublicKey" VARCHAR(1024) NOT NULL,
-    "userId" TEXT NOT NULL,
-    "walletId" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
+    "walletId" UUID NOT NULL,
     "sessionId" UUID NOT NULL,
 
     CONSTRAINT "WorkKeyShares_pkey" PRIMARY KEY ("id")
@@ -202,35 +202,35 @@ CREATE TABLE "WorkKeyShares" (
 
 -- CreateTable
 CREATE TABLE "RecoveryKeyShares" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "recoveryAuthShare" TEXT NOT NULL,
     "recoveryBackupShareHash" VARCHAR(20) NOT NULL,
     "recoveryBackupSharePublicKey" VARCHAR(1024) NOT NULL,
-    "userId" TEXT NOT NULL,
-    "walletId" TEXT NOT NULL,
-    "deviceAndLocationId" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
+    "walletId" UUID NOT NULL,
+    "deviceAndLocationId" UUID NOT NULL,
 
     CONSTRAINT "RecoveryKeyShares_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "Challenges" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "type" "ChallengeType" NOT NULL,
     "purpose" "ChallengePurpose" NOT NULL,
     "value" VARCHAR(255) NOT NULL,
     "version" VARCHAR(50) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "userId" TEXT NOT NULL,
-    "walletId" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
+    "walletId" UUID NOT NULL,
 
     CONSTRAINT "Challenges_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "AnonChallenges" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "value" VARCHAR(255) NOT NULL,
     "version" VARCHAR(50) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -242,14 +242,14 @@ CREATE TABLE "AnonChallenges" (
 
 -- CreateTable
 CREATE TABLE "DevicesAndLocations" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deviceNonce" VARCHAR(255) NOT NULL,
     "ip" INET NOT NULL,
     "countryCode" VARCHAR(2) NOT NULL,
     "userAgent" TEXT NOT NULL,
-    "userId" TEXT,
-    "applicationId" TEXT,
+    "userId" UUID,
+    "applicationId" UUID,
 
     CONSTRAINT "DevicesAndLocations_pkey" PRIMARY KEY ("id")
 );
@@ -263,26 +263,26 @@ CREATE TABLE "Sessions" (
     "ip" INET NOT NULL,
     "countryCode" VARCHAR(2) NOT NULL DEFAULT '',
     "userAgent" VARCHAR(500) NOT NULL,
-    "userId" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
 
     CONSTRAINT "Sessions_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "LoginAttempts" (
-    "id" TEXT NOT NULL,
+    "id" UUID NOT NULL,
     "rejectionReason" VARCHAR(255) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "supIdentityId" TEXT,
-    "userId" TEXT NOT NULL,
-    "deviceAndLocationId" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
+    "deviceAndLocationId" UUID NOT NULL,
 
     CONSTRAINT "LoginAttempts_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
 CREATE TABLE "_ApplicationToSession" (
-    "A" TEXT NOT NULL,
+    "A" UUID NOT NULL,
     "B" UUID NOT NULL,
 
     CONSTRAINT "_ApplicationToSession_AB_pkey" PRIMARY KEY ("A","B")
