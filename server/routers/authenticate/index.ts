@@ -59,7 +59,9 @@ export const authenticateRouter = {
             email: input.options.email,
             password: input.options.password,
           });
-          if (error) throw new Error(error.message);
+          if (error) {
+            throw new Error(error.message);
+          }
           return { user: data.user };
 
         default:
