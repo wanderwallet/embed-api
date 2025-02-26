@@ -1,6 +1,5 @@
 
-// Types:
-
+// (DB) Types:
 
 import { WalletInfo, WalletSource } from "@/server/utils/wallet/wallet.types";
 
@@ -13,34 +12,38 @@ export interface DbWallet extends Omit<Wallet, "info" | "source"> {
   source: null | WalletSource;
 }
 
-export type { WalletInfo, WalletSource } from "@/server/utils/wallet/wallet.types";
+export type { WalletInfo, WalletSource };
 
 export type {
-  UserProfile as DbUserProfile,
-  Session as DbSession,
   Challenge as DbChallenge,
+  Session as DbSession,
+  UserProfile as DbUserProfile,
 } from "@prisma/client";
 
-import type { RecoverableAccount } from "@/server/routers/account-recovery/fetchRecoverableAccounts";
+export type { RecoverableAccount } from "@/server/routers/account-recovery/fetchRecoverableAccounts";
 
-export type { RecoverableAccount };
-
-// Enums:
+// (DB) Enums:
 
 export {
-  WalletStatus,
-  WalletPrivacySetting,
-  Chain,
   AuthProviderType,
+  Chain,
   ExportType,
-  WalletSourceType,
+  WalletPrivacySetting,
   WalletSourceFrom,
+  WalletSourceType,
+  WalletStatus,
 } from "@prisma/client";
+
+// Auth:
 
 export type {
   User as SupabaseUser,
 } from "@supabase/supabase-js";
 
+// Clients:
+
 export { createTRPCClient } from "@/client/utils/trpc/trpc-client.utils";
+
+export { createSupabaseClient } from "@/client/utils/supabase/supabase-client.utils";
 
 export { ChallengeClientV1 } from "@/server/utils/challenge/clients/challenge-client-v1";

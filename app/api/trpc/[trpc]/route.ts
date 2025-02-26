@@ -18,10 +18,10 @@ const handler = async (req: NextRequest) => {
   })
 
   // TODO: Remove if CORS headers not needed (or transfer to a separate config file)
-  response.headers.append("Access-Control-Allow-Origin", "*")
-  response.headers.append("Access-Control-Request-Method", "*")
-  response.headers.append("Access-Control-Allow-Methods", "OPTIONS, GET, POST")
-  response.headers.append("Access-Control-Allow-Headers", "*")
+  // response.headers.append("Access-Control-Allow-Origin", "*")
+  // response.headers.append("Access-Control-Request-Method", "*")
+  // response.headers.append("Access-Control-Allow-Methods", "OPTIONS, GET, POST")
+  // response.headers.append("Access-Control-Allow-Headers", "*")
 
   return response
 }

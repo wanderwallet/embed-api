@@ -24,7 +24,7 @@ export const authenticateRouter = {
   .mutation(async ({input}) => {
     let url = ''
 
-    if(AuthProviderType.GOOGLE === input.authProviderType){
+    if (AuthProviderType.GOOGLE === input.authProviderType){
         url = await loginWithGoogle(input.authProviderType)
 
         console.log("URL =", url);
