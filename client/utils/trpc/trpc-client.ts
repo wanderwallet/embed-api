@@ -1,6 +1,6 @@
-import { createTRPCNext } from "@trpc/next"
-import { httpBatchLink } from "@trpc/client"
-import type { AppRouter } from "@/server/routers/_app"
+import { createTRPCNext } from "@trpc/next";
+import { httpBatchLink } from "@trpc/client";
+import type { AppRouter } from "@/server/routers/_app";
 
 function getBaseUrl() {
   if (typeof window !== "undefined") return "";
@@ -46,6 +46,9 @@ export const trpc = createTRPCNext<AppRouter>({
               ? {
                   authorization: `Bearer ${token}`,
                   "x-device-nonce": deviceNonce || "",
+                  "x-application-id":
+                    process.env.NEXT_PUBLIC_APPLICATION_ID || "",
+                  "x-api-key": process.env.NEXT_PUBLIC_API_KEY || "",
                 }
               : {};
           },

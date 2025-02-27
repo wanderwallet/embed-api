@@ -1,11 +1,13 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  provider   = "postgresql"
+  url        = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl  = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  extensions = [pgcrypto]
 }
 
 enum AuthProviderType {
@@ -108,11 +110,22 @@ enum ChallengePurpose {
   ACCOUNT_RECOVERY
 }
 
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
 // TODO: Document index usages.
 
 /**
  * model AuthMethod {
- * id            String           @id @default(uuid()) @db.Uuid
+ * id            String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
  * /// Auth providers typically create a new "user" for each different authentication method, so we keep its ID here.
  * /// This is typically stored in the `sub` property of an ID Token (e.g. Auth0).
  * providerId    String           @db.VarChar(255)
@@ -137,7 +150,7 @@ enum ChallengePurpose {
 model UserProfile {
   // Fields synced automatically from `auth.users`:
 
-  supId    String  @id @default(uuid()) @db.Uuid
+  supId    String  @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   supEmail String? @db.VarChar(255)
   supPhone String? @db.VarChar(255)
 
@@ -149,7 +162,7 @@ model UserProfile {
   phone       String?   @db.VarChar(255)
   picture     String?   @db.VarChar(255)
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt()
+  updatedAt   DateTime  @updatedAt
   recoveredAt DateTime?
 
   // Settings:
@@ -172,8 +185,8 @@ model UserProfile {
   /// If a request is rejected due to countryFilterSetting, include or hide the details in the error.
   countryPrivacySetting          FilterPrivacySetting?       @default(HIDE_DETAILS)
 
-  developer              Developer?
-  // authMethods            AuthMethod[]
+  organizations          Organization[]
+  teamMemberships        TeamMember[]
   wallets                Wallet[]
   walletActivations      WalletActivation[]
   walletRecoveries       WalletRecovery[]
@@ -188,33 +201,8 @@ model UserProfile {
   @@map("UserProfiles")
 }
 
-model Developer {
-  id            String   @id @default(uuid()) @db.Uuid
-  plan          String   @default("free") @db.VarChar(50)
-  planStartedAt String   @default("free") @db.VarChar(50)
-  apiKey        String   @unique @db.VarChar(255)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt()
-
-  // Billing Information:
-  name        String?
-  taxId       String?
-  address     String?
-  /// ISO 3166-1 alpha-2 code
-  countryCode String? @db.VarChar(2)
-
-  applications Application[]
-  bills        Bill[]
-
-  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId      String      @unique @db.Uuid
-
-  @@index([apiKey])
-  @@map("Developers")
-}
-
 model Bill {
-  id              String   @id @default(uuid()) @db.Uuid
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   type            BillType
   createdAt       DateTime @default(now())
   /// Discount %, [0, 1) range.
@@ -238,42 +226,43 @@ model Bill {
   /// }
   userOverrides Json
 
-  developer   Developer @relation(fields: [developerId], references: [id], onDelete: Cascade)
-  developerId String    @db.Uuid
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String @db.Uuid
 
-  @@index([developerId])
+  @@index([teamId])
   @@map("Bills")
 }
 
 model Application {
-  id          String   @id @default(uuid()) @db.Uuid
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @db.VarChar(100)
   description String?  @db.VarChar(255)
-  domains     String[] @db.VarChar(255) // TODO: Consider separating domains to add tags/label to them (e.g. staging, etc.)
+  domains     String[] @db.VarChar(255)
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt()
+  updatedAt   DateTime @updatedAt
 
-  /// Different customization options developers can set in their apps:
+  /// Different customization options teams can set in their apps:
   // TODO: Document its shape once defined.
   settings Json
 
   DeviceAndLocation DeviceAndLocation[]
   Session           Session[]
+  apiKeys           ApiKey[] // Application-specific API keys
 
-  // TODO: We might want to change this so that Applications can be shared to more than one Developer? But probably
-  // later, and consider adding teams at that point. Or replace Developer with Team.
-  developer   Developer @relation(fields: [developerId], references: [id], onDelete: Cascade)
-  developerId String    @db.Uuid
+  // Each application belongs to exactly one team
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String @db.Uuid
 
-  @@index([developerId])
+  @@index([teamId])
   @@map("Applications")
 }
 
 model Wallet {
-  id        String       @id @default(uuid()) @db.Uuid
+  id        String       @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   /// This must be set to READONLY if publicKey is not set.
   status    WalletStatus @default(ENABLED)
   createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt()
+  updatedAt DateTime     @updatedAt
   chain     Chain
   address   String       @db.VarChar(255)
   /// Can (not must) be empty for READONLY wallets. B64 string. 1024 just to be safe (e.g. Arweave wallet.owner = 683 characters).
@@ -354,7 +343,7 @@ model Wallet {
 }
 
 model WalletActivation {
-  id          String            @id @default(uuid()) @db.Uuid
+  id          String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   status      WalletUsageStatus
   activatedAt DateTime          @default(now())
 
@@ -376,7 +365,7 @@ model WalletActivation {
 }
 
 model WalletRecovery {
-  id          String            @id @default(uuid()) @db.Uuid
+  id          String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   status      WalletUsageStatus
   recoveredAt DateTime          @default(now())
 
@@ -398,7 +387,7 @@ model WalletRecovery {
 }
 
 model WalletExport {
-  id         String     @id @default(uuid()) @db.Uuid
+  id         String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   type       ExportType
   exportedAt DateTime   @default(now())
 
@@ -420,7 +409,7 @@ model WalletExport {
 /// regularly. This means a WorkKeyShare is linked to a specific deviceNonce, userId and walletId, and optionally to a Session (optionally because the session
 /// might be closed, but the deviceNonce and deviceShare stay on the device).
 model WorkKeyShare {
-  id               String   @id @default(uuid()) @db.Uuid
+  id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   createdAt        DateTime @default(now())
   sharesRotatedAt  DateTime @default(now())
   rotationWarnings Int      @default(0)
@@ -453,7 +442,7 @@ model WorkKeyShare {
 /// RecoveryKeyShares are rarely/occasionally used to reconstruct users' private keys on any device by combining them with their recoveryBackupShare (downloaded
 /// as a file), and are not rotated.
 model RecoveryKeyShare {
-  id        String   @id @default(uuid()) @db.Uuid
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   createdAt DateTime @default(now())
 
   /// Yes, Arweave private keys are humongous, 3168 characters as base64, so 4096 just to be safe.
@@ -481,7 +470,7 @@ model RecoveryKeyShare {
 
 /// See `challenge.utils.ts` and `challenge-client-v1.ts` for details on how the challenges are generated and validated.
 model Challenge {
-  id        String           @id @default(uuid()) @db.Uuid
+  id        String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   type      ChallengeType
   purpose   ChallengePurpose
   /// We use a 128 byte buffer, which translates to 172 characters in base64, so 255 to be safe.
@@ -503,7 +492,7 @@ model Challenge {
 
 /// Used in `generateFetchRecoverableAccountsChallenge()`
 model AnonChallenge {
-  id        String   @id @default(uuid()) @db.Uuid
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   value     String   @db.VarChar(255)
   version   String   @db.VarChar(50)
   createdAt DateTime @default(now())
@@ -517,7 +506,7 @@ model AnonChallenge {
 /// userId-deviceNonce-ip-userAgent is used to make sure we reuse DeviceAndLocation rows when nothing has changed. Note this entity is not meant to be updated
 /// when any of those fields change (in contrast to `Session`).
 model DeviceAndLocation {
-  id          String   @id @default(uuid()) @db.Uuid
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   createdAt   DateTime @default(now())
   deviceNonce String   @db.VarChar(255)
   /// IPv6 or IPv4-mapped address
@@ -548,9 +537,9 @@ model DeviceAndLocation {
 /// A Session represents an active session. The unique constraint on userId-deviceNonce makes sure we only have one session on a given device, and forces as to
 /// maintain ip and userAgent updated.
 model Session {
-  id          String   @id @default(uuid()) @db.Uuid
+  id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt()
+  updatedAt   DateTime @updatedAt
   deviceNonce String   @default("") @db.VarChar(255)
   // IPv6 or IPv4-mapped address
   ip          String   @db.Inet
@@ -572,7 +561,7 @@ model Session {
 }
 
 model AuthenticationAttempt {
-  id              String   @id @default(uuid()) @db.Uuid
+  id              String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   rejectionReason String   @db.VarChar(255)
   createdAt       DateTime @default(now())
 
@@ -591,4 +580,86 @@ model AuthenticationAttempt {
   @@index([userId])
   @@index([createdAt])
   @@map("LoginAttempts")
+}
+
+model Organization {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String   @db.VarChar(100)
+  slug      String   @unique @db.VarChar(50)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teams Team[]
+
+  // Organization owner
+  owner   UserProfile @relation(fields: [ownerId], references: [supId], onDelete: Cascade)
+  ownerId String      @db.Uuid
+
+  @@map("Organizations")
+}
+
+model Team {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String   @db.VarChar(100)
+  slug          String   @db.VarChar(50)
+  plan          Plan     @default(FREE)
+  planStartedAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  // Billing Information:
+  billingName        String?
+  taxId              String?
+  billingAddress     String?
+  /// ISO 3166-1 alpha-2 code
+  billingCountryCode String? @db.VarChar(2)
+
+  applications Application[]
+  members      TeamMember[]
+  bills        Bill[]
+  apiKeys      ApiKey[]
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @db.Uuid
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@map("Teams")
+}
+
+model TeamMember {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  role      Role     @default(MEMBER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String @db.Uuid
+
+  user   UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userId String      @db.Uuid
+
+  @@unique([teamId, userId])
+  @@index([userId])
+  @@map("TeamMembers")
+}
+
+model ApiKey {
+  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name       String    @db.VarChar(100)
+  key        String    @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt  DateTime  @default(now())
+  expiresAt  DateTime?
+  lastUsedAt DateTime?
+
+  // Each key belongs to exactly one team (for billing purposes)
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String @db.Uuid
+
+  // Optional link to a specific application (null means it works for all team apps)
+  application   Application? @relation(fields: [applicationId], references: [id])
+  applicationId String?      @db.Uuid
+
+  @@index([key])
+  @@map("ApiKeys")
 }
