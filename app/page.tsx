@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { trpc } from "@/client/utils/trpc/trpc-client-client"
+import { trpc } from "@/client/utils/trpc/trpc-client"
 import { useAuth } from "@/client/hooks/useAuth"
 
 export default function Login() {

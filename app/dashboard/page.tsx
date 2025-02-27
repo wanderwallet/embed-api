@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
-import { trpc } from "@/client/utils/trpc/trpc-client-client"
+import { trpc } from "@/client/utils/trpc/trpc-client"
 import { ProtectedApiInteraction } from "../../client/components/ProtectedApiInteraction"
 import { useAuth } from "@/client/hooks/useAuth"
 import { supabase } from "@/client/utils/supabase/supabase-client-client"

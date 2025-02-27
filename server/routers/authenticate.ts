@@ -24,7 +24,7 @@ export const authenticateRouter = {
   .mutation(async ({input}) => {
     let url = ''
 
-    if(AuthProviderType.GOOGLE === input.authProviderType){
+    if (AuthProviderType.GOOGLE === input.authProviderType){
         url = await loginWithGoogle(input.authProviderType)
 
         console.log("URL =", url);
@@ -45,7 +45,7 @@ export const authenticateRouter = {
     return { success: true, message: "Logged out successfully" }
   }),
 
-  refreshSession: protectedProcedure.query(async () => {
+  refreshSession: protectedProcedure.mutation(async () => {
     const { session, user } = await refreshSession()
     return {
       message: "Session refreshed successfully.",
