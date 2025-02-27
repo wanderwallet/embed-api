@@ -3,6 +3,7 @@ import { z } from "zod"
 import { WalletPrivacySetting, WalletStatus } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
+import { DbWallet } from "@/prisma/types/types";
 
 export const UpdateWalletRecoveryInputSchema = z.object({
   walletId: z.string().uuid(),
@@ -37,7 +38,7 @@ export const updateWalletRecovery = protectedProcedure
       });
     }
 
-    const wallet = ctx.prisma.wallet.update({
+    const wallet = await ctx.prisma.wallet.update({
       where: {
         id: input.walletId,
         userId: ctx.user.id,
@@ -48,6 +49,6 @@ export const updateWalletRecovery = protectedProcedure
     });
 
     return {
-      wallet,
+      wallet: wallet as DbWallet,
     };
   });

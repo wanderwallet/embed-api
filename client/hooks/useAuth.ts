@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react"
-import { setAuthToken, trpc } from "@/client/utils/trpc/trpc-client-client"
+import { setAuthToken, trpc } from "@/client/utils/trpc/trpc-client"
+import { User } from "@supabase/supabase-js"
 import { supabase } from "@/client/utils/supabase/supabase-client-client"
 
 export function useAuth() {
@@ -45,11 +46,13 @@ export function useAuth() {
   } = trpc.getUser.useQuery(undefined, {
     enabled: !!token,
     retry: false,
-  })
+  });
+
+  const user: User | null = data?.user || null;
 
   return token ? {
     token,
-    user: data?.user,
+    user,
     isLoading: isLoading || isUserLoading,
     error: userError,
   } : {

@@ -2,6 +2,9 @@
   "name": "embed-api",
   "version": "0.1.0",
   "private": true,
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
   "scripts": {
     "dev": "next dev",
     "build": "next build",
@@ -9,7 +12,9 @@
     "db:migrate": "prisma migrate dev",
     "seed": "node -r ts-node/register --env-file=.env prisma/seed.ts",
     "db:postinstall": "prisma generate && prisma migrate deploy",
-    "postinstall": "npx prisma generate"
+    "postinstall": "npx prisma generate",
+    "sdk:dev": "tsup --watch",
+    "sdk:build": "tsup"
   },
   "dependencies": {
     "@prisma/client": "6.2.1",
@@ -43,6 +48,7 @@
     "prisma": "6.2.1",
     "prisma-erd-generator": "^1.11.2",
     "ts-node": "^10.9.2",
-    "typescript": "^5"
+    "tsup": "^8.3.6",
+    "typescript": "^5.7.3"
   }
 }
