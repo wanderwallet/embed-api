@@ -4,14 +4,7 @@ import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { publicProcedure } from "@/server/trpc";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
-
-export interface RecoverableAccount {
-  userId: string;
-  name: string | null;
-  email: string | null;
-  phone: string | null;
-  picture: string | null;
-}
+import { RecoverableAccount } from "@/prisma/types/types";
 
 export const FetchRecoverableAccounts = z.object({
   challengeId: z.string().uuid(),

@@ -1,11 +1,17 @@
 import { ChallengeClient, ChallengeClientVersion, ChallengeData, ChallengeSolutionWithVersion, SolveChallengeParams } from "@/server/utils/challenge/challenge.types";
-import { isAnonChallenge } from "@/server/utils/challenge/challenge.utils";
-import { ChallengePurpose, ChallengeType } from "@prisma/client";
+import { AnonChallenge, Challenge, ChallengePurpose, ChallengeType } from "@prisma/client";
 
 const CHALLENGES_WITHOUT_SHARE_HASH: ChallengePurpose[] = [
   ChallengePurpose.SHARE_ROTATION,
   ChallengePurpose.ACCOUNT_RECOVERY,
 ];
+
+// We duplicate this function instead of importing it to as `challenge.utils.ts` imports `Config`, which throws an error
+// when imported in the browser:
+
+function isAnonChallenge(challenge: Challenge | AnonChallenge): challenge is AnonChallenge {
+  return !!(challenge as AnonChallenge).chain && !!(challenge as AnonChallenge).address;
+}
 
 function getChallengeRawData({
   challenge,

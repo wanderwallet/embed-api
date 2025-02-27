@@ -1,6 +1,6 @@
 "use client"
 
-import { getAuthToken, trpc } from "@/client/utils/trpc/trpc-client-client"
+import { getAuthToken, trpc } from "@/client/utils/trpc/trpc-client"
 import { jwtDecode } from "jwt-decode";
 
 export function ProtectedApiInteraction() {

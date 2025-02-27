@@ -4,6 +4,7 @@ import { WalletPrivacySetting, WalletStatus } from "@prisma/client";
 import { maskWalletAddress } from "@/server/utils/wallet/wallet.utils";
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
+import { DbWallet } from "@/prisma/types/types";
 
 export const MakeWalletPrivateInputSchema = z.object({
   walletId: z.string().uuid(),
@@ -54,6 +55,6 @@ export const makeWalletPrivate = protectedProcedure
     });
 
     return {
-      wallet,
+      wallet: wallet as DbWallet,
     };
   });

@@ -3,6 +3,7 @@ import { z } from "zod"
 import { Chain, WalletPrivacySetting, WalletStatus } from "@prisma/client";
 import { validateWallet } from "@/server/utils/wallet/wallet.validators";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
+import { DbWallet } from "@/prisma/types/types";
 
 export const CreateReadOnlyWalletInputSchema = z.object({
   status: z.enum([WalletStatus.READONLY, WalletStatus.LOST]),
@@ -44,6 +45,6 @@ export const createReadOnlyWallet = protectedProcedure
     });
 
     return {
-      wallet,
+      wallet: wallet as DbWallet,
     };
   });
