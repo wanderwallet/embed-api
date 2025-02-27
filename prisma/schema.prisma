@@ -610,7 +610,7 @@ model Passkey {
   lastUsedAt    DateTime @default(now())
 
   UserProfile   UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId        String
+  userId        String      @db.Uuid
 
   @@unique([userId, credentialId], name: "userPasskey")
   @@map("Passkeys")

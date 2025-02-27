@@ -7,7 +7,7 @@ CREATE TABLE "Passkeys" (
     "label" VARCHAR(255) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "lastUsedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "userId" TEXT NOT NULL,
+    "userId" UUID NOT NULL,
 
     CONSTRAINT "Passkeys_pkey" PRIMARY KEY ("id")
 );
