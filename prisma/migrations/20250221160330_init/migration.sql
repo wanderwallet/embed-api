@@ -84,7 +84,7 @@ CREATE TABLE "Bills" (
     "monthlySessions" INTEGER NOT NULL,
     "details" JSONB NOT NULL,
     "userOverrides" JSONB NOT NULL,
-    "teamId" UUID NOT NULL,
+    "organizationId" UUID NOT NULL,
 
     CONSTRAINT "Bills_pkey" PRIMARY KEY ("id")
 );
@@ -280,6 +280,10 @@ CREATE TABLE "Organizations" (
     "slug" VARCHAR(50) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "billingName" TEXT,
+    "taxId" TEXT,
+    "billingAddress" TEXT,
+    "billingCountryCode" VARCHAR(2),
     "ownerId" UUID NOT NULL,
 
     CONSTRAINT "Organizations_pkey" PRIMARY KEY ("id")
@@ -294,10 +298,6 @@ CREATE TABLE "Teams" (
     "planStartedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
-    "billingName" TEXT,
-    "taxId" TEXT,
-    "billingAddress" TEXT,
-    "billingCountryCode" VARCHAR(2),
     "organizationId" UUID NOT NULL,
 
     CONSTRAINT "Teams_pkey" PRIMARY KEY ("id")
@@ -336,7 +336,7 @@ CREATE TABLE "_ApplicationToSession" (
 );
 
 -- CreateIndex
-CREATE INDEX "Bills_teamId_idx" ON "Bills"("teamId");
+CREATE INDEX "Bills_organizationId_idx" ON "Bills"("organizationId");
 
 -- CreateIndex
 CREATE INDEX "Applications_teamId_idx" ON "Applications"("teamId");
@@ -420,7 +420,7 @@ CREATE INDEX "ApiKeys_key_idx" ON "ApiKeys"("key");
 CREATE INDEX "_ApplicationToSession_B_index" ON "_ApplicationToSession"("B");
 
 -- AddForeignKey
-ALTER TABLE "Bills" ADD CONSTRAINT "Bills_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Teams"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Bills" ADD CONSTRAINT "Bills_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Applications" ADD CONSTRAINT "Applications_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Teams"("id") ON DELETE CASCADE ON UPDATE CASCADE;
