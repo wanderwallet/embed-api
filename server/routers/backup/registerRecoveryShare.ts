@@ -38,7 +38,7 @@ export const registerRecoveryShare = protectedProcedure
       });
     }
 
-    if (validateShare(userWallet.chain, input.recoveryAuthShare).length > 0) {
+    if (validateShare(userWallet.chain, input.recoveryAuthShare, ["recoveryAuthShare"]).length > 0) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: ErrorMessages.INVALID_SHARE,
@@ -63,7 +63,7 @@ export const registerRecoveryShare = protectedProcedure
         },
       });
 
-      const createRecoverySharePromise = ctx.prisma.recoveryKeyShare.create({
+      const createRecoverySharePromise = tx.recoveryKeyShare.create({
         data: {
           recoveryAuthShare: input.recoveryAuthShare,
           recoveryBackupShareHash: input.recoveryBackupShareHash,

@@ -76,27 +76,34 @@ async function getAndUpdateSession(
   const { sub: userId, session_id: sessionId, sessionData } = decodeJwt(token);
 
   const sessionUpdates: Partial<typeof updates> = {};
-  if (updates.userAgent && sessionData.userAgent !== updates.userAgent) {
+
+  if (updates?.userAgent && sessionData?.userAgent !== updates?.userAgent) {
     sessionUpdates.userAgent = updates.userAgent;
   }
-  if (updates.deviceNonce && sessionData.deviceNonce !== updates.deviceNonce) {
+
+  if (updates?.deviceNonce && sessionData?.deviceNonce !== updates?.deviceNonce) {
     sessionUpdates.deviceNonce = updates.deviceNonce;
   }
-  if (updates.ip && sessionData.ip !== updates.ip) {
+
+  if (updates?.ip && sessionData?.ip !== updates?.ip) {
     sessionUpdates.ip = updates.ip;
   }
-  if (updates.countryCode && sessionData.countryCode !== updates.countryCode) {
+
+  if (updates?.countryCode && sessionData?.countryCode !== updates?.countryCode) {
     sessionUpdates.countryCode = updates.countryCode;
   }
 
   if (Object.keys(sessionUpdates).length > 0) {
     console.log("Updating session:", sessionUpdates);
+
     prisma.session
       .update({
         where: { id: sessionId },
         data: sessionUpdates,
       })
-      .catch((error) => console.error("Error updating session:", error));
+      .catch((error) => {
+        console.error("Error updating session:", error)
+      });
   }
 
   return {

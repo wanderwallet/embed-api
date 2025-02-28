@@ -12,34 +12,43 @@ export function getShareValidator() {
 }
 
 /**
- * We generate a SHA-256 hash => 32 bytes => 20 characters in base64.
+ * We generate a SHA-256 hash => 32 bytes * 4/3 characters/byte = 43.3333 => 44 characters in base64.
  */
 export function getShareHashValidator() {
-  return z.string().length(20);
+  return z.string().length(44);
 }
 
 /**
- * We generate RSA-PSS key pair with a 4096 modulusLength, which gives as a 550 byte public key exported as SPKI =>
- * 736 characters in base64.
+ * We generate RSA-PSS key pair with a 4096 modulusLength, which gives as a 540-550 bytes public key if the format is
+ * PKCS#1. PKCS#8 adds some extra metadata and bumps the size to 560, so 540-560 * 4/3 characters/byte = 720-747
+ * characters in base64.
  */
 export function getSharePublicKeyValidator() {
-  return z.string().length(736);
+  // TODO: Can we expect this to always be exactly 736? (550 as base64)?
+  return z.string().min(720).max(747);
 }
 
 export const SHARE_REX_EXPS: Record<Chain, RegExp> = {
-  [Chain.ARWEAVE]: /^[a-z0-9-_]{3168}$/i,
-  [Chain.ETHEREUM]: /^[A-F0-9]{44}$/,
+  // See https://stackoverflow.com/questions/7860392/determine-if-string-is-in-base64-using-javascript
+  [Chain.ARWEAVE]: /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/i,
+  [Chain.ETHEREUM]: /^[A-F0-9]+$/i,
 }
 
-export function getChainShareValidator<T extends string = string>(chain: Chain) {
-  return z.custom<T>((val) => {
-    return typeof val === "string" ? SHARE_REX_EXPS[chain].test(val) : false;
-  }, `Invalid ${ chain } private key`)
+export const SHARE_LENGTHS: Record<Chain, number> = {
+  [Chain.ARWEAVE]: 3168,
+  [Chain.ETHEREUM]: 44,
+}
+
+export function getChainShareValidator(chain: Chain) {
+  return z.string().length(SHARE_LENGTHS[chain]).refine((val) => {
+    return SHARE_REX_EXPS[chain].test(val);
+  }, `Invalid ${ chain } share`)
 }
 
 export function validateShare(
   chain: Chain,
   share: string,
+  sharePath: (string | number)[],
 ): ZodCustomIssue[] {
   const issues: ZodCustomIssue[] = [];
 
@@ -50,7 +59,7 @@ export function validateShare(
   } catch (err) {
     issues.push({
       code: ZodIssueCode.custom,
-      path: ["publicKey"],
+      path: sharePath,
       message: getErrorMessage(err),
     });
   }

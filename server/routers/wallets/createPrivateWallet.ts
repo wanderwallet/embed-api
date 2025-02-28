@@ -4,9 +4,10 @@ import { Chain, WalletPrivacySetting, WalletSourceFrom, WalletSourceType, Wallet
 import { maskWalletAddress } from "@/server/utils/wallet/wallet.utils";
 import { validateWallet } from "@/server/utils/wallet/wallet.validators";
 import { InputJsonValue } from "@prisma/client/runtime/library";
-import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
+import { getDeviceAndLocationConnectOrCreate } from "@/server/utils/device-n-location/device-n-location.utils";
 import { getShareValidator, getShareHashValidator, getSharePublicKeyValidator, validateShare } from "@/server/utils/share/share.validators";
 import { DbWallet } from "@/prisma/types/types";
+import { getUserConnectOrCreate } from "@/server/utils/user/user.utils";
 
 export const CreatePrivateWalletInputSchema = z.object({
   status: z.enum([WalletStatus.ENABLED, WalletStatus.DISABLED]),
@@ -31,7 +32,7 @@ export const CreatePrivateWalletInputSchema = z.object({
   walletIssues.forEach(ctx.addIssue);
 
   // `authShare` has the right format according to the length of the keys on a specific `chain`:
-  const shareIssues = validateShare(data.chain, data.authShare);
+  const shareIssues = validateShare(data.chain, data.authShare, ["authShare"]);
   shareIssues.forEach(ctx.addIssue);
 });
 
@@ -40,37 +41,35 @@ export const createPrivateWallet = protectedProcedure
   .mutation(async ({ input, ctx }) => {
     const canBeRecovered = input.source.type === WalletSourceType.IMPORTED ? true : false;
 
-    const wallet = await ctx.prisma.$transaction(async (tx) => {
-      const deviceAndLocationId = await getDeviceAndLocationId(ctx, tx);
+    const wallet = await ctx.prisma.wallet.create({
+      data: {
+        status: input.status,
+        chain: input.chain,
+        address: maskWalletAddress(input.chain, input.address),
+        publicKey: null,
+        aliasSetting: input.aliasSetting,
+        descriptionSetting: input.descriptionSetting,
+        tagsSetting: input.tagsSetting,
+        doNotAskAgainSetting: false,
+        walletPrivacySetting: WalletPrivacySetting.PRIVATE,
+        canRecoverAccountSetting: false,
+        canBeRecovered,
+        source: input.source as InputJsonValue,
 
-      return ctx.prisma.wallet.create({
-        data: {
-          status: input.status,
-          chain: input.chain,
-          address: maskWalletAddress(input.chain, input.address),
-          publicKey: null,
-          aliasSetting: input.aliasSetting,
-          descriptionSetting: input.descriptionSetting,
-          tagsSetting: input.tagsSetting,
-          doNotAskAgainSetting: false,
-          walletPrivacySetting: WalletPrivacySetting.PRIVATE,
-          canRecoverAccountSetting: false,
-          canBeRecovered,
-          source: input.source as InputJsonValue,
-          userId: ctx.user.id,
-          deviceAndLocationId,
+        userProfile: getUserConnectOrCreate(ctx),
 
-          workKeyShares: {
-            create: {
-              authShare: input.authShare,
-              deviceShareHash: input.deviceShareHash,
-              deviceSharePublicKey: input.deviceSharePublicKey,
-              userId: ctx.user.id,
-              sessionId: ctx.session.id,
-            },
+        deviceAndLocation: getDeviceAndLocationConnectOrCreate(ctx),
+
+        workKeyShares: {
+          create: {
+            authShare: input.authShare,
+            deviceShareHash: input.deviceShareHash,
+            deviceSharePublicKey: input.deviceSharePublicKey,
+            userId: ctx.user.id,
+            sessionId: ctx.session.id,
           },
         },
-      });
+      },
     });
 
     return {

@@ -45,7 +45,7 @@ CREATE TYPE "ChallengePurpose" AS ENUM ('ACTIVATION', 'SHARE_RECOVERY', 'SHARE_R
 
 -- CreateTable
 CREATE TABLE "UserProfiles" (
-    "supId" UUID NOT NULL,
+    "supId" UUID NOT NULL DEFAULT gen_random_uuid(),
     "supEmail" VARCHAR(255),
     "supPhone" VARCHAR(255),
     "name" VARCHAR(100),
@@ -66,7 +66,7 @@ CREATE TABLE "UserProfiles" (
 
 -- CreateTable
 CREATE TABLE "Developers" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "plan" VARCHAR(50) NOT NULL DEFAULT 'free',
     "planStartedAt" VARCHAR(50) NOT NULL DEFAULT 'free',
     "apiKey" VARCHAR(255) NOT NULL,
@@ -83,7 +83,7 @@ CREATE TABLE "Developers" (
 
 -- CreateTable
 CREATE TABLE "Bills" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "type" "BillType" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "discount" DOUBLE PRECISION NOT NULL,
@@ -99,7 +99,7 @@ CREATE TABLE "Bills" (
 
 -- CreateTable
 CREATE TABLE "Applications" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "description" VARCHAR(255),
     "domains" VARCHAR(255)[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -112,7 +112,7 @@ CREATE TABLE "Applications" (
 
 -- CreateTable
 CREATE TABLE "Wallets" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "status" "WalletStatus" NOT NULL DEFAULT 'ENABLED',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -148,7 +148,7 @@ CREATE TABLE "Wallets" (
 
 -- CreateTable
 CREATE TABLE "WalletActivations" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "status" "WalletUsageStatus" NOT NULL,
     "activatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" UUID NOT NULL,
@@ -161,7 +161,7 @@ CREATE TABLE "WalletActivations" (
 
 -- CreateTable
 CREATE TABLE "WalletRecoveries" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "status" "WalletUsageStatus" NOT NULL,
     "recoveredAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" UUID NOT NULL,
@@ -174,7 +174,7 @@ CREATE TABLE "WalletRecoveries" (
 
 -- CreateTable
 CREATE TABLE "WalletExports" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "type" "ExportType" NOT NULL,
     "exportedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "userId" UUID NOT NULL,
@@ -186,12 +186,12 @@ CREATE TABLE "WalletExports" (
 
 -- CreateTable
 CREATE TABLE "WorkKeyShares" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "sharesRotatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "rotationWarnings" INTEGER NOT NULL DEFAULT 0,
     "authShare" VARCHAR(4096) NOT NULL,
-    "deviceShareHash" VARCHAR(20) NOT NULL,
+    "deviceShareHash" VARCHAR(44) NOT NULL,
     "deviceSharePublicKey" VARCHAR(1024) NOT NULL,
     "userId" UUID NOT NULL,
     "walletId" UUID NOT NULL,
@@ -202,10 +202,10 @@ CREATE TABLE "WorkKeyShares" (
 
 -- CreateTable
 CREATE TABLE "RecoveryKeyShares" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "recoveryAuthShare" TEXT NOT NULL,
-    "recoveryBackupShareHash" VARCHAR(20) NOT NULL,
+    "recoveryBackupShareHash" VARCHAR(44) NOT NULL,
     "recoveryBackupSharePublicKey" VARCHAR(1024) NOT NULL,
     "userId" UUID NOT NULL,
     "walletId" UUID NOT NULL,
@@ -216,7 +216,7 @@ CREATE TABLE "RecoveryKeyShares" (
 
 -- CreateTable
 CREATE TABLE "Challenges" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "type" "ChallengeType" NOT NULL,
     "purpose" "ChallengePurpose" NOT NULL,
     "value" VARCHAR(255) NOT NULL,
@@ -230,7 +230,7 @@ CREATE TABLE "Challenges" (
 
 -- CreateTable
 CREATE TABLE "AnonChallenges" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "value" VARCHAR(255) NOT NULL,
     "version" VARCHAR(50) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -242,7 +242,7 @@ CREATE TABLE "AnonChallenges" (
 
 -- CreateTable
 CREATE TABLE "DevicesAndLocations" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deviceNonce" VARCHAR(255) NOT NULL,
     "ip" INET NOT NULL,
@@ -256,7 +256,7 @@ CREATE TABLE "DevicesAndLocations" (
 
 -- CreateTable
 CREATE TABLE "Sessions" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deviceNonce" VARCHAR(255) NOT NULL DEFAULT '',
@@ -270,7 +270,7 @@ CREATE TABLE "Sessions" (
 
 -- CreateTable
 CREATE TABLE "LoginAttempts" (
-    "id" UUID NOT NULL,
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "rejectionReason" VARCHAR(255) NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "supIdentityId" TEXT,
