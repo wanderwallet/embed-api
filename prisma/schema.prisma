@@ -1,3 +1,8 @@
+// TODO: Uncomment and run locally to generate ERD.  Will not work on Vercel.
+// generator erd {
+//   provider = "prisma-erd-generator"
+// }
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -106,6 +111,7 @@ enum ChallengePurpose {
   SHARE_RECOVERY
   SHARE_ROTATION
   ACCOUNT_RECOVERY
+  AUTHENTICATION
 }
 
 // TODO: Document index usages.
@@ -184,6 +190,7 @@ model UserProfile {
   devicesAndLocations    DeviceAndLocation[]
   sessions               Session[]
   authenticationAttempts AuthenticationAttempt[]
+  passkeys               Passkey[]
 
   @@map("UserProfiles")
 }
@@ -591,4 +598,20 @@ model AuthenticationAttempt {
   @@index([userId])
   @@index([createdAt])
   @@map("LoginAttempts")
+}
+
+model Passkey {
+  id            String   @id @default(uuid())
+  credentialId  String   @db.VarChar(255)
+  publicKey     String   @db.VarChar(1024)
+  signCount     Int      @default(0)
+  label         String   @db.VarChar(255)
+  createdAt     DateTime @default(now())
+  lastUsedAt    DateTime @default(now())
+
+  UserProfile   UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userId        String      @db.Uuid
+
+  @@unique([userId, credentialId], name: "userPasskey")
+  @@map("Passkeys")
 }

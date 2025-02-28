@@ -1,4 +1,4 @@
-import { inferAsyncReturnType } from "@trpc/server";
+import { inferAsyncReturnType } from "@trpc/server"
 import { Session } from "@prisma/client";
 import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import { jwtDecode } from "jwt-decode";

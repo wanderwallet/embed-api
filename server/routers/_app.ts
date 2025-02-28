@@ -23,7 +23,6 @@ import { generateWalletActivationChallenge } from "@/server/routers/work-shares/
 import { rotateAuthShare } from "@/server/routers/work-shares/rotateAuthShare"
 import { registerWalletExport } from "@/server/routers/backup/registerWalletExport"
 import { authenticateRouter } from "@/server/routers/authenticate"
-// import { supabase } from '@/utils/supabaseClient';
 
 export const appRouter = router({
   ...authenticateRouter,
