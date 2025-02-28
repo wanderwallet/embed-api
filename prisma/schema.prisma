@@ -617,7 +617,6 @@ model Team {
   applications Application[]
   members      TeamMember[]
   bills        Bill[]
-  apiKeys      ApiKey[]
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String       @db.Uuid
@@ -645,20 +644,14 @@ model TeamMember {
 }
 
 model ApiKey {
-  id         String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name       String    @db.VarChar(100)
-  key        String    @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  createdAt  DateTime  @default(now())
-  expiresAt  DateTime?
-  lastUsedAt DateTime?
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String    @db.VarChar(100)
+  key       String    @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt DateTime  @default(now())
+  expiresAt DateTime?
 
-  // Each key belongs to exactly one team (for billing purposes)
-  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
-  teamId String @db.Uuid
-
-  // Optional link to a specific application (null means it works for all team apps)
-  application   Application? @relation(fields: [applicationId], references: [id])
-  applicationId String?      @db.Uuid
+  application   Application @relation(fields: [applicationId], references: [id])
+  applicationId String      @db.Uuid
 
   @@index([key])
   @@map("ApiKeys")

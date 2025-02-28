@@ -13,7 +13,7 @@ export async function createContext({ req }: { req: Request }) {
   const authHeader = req.headers.get("authorization");
   const apiKey = req.headers.get("x-api-key");
   const applicationId = req.headers.get("x-application-id");
-  const origin = req.headers.get("origin") || req.headers.get("referer");
+  const origin = req.headers.get("x-application-origin");
 
   if (!authHeader || !apiKey || !applicationId) {
     return createEmptyContext();
@@ -92,7 +92,6 @@ async function validateApiKeyAndApplication(
   origin: string | null
 ): Promise<{
   application: Pick<Application, "id" | "domains"> | null;
-  teamId: string | null;
   valid: boolean;
 }> {
   try {
@@ -103,7 +102,6 @@ async function validateApiKeyAndApplication(
         id: true,
         expiresAt: true,
         applicationId: true,
-        teamId: true,
         application: { select: { id: true, domains: true } },
       },
     });
@@ -114,63 +112,40 @@ async function validateApiKeyAndApplication(
       (apiKeyRecord.expiresAt && apiKeyRecord.expiresAt < new Date())
     ) {
       console.error("Invalid or expired API key");
-      return { application: null, teamId: null, valid: false };
+      return { application: null, valid: false };
     }
 
     // Check application binding
-    if (
-      apiKeyRecord.applicationId &&
-      apiKeyRecord.applicationId !== applicationId
-    ) {
+    if (apiKeyRecord.applicationId !== applicationId) {
       console.error("API key is not valid for this application");
-      return { application: null, teamId: null, valid: false };
+      return { application: null, valid: false };
     }
 
-    const teamId = apiKeyRecord.teamId;
-
-    // Update last used timestamp asynchronously (don't await)
-    // prisma.apiKey
-    //   .update({
-    //     where: { id: apiKeyRecord.id },
-    //     data: { lastUsedAt: new Date() },
-    //   })
-    //   .catch((error) => console.error("Error updating API key usage:", error));
-
-    // Get application
-    const application = apiKeyRecord.applicationId
-      ? apiKeyRecord.application
-      : await prisma.application.findFirst({
-          where: { id: applicationId, teamId },
-        });
+    const application = apiKeyRecord.application;
 
     if (!application) {
       console.error("Application not found or not associated with the team");
-      return { application: null, teamId: null, valid: false };
+      return { application: null, valid: false };
     }
 
     // Domain validation
     if (application.domains.length > 0) {
       const requestDomain = extractDomain(origin);
-
-      if (!requestDomain) {
-        console.warn(
-          "No origin or referer header provided for domain validation"
-        );
-        return { application: null, teamId: null, valid: false };
-      }
-
-      if (!isDomainAllowed(requestDomain, application.domains)) {
+      if (
+        !requestDomain ||
+        !isDomainAllowed(requestDomain, application.domains)
+      ) {
         console.error(
           `Request domain ${requestDomain} not allowed for this application`
         );
-        return { application: null, teamId: null, valid: false };
+        return { application: null, valid: false };
       }
     }
 
-    return { application, teamId, valid: true };
+    return { application, valid: true };
   } catch (error) {
     console.error("Error validating API key or application:", error);
-    return { application: null, teamId: null, valid: false };
+    return { application: null, valid: false };
   }
 }
 

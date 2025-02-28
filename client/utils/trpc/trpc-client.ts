@@ -49,6 +49,7 @@ export const trpc = createTRPCNext<AppRouter>({
                   "x-application-id":
                     process.env.NEXT_PUBLIC_APPLICATION_ID || "",
                   "x-api-key": process.env.NEXT_PUBLIC_API_KEY || "",
+                  "x-application-origin": window.location.origin,
                 }
               : {};
           },

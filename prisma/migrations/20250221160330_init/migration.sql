@@ -322,9 +322,7 @@ CREATE TABLE "ApiKeys" (
     "key" UUID NOT NULL DEFAULT gen_random_uuid(),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "expiresAt" TIMESTAMP(3),
-    "lastUsedAt" TIMESTAMP(3),
-    "teamId" UUID NOT NULL,
-    "applicationId" UUID,
+    "applicationId" UUID NOT NULL,
 
     CONSTRAINT "ApiKeys_pkey" PRIMARY KEY ("id")
 );
@@ -518,10 +516,7 @@ ALTER TABLE "TeamMembers" ADD CONSTRAINT "TeamMembers_teamId_fkey" FOREIGN KEY (
 ALTER TABLE "TeamMembers" ADD CONSTRAINT "TeamMembers_userId_fkey" FOREIGN KEY ("userId") REFERENCES "UserProfiles"("supId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ApiKeys" ADD CONSTRAINT "ApiKeys_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Teams"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "ApiKeys" ADD CONSTRAINT "ApiKeys_applicationId_fkey" FOREIGN KEY ("applicationId") REFERENCES "Applications"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+ALTER TABLE "ApiKeys" ADD CONSTRAINT "ApiKeys_applicationId_fkey" FOREIGN KEY ("applicationId") REFERENCES "Applications"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_ApplicationToSession" ADD CONSTRAINT "_ApplicationToSession_A_fkey" FOREIGN KEY ("A") REFERENCES "Applications"("id") ON DELETE CASCADE ON UPDATE CASCADE;
