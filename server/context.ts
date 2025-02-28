@@ -91,7 +91,7 @@ async function validateApiKeyAndApplication(
   applicationId: string,
   origin: string | null
 ): Promise<{
-  application: Application | null;
+  application: Pick<Application, "id" | "domains"> | null;
   teamId: string | null;
   valid: boolean;
 }> {
@@ -99,7 +99,13 @@ async function validateApiKeyAndApplication(
     // Get API key with a single query
     const apiKeyRecord = await prisma.apiKey.findUnique({
       where: { key: apiKey },
-      include: { team: true },
+      select: {
+        id: true,
+        expiresAt: true,
+        applicationId: true,
+        teamId: true,
+        application: { select: { id: true, domains: true } },
+      },
     });
 
     // Validate API key
@@ -131,9 +137,11 @@ async function validateApiKeyAndApplication(
     //   .catch((error) => console.error("Error updating API key usage:", error));
 
     // Get application
-    const application = await prisma.application.findFirst({
-      where: { id: applicationId, teamId },
-    });
+    const application = apiKeyRecord.applicationId
+      ? apiKeyRecord.application
+      : await prisma.application.findFirst({
+          where: { id: applicationId, teamId },
+        });
 
     if (!application) {
       console.error("Application not found or not associated with the team");
