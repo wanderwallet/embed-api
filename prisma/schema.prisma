@@ -650,7 +650,7 @@ model ApiKey {
   createdAt DateTime  @default(now())
   expiresAt DateTime?
 
-  application   Application @relation(fields: [applicationId], references: [id])
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   applicationId String      @db.Uuid
 
   @@index([key])
