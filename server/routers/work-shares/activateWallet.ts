@@ -124,8 +124,6 @@ export const activateWallet = protectedProcedure
 
     const shouldRotate = now - workKeyShare.sharesRotatedAt.getTime() >= Config.SHARE_ACTIVE_TTL_MS;
 
-    console.log("shouldRotate =", shouldRotate);
-
     const [
       rotationChallenge,
       wallet,
