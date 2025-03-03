@@ -31,9 +31,40 @@ export function getDeviceAndLocationId(
         countryCode: "",
         userAgent: ctx.session.userAgent,
         userId: ctx.user.id,
-        applicationId: "",
+        applicationId: null,
       },
       update: {},
     })
     .then((result) => result.id);
+}
+
+export function getDeviceAndLocationConnectOrCreate(
+  ctx: Context,
+) {
+  if (!ctx.user) {
+    throw new Error("Missing `ctx.user`");
+  }
+
+  // TODO: Get ip, countryCode, userAgent, applicationId...
+
+  return {
+    connectOrCreate: {
+      where: {
+        userDevice: {
+          userId: ctx.user.id,
+          deviceNonce: ctx.session.deviceNonce,
+          ip: ctx.session.ip,
+          userAgent: ctx.session.userAgent,
+        },
+      },
+      create: {
+        deviceNonce: ctx.session.deviceNonce,
+        ip: ctx.session.ip,
+        countryCode: "",
+        userAgent: ctx.session.userAgent,
+        userId: ctx.user.id,
+        applicationId: null,
+      },
+    },
+  };
 }

@@ -2,8 +2,9 @@ import { protectedProcedure } from "@/server/trpc"
 import { z } from "zod"
 import { Chain, WalletPrivacySetting, WalletStatus } from "@prisma/client";
 import { validateWallet } from "@/server/utils/wallet/wallet.validators";
-import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
+import { getDeviceAndLocationConnectOrCreate } from "@/server/utils/device-n-location/device-n-location.utils";
 import { DbWallet } from "@/prisma/types/types";
+import { getUserConnectOrCreate } from "@/server/utils/user/user.utils";
 
 export const CreateReadOnlyWalletInputSchema = z.object({
   status: z.enum([WalletStatus.READONLY, WalletStatus.LOST]),
@@ -22,10 +23,7 @@ export const CreateReadOnlyWalletInputSchema = z.object({
 export const createReadOnlyWallet = protectedProcedure
   .input(CreateReadOnlyWalletInputSchema)
   .mutation(async ({ input, ctx }) => {
-    const wallet = await ctx.prisma.$transaction(async (tx) => {
-      const deviceAndLocationId = await getDeviceAndLocationId(ctx, tx);
-
-      return ctx.prisma.wallet.create({
+    const wallet = await ctx.prisma.wallet.create({
         data: {
           status: input.status,
           chain: input.chain,
@@ -38,11 +36,12 @@ export const createReadOnlyWallet = protectedProcedure
           walletPrivacySetting: WalletPrivacySetting.PUBLIC,
           canRecoverAccountSetting: false,
           canBeRecovered: false,
-          userId: ctx.user.id,
-          deviceAndLocationId,
+
+          userProfile: getUserConnectOrCreate(ctx),
+
+          deviceAndLocation: getDeviceAndLocationConnectOrCreate(ctx),
         },
       });
-    });
 
     return {
       wallet: wallet as DbWallet,
