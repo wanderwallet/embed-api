@@ -96,7 +96,7 @@ export const registerAuthShare = protectedProcedure
         },
       });
 
-      // When users go throw recoverWallet, it means either they've lost the work share or WE lost it. If we lost it,
+      // When users go through recoverWallet, it means either they've lost the work share or WE lost it. If we lost it,
       // then there's no work share to update here, so we need to do an upsert:
 
       const rotateOrCreateWorkKeyShareAndRegisterWalletActivationPromise = tx.workKeyShare.upsert({
