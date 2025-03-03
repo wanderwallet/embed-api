@@ -9,6 +9,7 @@ DECLARE
   session_id uuid;
   session_data public."Sessions"%ROWTYPE;
   auth_session_data record;
+  application_ids uuid[];
 BEGIN
   -- Extract original claims and session_id
   claims := event->'claims';
@@ -74,6 +75,19 @@ BEGIN
       );
     END IF;
   END IF;
+
+  -- -- Get the application ids from the session
+  -- SELECT COALESCE(array_agg(a.id), ARRAY[]::uuid[]) INTO application_ids
+  -- FROM public."Applications" a
+  -- INNER JOIN public."_ApplicationToSession" ats ON a.id = ats."A"
+  -- WHERE ats."B" = session_id;
+
+  -- -- Add the application ids to the sessionData in claims
+  -- claims := jsonb_set(
+  --   claims, 
+  --   '{sessionData,applicationIds}', 
+  --   COALESCE(to_jsonb(application_ids), '[]'::jsonb)
+  -- );
 
   -- Update the claims in the event and return
   event := jsonb_set(event, '{claims}', claims);

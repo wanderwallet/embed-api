@@ -1,5 +1,5 @@
 import { inferAsyncReturnType } from "@trpc/server";
-import { Application, Session } from "@prisma/client";
+import { Session } from "@prisma/client";
 import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import { jwtDecode } from "jwt-decode";
 import { prisma } from "./utils/prisma/prisma-client";
@@ -13,7 +13,6 @@ export async function createContext({ req }: { req: Request }) {
   const authHeader = req.headers.get("authorization");
   const apiKey = req.headers.get("x-api-key");
   const applicationId = req.headers.get("x-application-id");
-  const origin = req.headers.get("x-application-origin");
 
   if (!authHeader || !apiKey || !applicationId) {
     return createEmptyContext();
@@ -21,17 +20,6 @@ export async function createContext({ req }: { req: Request }) {
 
   const token = authHeader.split(" ")[1];
   if (!token) return createEmptyContext();
-
-  // Validate API key and application
-  const { valid } = await validateApiKeyAndApplication(
-    apiKey,
-    applicationId,
-    origin
-  );
-
-  if (!valid) {
-    return createEmptyContext();
-  }
 
   const userAgent = req.headers.get("user-agent") || "";
   const deviceNonce = req.headers.get("x-device-nonce") || "";
@@ -84,97 +72,6 @@ export async function createContext({ req }: { req: Request }) {
     console.error("Error processing session:", error);
     return createEmptyContext();
   }
-}
-
-async function validateApiKeyAndApplication(
-  apiKey: string,
-  applicationId: string,
-  origin: string | null
-): Promise<{
-  application: Pick<Application, "id" | "domains"> | null;
-  valid: boolean;
-}> {
-  try {
-    // Get API key with a single query
-    const apiKeyRecord = await prisma.apiKey.findUnique({
-      where: { key: apiKey },
-      select: {
-        id: true,
-        expiresAt: true,
-        applicationId: true,
-        application: { select: { id: true, domains: true } },
-      },
-    });
-
-    // Validate API key
-    if (
-      !apiKeyRecord ||
-      (apiKeyRecord.expiresAt && apiKeyRecord.expiresAt < new Date())
-    ) {
-      console.error("Invalid or expired API key");
-      return { application: null, valid: false };
-    }
-
-    // Check application binding
-    if (apiKeyRecord.applicationId !== applicationId) {
-      console.error("API key is not valid for this application");
-      return { application: null, valid: false };
-    }
-
-    const application = apiKeyRecord.application;
-
-    if (!application) {
-      console.error("Application not found or not associated with the team");
-      return { application: null, valid: false };
-    }
-
-    // Domain validation
-    if (application.domains.length > 0) {
-      const requestDomain = extractDomain(origin);
-      if (
-        !requestDomain ||
-        !isDomainAllowed(requestDomain, application.domains)
-      ) {
-        console.error(
-          `Request domain ${requestDomain} not allowed for this application`
-        );
-        return { application: null, valid: false };
-      }
-    }
-
-    return { application, valid: true };
-  } catch (error) {
-    console.error("Error validating API key or application:", error);
-    return { application: null, valid: false };
-  }
-}
-
-function extractDomain(origin: string | null): string | null {
-  if (origin) {
-    try {
-      return new URL(origin).host;
-    } catch {
-      // Invalid origin, continue to referer
-    }
-  }
-
-  return null;
-}
-
-function isDomainAllowed(
-  requestDomain: string,
-  allowedDomains: string[]
-): boolean {
-  return allowedDomains.some((domain) => {
-    // Exact match
-    if (requestDomain === domain) {
-      return true;
-    }
-
-    // Subdomain match
-    const domainToCheck = domain.startsWith(".") ? domain : `.${domain}`;
-    return requestDomain.endsWith(domainToCheck);
-  });
 }
 
 async function getAndUpdateSession(
