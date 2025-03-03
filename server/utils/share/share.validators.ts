@@ -34,13 +34,28 @@ export const SHARE_REX_EXPS: Record<Chain, RegExp> = {
   [Chain.ETHEREUM]: /^[A-F0-9]+$/i,
 }
 
-export const SHARE_LENGTHS: Record<Chain, number> = {
-  [Chain.ARWEAVE]: 3168,
+export const SHARE_LENGTHS: Record<Chain, number | number[]> = {
+  // Small difference in size due to padding in base64. Length is usually 3168 but sometimes it's 3172.
+  // Example: Use seedPhrase = "figure prevent notable absent spy invite reform pave cancel toe donkey insane".
+  // This could also be addressed with zero-padding.
+  [Chain.ARWEAVE]: [3168, 3172],
   [Chain.ETHEREUM]: 44,
 }
 
 export function getChainShareValidator(chain: Chain) {
-  return z.string().length(SHARE_LENGTHS[chain]).refine((val) => {
+  let chainLengths = SHARE_LENGTHS[chain];
+
+  if (typeof chainLengths !== "number" && chainLengths.length < 2) chainLengths = chainLengths[0] || 0;
+
+  return (
+    typeof chainLengths === "number"
+      ? z.string().length(chainLengths)
+      : z.union([
+        z.string().length(chainLengths[0]),
+        z.string().length(chainLengths[1]),
+        ...chainLengths.slice(2).map(l => z.string().length(l)),
+      ])
+).refine((val) => {
     return SHARE_REX_EXPS[chain].test(val);
   }, `Invalid ${ chain } share`)
 }

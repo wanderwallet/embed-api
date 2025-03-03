@@ -46,10 +46,16 @@ export const registerRecoveryShare = protectedProcedure
     }
 
     const [
-      wallet
+      recoveryFileServerSignature,
+      wallet,
     ] = await ctx.prisma.$transaction(async (tx) => {
       const deviceAndLocationId = await deviceAndLocationIdPromise;
       const dateNow = new Date();
+
+      const recoveryFileServerSignaturePromise = BackupUtils.generateRecoveryFileSignature({
+        walletId: userWallet.id,
+        recoveryBackupShareHash: input.recoveryBackupShareHash,
+      });
 
       const updateWalletStatsPromise = tx.wallet.update({
         where: {
@@ -77,14 +83,10 @@ export const registerRecoveryShare = protectedProcedure
       });
 
       return Promise.all([
+        recoveryFileServerSignaturePromise,
         updateWalletStatsPromise,
         createRecoverySharePromise,
       ]);
-    });
-
-    const recoveryFileServerSignature = await BackupUtils.generateRecoveryFileSignature({
-      walletId: userWallet.id,
-      recoveryBackupShareHash: input.recoveryBackupShareHash,
     });
 
     return {

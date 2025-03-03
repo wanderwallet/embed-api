@@ -1,5 +1,6 @@
 import { createTRPCProxyClient, httpBatchLink } from "@trpc/client"
 import type { AppRouter } from "@/server/routers/_app"
+import superjson from 'superjson';
 
 export interface CreateTRPCClientOptions {
   baseURL?: string;
@@ -34,6 +35,7 @@ export function createTRPCClient({
   if (!url) throw new Error("No `baseURL` or `trpcURL` provided.");
 
   const client = createTRPCProxyClient<AppRouter>({
+    transformer: superjson,
     links: [
       httpBatchLink({
         url,

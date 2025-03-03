@@ -96,7 +96,10 @@ export const registerAuthShare = protectedProcedure
         },
       });
 
-      const rotateOrCreateWorkKeyShareAndRegisterWalletActivationPromise = tx.workKeyShare.update({
+      // When users go throw recoverWallet, it means either they've lost the work share or WE lost it. If we lost it,
+      // then there's no work share to update here, so we need to do an upsert:
+
+      const rotateOrCreateWorkKeyShareAndRegisterWalletActivationPromise = tx.workKeyShare.upsert({
         where: {
           userSessionWorkShare: {
             userId: ctx.user.id,
@@ -104,13 +107,21 @@ export const registerAuthShare = protectedProcedure
             walletId: input.walletId,
           },
         },
-        data: {
-          sharesRotatedAt: dateNow,
-          rotationWarnings: 0,
+        create: {
           authShare: input.authShare,
           deviceShareHash: input.deviceShareHash,
           deviceSharePublicKey: input.deviceSharePublicKey,
-        }
+          userId: ctx.user.id,
+          sessionId: ctx.session.id,
+          walletId: input.walletId,
+        },
+        update: {
+          authShare: input.authShare,
+          deviceShareHash: input.deviceShareHash,
+          deviceSharePublicKey: input.deviceSharePublicKey,
+          sharesRotatedAt: dateNow,
+          rotationWarnings: 0,
+        },
       }).then((workKeyShare) => {
         // TODO: How to limit the # of activations per user?
         return tx.walletActivation.create({

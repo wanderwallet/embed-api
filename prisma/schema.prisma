@@ -425,7 +425,7 @@ model WorkKeyShare {
   sharesRotatedAt  DateTime @default(now())
   rotationWarnings Int      @default(0)
 
-  /// Yes, Arweave private keys are humongous, 3168 characters as base64, so 4096 just to be safe.
+  /// Yes, Arweave private keys are humongous, 3168 / 3172 characters as base64, so 4096 just to be safe.
   authShare            String @db.VarChar(4096)
   /// SHA-256 hash => 32 bytes signature => 44 characters in base64
   deviceShareHash      String @db.VarChar(44)
@@ -456,7 +456,7 @@ model RecoveryKeyShare {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   createdAt DateTime @default(now())
 
-  /// Yes, Arweave private keys are humongous, 3168 characters as base64, so 4096 just to be safe.
+  /// Yes, Arweave private keys are humongous, 3168 / 3172 characters as base64, so 4096 just to be safe.
   recoveryAuthShare            String
   /// SHA-256 hash => 32 bytes signature => 44 characters in base64
   recoveryBackupShareHash      String @db.VarChar(44)

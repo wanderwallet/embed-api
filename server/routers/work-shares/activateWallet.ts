@@ -124,6 +124,8 @@ export const activateWallet = protectedProcedure
 
     const shouldRotate = now - workKeyShare.sharesRotatedAt.getTime() >= Config.SHARE_ACTIVE_TTL_MS;
 
+    console.log("shouldRotate =", shouldRotate);
+
     const [
       rotationChallenge,
       wallet,
@@ -139,7 +141,7 @@ export const activateWallet = protectedProcedure
 
         // Relations:
         userId: ctx.user.id,
-        walletId: ctx.user.id,
+        walletId: input.walletId,
       } as const satisfies Partial<Challenge>;
 
       const rotationChallengePromise = shouldRotate ? tx.challenge.upsert({
