@@ -12,7 +12,11 @@ returns table (
     team_id uuid,
     application_id uuid,
     api_key uuid
-) as $$
+) 
+security definer
+set search_path = public
+language plpgsql
+as $$
 declare
     name text;
     org_id uuid;
@@ -141,4 +145,7 @@ begin
         app_id as application_id,
         api_key;
 end;
-$$ language plpgsql;
+$$;
+
+-- Ensure no other roles have access
+REVOKE ALL ON FUNCTION public.create_org_team_app_for_user(uuid, text) FROM PUBLIC;
