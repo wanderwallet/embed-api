@@ -53,7 +53,7 @@ export async function createContext({ req }: { req: Request }) {
   }
 
   try {
-    const sessionData = await getAndUpdateSession(token, applicationId, {
+    const sessionData = await getAndUpdateSession(token, {
       userAgent,
       deviceNonce,
       ip,
@@ -76,7 +76,6 @@ export async function createContext({ req }: { req: Request }) {
 
 async function getAndUpdateSession(
   token: string,
-  applicationId: string,
   updates: Pick<Session, "userAgent" | "deviceNonce" | "ip" | "countryCode">
 ): Promise<Session> {
   const { sub: userId, session_id: sessionId, sessionData } = decodeJwt(token);
@@ -103,20 +102,6 @@ async function getAndUpdateSession(
         console.error("Error updating session:", error);
       });
   }
-
-  // Link the session to the application if not already linked
-  prisma.application
-    .update({
-      where: { id: applicationId },
-      data: {
-        Session: {
-          connect: { id: sessionId },
-        },
-      },
-    })
-    .catch((error) =>
-      console.error("Error linking session to application:", error)
-    );
 
   return {
     userId,
