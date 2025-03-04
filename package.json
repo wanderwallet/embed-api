@@ -11,6 +11,7 @@
     "start": "next start",
     "db:migrate": "prisma migrate dev",
     "seed": "node -r ts-node/register --env-file=.env prisma/seed.ts",
+    "postinstall": "prisma generate",
     "db:postinstall": "prisma generate && prisma migrate deploy",
     "db:regenerate-migrations": "./scripts/regenerate-prisma-migrations.sh",
     "sdk:dev": "tsup --watch",
