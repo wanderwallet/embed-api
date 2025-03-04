@@ -75,7 +75,7 @@ async function solveChallenge({
       throw new Error("Missing `jwk` (JWK private key)");
     }
 
-    const privateKey = await window.crypto.subtle.importKey(
+    const privateKey = await crypto.subtle.importKey(
       "jwk",
       jwk,
       IMPORT_KEY_ALGORITHM,

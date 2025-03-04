@@ -1,7 +1,7 @@
 import { ChallengeClient, ChallengeClientVersion, ChallengeData } from "@/server/utils/challenge/challenge.types";
 import { ChallengeClientV1 } from "@/server/utils/challenge/clients/challenge-client-v1";
 import { Config } from "@/server/utils/config/config.constants";
-import { AnonChallenge, Challenge, ChallengeType } from "@prisma/client";
+import { AnonChallenge, Challenge, ChallengePurpose, ChallengeType } from "@prisma/client";
 
 export function isAnonChallenge(challenge: Challenge | AnonChallenge): challenge is AnonChallenge {
   return !!(challenge as AnonChallenge).chain && !!(challenge as AnonChallenge).address;
@@ -31,18 +31,22 @@ export async function verifyChallenge({
 
   // Verification:
   now,
-  solution: solutionParam,
+  solution,
   publicKey: publicKeyParam,
 }: VerifyChallengeParams) {
   try {
-    const [solutionVersion, solution] = solutionParam.split(".");
+    const solutionVersion = solution.split(".")[0];
     const challengeClient = CHALLENGE_CLIENTS[solutionVersion];
 
     if (!challengeClient) {
       throw new Error(`Invalid challenge version`);
     }
 
-    if (now - challenge.createdAt.getTime() >= Config.CHALLENGE_TTL_MS) {
+    const challengeTTL = isAnonChallenge(challenge) || challenge.purpose === ChallengePurpose.SHARE_ROTATION
+      ? Config.CHALLENGE_ROTATION_TTL_MS
+      : Config.CHALLENGE_TTL_MS;
+
+    if (now - challenge.createdAt.getTime() >= challengeTTL) {
       return false;
     }
 
@@ -51,7 +55,7 @@ export async function verifyChallenge({
         throw new Error("Missing `publicKey` (base64 public key)");
       }
 
-      const publicKey = await window.crypto.subtle.importKey(
+      const publicKey = await crypto.subtle.importKey(
         "spki",
         Buffer.from(publicKeyParam, "base64"),
         challengeClient.importKeyAlgorithm,
@@ -60,6 +64,7 @@ export async function verifyChallenge({
       );
 
       const challengeRawData = await challengeClient.getChallengeRawData({ challenge, session, shareHash });
+
       const challengeRawDataBuffer = Buffer.from(challengeRawData);
 
       return crypto.subtle.verify(

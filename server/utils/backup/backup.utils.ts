@@ -51,7 +51,7 @@ async function generateRecoveryFileSignature(recoveryFileData: RecoveryFileData)
   const recoveryFileRawData = getRecoveryFileSignatureRawData(recoveryFileData);
   const recoveryFileRawDataBuffer = Buffer.from(recoveryFileRawData);
 
-  const privateKey = await window.crypto.subtle.importKey(
+  const privateKey = await crypto.subtle.importKey(
     "pkcs8",
     Buffer.from(Config.BACKUP_FILE_PRIVATE_KEY, "base64"),
     IMPORT_KEY_ALGORITHM,
@@ -77,7 +77,7 @@ async function verifyRecoveryFileSignature({
   ...recoveryFileData
 }: VerifyRecoveryFileSignature) {
 
-  const publicKey = await window.crypto.subtle.importKey(
+  const publicKey = await crypto.subtle.importKey(
     "spki",
     Buffer.from(Config.BACKUP_FILE_PUBLIC_KEY, "base64"),
     IMPORT_KEY_ALGORITHM,

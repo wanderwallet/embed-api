@@ -139,7 +139,7 @@ export const activateWallet = protectedProcedure
 
         // Relations:
         userId: ctx.user.id,
-        walletId: ctx.user.id,
+        walletId: input.walletId,
       } as const satisfies Partial<Challenge>;
 
       const rotationChallengePromise = shouldRotate ? tx.challenge.upsert({

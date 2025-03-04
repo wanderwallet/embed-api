@@ -12,6 +12,7 @@
     "db:migrate": "prisma migrate dev",
     "seed": "node -r ts-node/register --env-file=.env prisma/seed.ts",
     "db:postinstall": "prisma generate && prisma migrate deploy",
+    "db:regenerate-migrations": "./scripts/regenerate-prisma-migrations.sh",
     "sdk:dev": "tsup --watch",
     "sdk:build": "tsup"
   },
@@ -31,6 +32,7 @@
     "next": "14.2.16",
     "react": "^18",
     "react-dom": "^18",
+    "superjson": "^2.2.2",
     "zod": "^3.24.1"
   },
   "devDependencies": {

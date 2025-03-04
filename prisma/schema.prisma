@@ -331,7 +331,7 @@ model Wallet {
   recoveryKeyShares RecoveryKeyShare[]
   challenges        Challenge[]
 
-  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId      String      @db.Uuid
 
   deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
@@ -347,7 +347,7 @@ model WalletActivation {
   status      WalletUsageStatus
   activatedAt DateTime          @default(now())
 
-  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId      String      @db.Uuid
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
@@ -369,7 +369,7 @@ model WalletRecovery {
   status      WalletUsageStatus
   recoveredAt DateTime          @default(now())
 
-  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId      String      @db.Uuid
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
@@ -391,7 +391,7 @@ model WalletExport {
   type       ExportType
   exportedAt DateTime   @default(now())
 
-  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId      String      @db.Uuid
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
@@ -414,16 +414,16 @@ model WorkKeyShare {
   sharesRotatedAt  DateTime @default(now())
   rotationWarnings Int      @default(0)
 
-  /// Yes, Arweave private keys are humongous, 3168 characters as base64, so 4096 just to be safe.
+  /// Yes, Arweave private keys are humongous, 3168 / 3172 characters as base64, so 4096 just to be safe.
   authShare            String @db.VarChar(4096)
-  /// SHA-256 hash => 32 bytes signature => 20 characters in base64
-  deviceShareHash      String @db.VarChar(20)
+  /// SHA-256 hash => 32 bytes signature => 44 characters in base64
+  deviceShareHash      String @db.VarChar(44)
   /// RSA-PSS with a 4096 modulusLength => 550 bytes public key as SPKI => 736 characters in base64. 1024 just to be safe.
   deviceSharePublicKey String @db.VarChar(1024)
 
   walletActivations WalletActivation[]
 
-  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId      String      @db.Uuid
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
@@ -445,16 +445,16 @@ model RecoveryKeyShare {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   createdAt DateTime @default(now())
 
-  /// Yes, Arweave private keys are humongous, 3168 characters as base64, so 4096 just to be safe.
+  /// Yes, Arweave private keys are humongous, 3168 / 3172 characters as base64, so 4096 just to be safe.
   recoveryAuthShare            String
-  /// SHA-256 hash => 32 bytes signature => 20 characters in base64
-  recoveryBackupShareHash      String @db.VarChar(20)
+  /// SHA-256 hash => 32 bytes signature => 44 characters in base64
+  recoveryBackupShareHash      String @db.VarChar(44)
   /// RSA-PSS with a 4096 modulusLength => 550 bytes public key as SPKI => 736 characters in base64. 1024 just to be safe.
   recoveryBackupSharePublicKey String @db.VarChar(1024)
 
   walletRecoveries WalletRecovery[]
 
-  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId      String      @db.Uuid
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
@@ -478,7 +478,7 @@ model Challenge {
   version   String           @db.VarChar(50)
   createdAt DateTime         @default(now())
 
-  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId      String      @db.Uuid
 
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
@@ -522,7 +522,7 @@ model DeviceAndLocation {
   recoveryKeyShares      RecoveryKeyShare[]
   authenticationAttempts AuthenticationAttempt[]
 
-  UserProfile UserProfile? @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userProfile UserProfile? @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId      String?      @db.Uuid
 
   application   Application? @relation(fields: [applicationId], references: [id], onDelete: SetNull)
@@ -550,7 +550,7 @@ model Session {
   applications  Application[]
   workKeyShares WorkKeyShare[]
 
-  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId      String      @db.Uuid
 
   /// Note how here we don't include ip and userAgent, as we only want to keep one session per user-device, so if the IP
@@ -568,7 +568,7 @@ model AuthenticationAttempt {
   /// No supIdentity here as this is a reference to auth.users
   supIdentityId String?
 
-  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId      String      @db.Uuid
 
   // authMethod   AuthMethod? @relation(fields: [authMethodId], references: [id], onDelete: SetNull)

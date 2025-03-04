@@ -53,7 +53,7 @@ export const registerWalletExport = protectedProcedure
         },
       });
 
-      const registerWalletExportPromise = ctx.prisma.walletExport.create({
+      const registerWalletExportPromise = tx.walletExport.create({
         data: {
           type: input.type,
 

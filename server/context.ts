@@ -86,19 +86,22 @@ async function getAndUpdateSession(
     keyof typeof updates,
     string
   ][]) {
-    if (value && sessionData[key] !== value) {
+    if (value && sessionData?.[key] !== value) {
       sessionUpdates[key] = value;
     }
   }
 
   if (Object.keys(sessionUpdates).length > 0) {
     console.log("Updating session:", sessionUpdates);
+
     prisma.session
       .update({
         where: { id: sessionId },
         data: sessionUpdates,
       })
-      .catch((error) => console.error("Error updating session:", error));
+      .catch((error) => {
+        console.error("Error updating session:", error);
+      });
   }
 
   // Link the session to the application if not already linked

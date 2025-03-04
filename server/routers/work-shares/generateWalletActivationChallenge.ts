@@ -50,6 +50,7 @@ export const generateWalletActivationChallenge = protectedProcedure
     }
 
     const challengeValue = ChallengeUtils.generateChangeValue();
+
     const challengeUpsertData = {
       type: Config.CHALLENGE_TYPE,
       purpose: ChallengePurpose.ACTIVATION,
@@ -65,7 +66,7 @@ export const generateWalletActivationChallenge = protectedProcedure
       where: {
         userChallenges: {
           userId: ctx.user.id,
-          purpose: ChallengePurpose.SHARE_ROTATION,
+          purpose: ChallengePurpose.ACTIVATION,
         },
       },
       create: challengeUpsertData,

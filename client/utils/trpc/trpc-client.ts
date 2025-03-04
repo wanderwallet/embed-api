@@ -1,6 +1,7 @@
 import { createTRPCNext } from "@trpc/next";
 import { httpBatchLink } from "@trpc/client";
 import type { AppRouter } from "@/server/routers/_app";
+import superjson from "superjson";
 
 function getBaseUrl() {
   if (typeof window !== "undefined") return "";
@@ -38,6 +39,7 @@ export function setDeviceNonce() {
 export const trpc = createTRPCNext<AppRouter>({
   config() {
     return {
+      transformer: superjson,
       links: [
         httpBatchLink({
           url: `${getBaseUrl()}/api/trpc`,

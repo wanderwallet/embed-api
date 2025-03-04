@@ -134,5 +134,12 @@ We can probably remove/reset those records every month and only keep aggregated 
 - deleteWalletActivation?
 
 
+## Creating a fresh "init" migration and CLEARING the connected DB:
 
+```
+pnpm db:regenerate-migrations
+```
 
+If this worked, you should see 5 triggers in Supabase under [Database > Triggers > auth](https://supabase.com/dashboard/project/pboorlggoqpyiucxmneq/database/triggers?schema=auth).
+
+Also, make sure you delete your Supabase users under Authentication, as those are no longer duplicated in the `UserProfile` table.
