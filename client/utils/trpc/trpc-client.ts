@@ -50,7 +50,7 @@ export const trpc = createTRPCNext<AppRouter>({
                   "x-device-nonce": deviceNonce || "",
                   "x-application-id":
                     process.env.NEXT_PUBLIC_APPLICATION_ID || "",
-                  "x-api-key": process.env.NEXT_PUBLIC_API_KEY || "",
+                  "x-client-id": process.env.NEXT_PUBLIC_CLIENT_ID || "",
                   "x-application-origin": window.location.origin,
                 }
               : {};

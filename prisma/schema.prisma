@@ -247,7 +247,7 @@ model Application {
 
   DeviceAndLocation DeviceAndLocation[]
   Session           Session[]
-  apiKeys           ApiKey[] // Application-specific API keys
+  clientIds         ClientId[] // Application-specific client IDs
 
   // Each application belongs to exactly one team
   team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
@@ -600,8 +600,9 @@ model Organization {
   bills Bill[]
 
   // Organization owner
-  owner   UserProfile @relation(fields: [ownerId], references: [supId], onDelete: Cascade)
-  ownerId String      @db.Uuid
+  owner      UserProfile  @relation(fields: [ownerId], references: [supId], onDelete: Cascade)
+  ownerId    String       @db.Uuid
+  TeamMember TeamMember[]
 
   @@map("Organizations")
 }
@@ -632,27 +633,28 @@ model TeamMember {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @db.Uuid
+
   team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String @db.Uuid
 
   user   UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId String      @db.Uuid
 
-  @@unique([teamId, userId])
+  @@unique([organizationId, teamId, userId])
   @@index([userId])
   @@map("TeamMembers")
 }
 
-model ApiKey {
+model ClientId {
   id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String    @db.VarChar(100)
-  key       String    @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   createdAt DateTime  @default(now())
   expiresAt DateTime?
 
   application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
   applicationId String      @db.Uuid
 
-  @@index([key])
-  @@map("ApiKeys")
+  @@map("ClientIds")
 }

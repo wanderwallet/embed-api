@@ -11,7 +11,7 @@ returns table (
     organization_id uuid,
     team_id uuid,
     application_id uuid,
-    api_key uuid
+    client_id uuid
 ) 
 security definer
 set search_path = public
@@ -22,7 +22,7 @@ declare
     org_id uuid;
     team_id uuid;
     username text;
-    api_key uuid;
+    client_id uuid;
     app_id uuid;
     user_record public."UserProfiles"%ROWTYPE;
 begin
@@ -89,6 +89,7 @@ begin
     -- Add user as team member with owner role
     insert into public."TeamMembers" (
         "role",
+        "organizationId",
         "teamId",
         "userId",
         "createdAt",
@@ -96,6 +97,7 @@ begin
     )
     values (
         'OWNER',
+        org_id,
         team_id,
         user_id,
         now(),
@@ -123,27 +125,24 @@ begin
     )
     returning "id" into app_id;
 
-    api_key := gen_random_uuid();
-
-    -- Create a default API key for the application
-    insert into public."ApiKeys" (
+    -- Create a default client ID for the application
+    insert into public."ClientIds" (
         "name",
-        "key",
         "applicationId",
         "createdAt"
     )
     values (
-        'Default API Key',
-        api_key,
+        'Default Client Id',
         app_id,
         now()
-    );
+    ) 
+    returning "id" into client_id;
 
     return query select 
         org_id as organization_id,
         team_id,
         app_id as application_id,
-        api_key;
+        client_id;
 end;
 $$;
 

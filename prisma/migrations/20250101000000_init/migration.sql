@@ -309,6 +309,7 @@ CREATE TABLE "TeamMembers" (
     "role" "Role" NOT NULL DEFAULT 'MEMBER',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
+    "organizationId" UUID NOT NULL,
     "teamId" UUID NOT NULL,
     "userId" UUID NOT NULL,
 
@@ -316,15 +317,14 @@ CREATE TABLE "TeamMembers" (
 );
 
 -- CreateTable
-CREATE TABLE "ApiKeys" (
+CREATE TABLE "ClientIds" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "name" VARCHAR(100) NOT NULL,
-    "key" UUID NOT NULL DEFAULT gen_random_uuid(),
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "expiresAt" TIMESTAMP(3),
     "applicationId" UUID NOT NULL,
 
-    CONSTRAINT "ApiKeys_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "ClientIds_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -408,13 +408,7 @@ CREATE UNIQUE INDEX "Teams_organizationId_slug_key" ON "Teams"("organizationId",
 CREATE INDEX "TeamMembers_userId_idx" ON "TeamMembers"("userId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "TeamMembers_teamId_userId_key" ON "TeamMembers"("teamId", "userId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "ApiKeys_key_key" ON "ApiKeys"("key");
-
--- CreateIndex
-CREATE INDEX "ApiKeys_key_idx" ON "ApiKeys"("key");
+CREATE UNIQUE INDEX "TeamMembers_organizationId_teamId_userId_key" ON "TeamMembers"("organizationId", "teamId", "userId");
 
 -- CreateIndex
 CREATE INDEX "_ApplicationToSession_B_index" ON "_ApplicationToSession"("B");
@@ -510,13 +504,16 @@ ALTER TABLE "Organizations" ADD CONSTRAINT "Organizations_ownerId_fkey" FOREIGN 
 ALTER TABLE "Teams" ADD CONSTRAINT "Teams_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "TeamMembers" ADD CONSTRAINT "TeamMembers_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "TeamMembers" ADD CONSTRAINT "TeamMembers_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Teams"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "TeamMembers" ADD CONSTRAINT "TeamMembers_userId_fkey" FOREIGN KEY ("userId") REFERENCES "UserProfiles"("supId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "ApiKeys" ADD CONSTRAINT "ApiKeys_applicationId_fkey" FOREIGN KEY ("applicationId") REFERENCES "Applications"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "ClientIds" ADD CONSTRAINT "ClientIds_applicationId_fkey" FOREIGN KEY ("applicationId") REFERENCES "Applications"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "_ApplicationToSession" ADD CONSTRAINT "_ApplicationToSession_A_fkey" FOREIGN KEY ("A") REFERENCES "Applications"("id") ON DELETE CASCADE ON UPDATE CASCADE;

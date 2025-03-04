@@ -11,10 +11,10 @@ import {
 
 export async function createContext({ req }: { req: Request }) {
   const authHeader = req.headers.get("authorization");
-  const apiKey = req.headers.get("x-api-key");
+  const clientId = req.headers.get("x-client-id");
   const applicationId = req.headers.get("x-application-id");
 
-  if (!authHeader || !apiKey || !applicationId) {
+  if (!authHeader || !clientId || !applicationId) {
     return createEmptyContext();
   }
 
