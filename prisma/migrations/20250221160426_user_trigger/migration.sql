@@ -12,8 +12,6 @@
 
 create function public.handle_new_user()
 returns trigger as $$
-declare
-    name text;
 begin
     insert into public."UserProfiles" ("supId", "supEmail", "supPhone", "name", "email", "phone", "picture", "updatedAt")
     values (new.id, new.email, new.phone, new.raw_user_meta_data->>'full_name', new.email, new.phone, coalesce(new.raw_user_meta_data->>'avatar_url', new.raw_user_meta_data->>'picture'), now());

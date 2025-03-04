@@ -9,7 +9,7 @@ DECLARE
   session_id uuid;
   session_data public."Sessions"%ROWTYPE;
   auth_session_data record;
-  application_ids uuid[];
+  -- application_ids uuid[];
 BEGIN
   -- Extract original claims and session_id
   claims := event->'claims';
