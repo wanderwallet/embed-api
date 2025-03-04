@@ -247,7 +247,7 @@ model Application {
 
   DeviceAndLocation DeviceAndLocation[]
   Session           Session[]
-  clientIds         ClientId[] // Application-specific client IDs
+  clientId          ClientId?
 
   // Each application belongs to exactly one team
   team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
@@ -654,7 +654,7 @@ model ClientId {
   expiresAt DateTime?
 
   application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  applicationId String      @db.Uuid
+  applicationId String      @unique @db.Uuid
 
   @@map("ClientIds")
 }

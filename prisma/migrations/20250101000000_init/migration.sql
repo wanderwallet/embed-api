@@ -411,6 +411,9 @@ CREATE INDEX "TeamMembers_userId_idx" ON "TeamMembers"("userId");
 CREATE UNIQUE INDEX "TeamMembers_organizationId_teamId_userId_key" ON "TeamMembers"("organizationId", "teamId", "userId");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "ClientIds_applicationId_key" ON "ClientIds"("applicationId");
+
+-- CreateIndex
 CREATE INDEX "_ApplicationToSession_B_index" ON "_ApplicationToSession"("B");
 
 -- AddForeignKey
