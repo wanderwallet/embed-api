@@ -134,5 +134,20 @@ We can probably remove/reset those records every month and only keep aggregated 
 - deleteWalletActivation?
 
 
+## Creating a fresh "init" migration and CLEARING the connected DB:
 
+```
+mv prisma/migrations/ prisma/migrations-old
+npx prisma generate
+npx prisma migrate dev --name init
+mv prisma/migrations/*_init prisma/migrations/20250101000000_init
+mv prisma/migrations-old/20250221160426_user_trigger prisma/migrations/
+mv prisma/migrations-old/20250224065512_session_trigger prisma/migrations/
+mv prisma/migrations-old/20250224085617_custom_access_token prisma/migrations/
+rm -rf prisma/migrations-old/
+npx prisma migrate dev
+```
 
+If this worked, you should see 5 triggers in Supabase under [Database > Triggers > auth](https://supabase.com/dashboard/project/pboorlggoqpyiucxmneq/database/triggers?schema=auth).
+
+Also, make sure you delete your Supabase users under Authentication, as those are no longer duplicated in the `UserProfile` table.

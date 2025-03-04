@@ -137,7 +137,7 @@ export const recoverWallet = protectedProcedure
 
         // Relations:
         userId: ctx.user.id,
-        walletId: ctx.user.id,
+        walletId: input.walletId,
       } as const satisfies Partial<Challenge>;
 
       const rotationChallengePromise = tx.challenge.upsert({

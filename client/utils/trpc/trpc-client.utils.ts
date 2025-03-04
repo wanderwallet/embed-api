@@ -1,17 +1,23 @@
 import { createTRPCProxyClient, httpBatchLink } from "@trpc/client"
 import type { AppRouter } from "@/server/routers/_app"
+import superjson from 'superjson';
 
 export interface CreateTRPCClientOptions {
   baseURL?: string;
   trpcURL?: string;
+  authToken?: string | null;
+  deviceNonce?: string;
+  apiKey?: string;
 }
 
 export function createTRPCClient({
   baseURL,
   trpcURL,
+  ...params
 }: CreateTRPCClientOptions) {
-  let authToken: string | null = null;
-  let deviceNonce = "";
+  let authToken = params.authToken || null;
+  let deviceNonce = params.deviceNonce || "";
+  let apiKey = params.apiKey || "";
 
   function getAuthTokenHeader() {
     return authToken;
@@ -29,21 +35,37 @@ export function createTRPCClient({
     deviceNonce = nextDeviceNonce;
   }
 
+  function getApiKeyHeader() {
+    return apiKey;
+  }
+
+  function setApiKeyHeader(nextApiKey: string) {
+    apiKey = nextApiKey;
+  }
+
   const url = trpcURL || (baseURL ? `${baseURL}/api/trpc` : "");
 
   if (!url) throw new Error("No `baseURL` or `trpcURL` provided.");
 
   const client = createTRPCProxyClient<AppRouter>({
+    transformer: superjson,
     links: [
       httpBatchLink({
         url,
         headers() {
-          return authToken
-            ? {
-                authorization: `Bearer ${authToken}`,
-                "x-device-nonce": deviceNonce || "",
-              }
-            : {}
+          if (!deviceNonce) {
+            throw new Error(`Missing device nonce header.`)
+          }
+
+          if (!apiKey) {
+            throw new Error(`Missing API key header.`)
+          }
+
+          return {
+            authorization: `Bearer ${authToken}`,
+            "x-device-nonce": deviceNonce,
+            "x-api-key": apiKey,
+          };
         },
       }),
     ],
@@ -55,5 +77,7 @@ export function createTRPCClient({
     setAuthTokenHeader,
     getDeviceNonceHeader,
     setDeviceNonceHeader,
+    getApiKeyHeader,
+    setApiKeyHeader,
   };
 }

@@ -11,8 +11,8 @@
     "start": "next start",
     "db:migrate": "prisma migrate dev",
     "seed": "node -r ts-node/register --env-file=.env prisma/seed.ts",
+    "postinstall": "prisma generate",
     "db:postinstall": "prisma generate && prisma migrate deploy",
-    "postinstall": "npx prisma generate",
     "sdk:dev": "tsup --watch",
     "sdk:build": "tsup"
   },
@@ -35,6 +35,7 @@
     "react": "^18",
     "react-dom": "^18",
     "server": "link:@types/@simplewebauthn/server",
+    "superjson": "^2.2.2",
     "zod": "^3.24.1"
   },
   "devDependencies": {

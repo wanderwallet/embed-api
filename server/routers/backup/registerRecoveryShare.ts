@@ -38,7 +38,7 @@ export const registerRecoveryShare = protectedProcedure
       });
     }
 
-    if (validateShare(userWallet.chain, input.recoveryAuthShare).length > 0) {
+    if (validateShare(userWallet.chain, input.recoveryAuthShare, ["recoveryAuthShare"]).length > 0) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: ErrorMessages.INVALID_SHARE,
@@ -46,10 +46,16 @@ export const registerRecoveryShare = protectedProcedure
     }
 
     const [
-      wallet
+      recoveryFileServerSignature,
+      wallet,
     ] = await ctx.prisma.$transaction(async (tx) => {
       const deviceAndLocationId = await deviceAndLocationIdPromise;
       const dateNow = new Date();
+
+      const recoveryFileServerSignaturePromise = BackupUtils.generateRecoveryFileSignature({
+        walletId: userWallet.id,
+        recoveryBackupShareHash: input.recoveryBackupShareHash,
+      });
 
       const updateWalletStatsPromise = tx.wallet.update({
         where: {
@@ -63,7 +69,7 @@ export const registerRecoveryShare = protectedProcedure
         },
       });
 
-      const createRecoverySharePromise = ctx.prisma.recoveryKeyShare.create({
+      const createRecoverySharePromise = tx.recoveryKeyShare.create({
         data: {
           recoveryAuthShare: input.recoveryAuthShare,
           recoveryBackupShareHash: input.recoveryBackupShareHash,
@@ -77,14 +83,10 @@ export const registerRecoveryShare = protectedProcedure
       });
 
       return Promise.all([
+        recoveryFileServerSignaturePromise,
         updateWalletStatsPromise,
         createRecoverySharePromise,
       ]);
-    });
-
-    const recoveryFileServerSignature = await BackupUtils.generateRecoveryFileSignature({
-      walletId: userWallet.id,
-      recoveryBackupShareHash: input.recoveryBackupShareHash,
     });
 
     return {
