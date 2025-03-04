@@ -1,13 +1,13 @@
-import { createTRPCProxyClient, httpBatchLink } from "@trpc/client"
-import type { AppRouter } from "@/server/routers/_app"
-import superjson from 'superjson';
+import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
+import type { AppRouter } from "@/server/routers/_app";
+import superjson from "superjson";
 
 export interface CreateTRPCClientOptions {
   baseURL?: string;
   trpcURL?: string;
   authToken?: string | null;
   deviceNonce?: string;
-  apiKey?: string;
+  clientId?: string;
 }
 
 export function createTRPCClient({
@@ -17,7 +17,7 @@ export function createTRPCClient({
 }: CreateTRPCClientOptions) {
   let authToken = params.authToken || null;
   let deviceNonce = params.deviceNonce || "";
-  let apiKey = params.apiKey || "";
+  let clientId = params.clientId || "";
 
   function getAuthTokenHeader() {
     return authToken;
@@ -35,12 +35,12 @@ export function createTRPCClient({
     deviceNonce = nextDeviceNonce;
   }
 
-  function getApiKeyHeader() {
-    return apiKey;
+  function getClientIdHeader() {
+    return clientId;
   }
 
-  function setApiKeyHeader(nextApiKey: string) {
-    apiKey = nextApiKey;
+  function setClientIdHeader(nextClientId: string) {
+    clientId = nextClientId;
   }
 
   const url = trpcURL || (baseURL ? `${baseURL}/api/trpc` : "");
@@ -54,17 +54,17 @@ export function createTRPCClient({
         url,
         headers() {
           if (!deviceNonce) {
-            throw new Error(`Missing device nonce header.`)
+            throw new Error(`Missing device nonce header.`);
           }
 
-          if (!apiKey) {
-            throw new Error(`Missing API key header.`)
+          if (!clientId) {
+            throw new Error(`Missing client ID header.`);
           }
 
           return {
             authorization: `Bearer ${authToken}`,
             "x-device-nonce": deviceNonce,
-            "x-api-key": apiKey,
+            "x-client-id": clientId,
           };
         },
       }),
@@ -77,7 +77,7 @@ export function createTRPCClient({
     setAuthTokenHeader,
     getDeviceNonceHeader,
     setDeviceNonceHeader,
-    getApiKeyHeader,
-    setApiKeyHeader,
+    getClientIdHeader,
+    setClientIdHeader,
   };
 }
