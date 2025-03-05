@@ -26,7 +26,7 @@ export default function DashboardPage() {
   }) => (
     <button
       onClick={() => setActiveView(view)}
-      className={`w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium rounded-md transition-colors duration-200
+      className={`w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium rounded-md transition-colors duration-200 cursor-pointer
         ${
           activeView === view
             ? "bg-blue-50 text-blue-700 border border-blue-100"
@@ -172,16 +172,12 @@ function TeamsView() {
           slug: slug,
         });
 
-        // Dismiss loading toast and show success
-        toast.dismiss(loadingToast);
-        toast.success("Team created successfully!");
-
         setNewTeam({ name: "", slug: "" });
         setShowCreateForm(false);
-      } catch (error) {
-        // Dismiss loading toast and show error
+      } catch {
+        //
+      } finally {
         toast.dismiss(loadingToast);
-        toast.error(error.message || "Failed to create team");
       }
     },
     [newTeam, createTeamMutation]
@@ -201,7 +197,7 @@ function TeamsView() {
         <h2 className="text-xl font-semibold text-gray-900">Teams</h2>
         <button
           onClick={() => setShowCreateForm(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 cursor-pointer"
         >
           Create Team
         </button>
@@ -307,7 +303,7 @@ function TeamsView() {
               </div>
               <button
                 onClick={() => router.push(`/dashboard/teams/${team.id}`)}
-                className="text-blue-600 hover:text-blue-800"
+                className="text-blue-600 hover:text-blue-800 cursor-pointer"
               >
                 Manage →
               </button>
@@ -377,16 +373,12 @@ function ApplicationsView() {
           domains: newApp.domains,
         });
 
-        // Dismiss loading toast and show success
-        toast.dismiss(loadingToast);
-        toast.success("Application created successfully!");
-
         setNewApp({ name: "", description: "", teamId: "", domains: [] });
         setShowCreateForm(false);
-      } catch (error) {
-        // Dismiss loading toast and show error
+      } catch {
+        //
+      } finally {
         toast.dismiss(loadingToast);
-        toast.error(error.message || "Failed to create application");
       }
     },
     [newApp, createAppMutation]
@@ -408,7 +400,7 @@ function ApplicationsView() {
         <h2 className="text-xl font-semibold text-gray-900">Applications</h2>
         <button
           onClick={() => setShowCreateForm(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 cursor-pointer"
         >
           Create Application
         </button>
@@ -593,7 +585,7 @@ function ApplicationsView() {
               </div>
               <button
                 onClick={() => router.push(`/dashboard/applications/${app.id}`)}
-                className="text-blue-600 hover:text-blue-800"
+                className="text-blue-600 hover:text-blue-800 cursor-pointer"
               >
                 Manage →
               </button>

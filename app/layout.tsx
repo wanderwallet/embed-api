@@ -34,10 +34,6 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   }, [isAuthLoading, user, router, pathname]);
 
-  const handleRefresh = async () => {
-    await supabase.auth.refreshSession();
-  };
-
   const handleLogout = async () => {
     try {
       setIsLoading(true);
@@ -60,9 +56,7 @@ function AuthProvider({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {user && (
-        <Header user={user} onRefresh={handleRefresh} onLogout={handleLogout} />
-      )}
+      {user && <Header user={user} onLogout={handleLogout} />}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">{children}</div>
     </div>
   );

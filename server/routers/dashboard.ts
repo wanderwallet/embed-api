@@ -234,4 +234,205 @@ export const dashboardRouter = {
       apiKeys,
     };
   }),
+
+  getTeam: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const team = await ctx.prisma.team.findFirst({
+        where: {
+          id: input.id,
+          members: {
+            some: {
+              userId: ctx.user.id,
+            },
+          },
+        },
+        include: {
+          organization: true,
+          _count: {
+            select: {
+              members: true,
+              applications: true,
+            },
+          },
+        },
+      });
+
+      if (!team) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Team not found",
+        });
+      }
+
+      return team;
+    }),
+
+  updateTeam: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        name: z.string().min(1).max(100),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const team = await ctx.prisma.team.findFirst({
+        where: {
+          id: input.id,
+          members: {
+            some: {
+              userId: ctx.user.id,
+              role: {
+                in: ["OWNER", "ADMIN"],
+              },
+            },
+          },
+        },
+      });
+
+      if (!team) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Team not found or you don't have permission to update it",
+        });
+      }
+
+      return ctx.prisma.team.update({
+        where: { id: input.id },
+        data: {
+          name: input.name,
+        },
+      });
+    }),
+
+  deleteTeam: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const team = await ctx.prisma.team.findFirst({
+        where: {
+          id: input.id,
+          members: {
+            some: {
+              userId: ctx.user.id,
+              role: "OWNER",
+            },
+          },
+        },
+      });
+
+      if (!team) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Team not found or you don't have permission to delete it",
+        });
+      }
+
+      return ctx.prisma.team.delete({ where: { id: input.id } });
+    }),
+
+  getApplication: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .query(async ({ ctx, input }) => {
+      const application = await ctx.prisma.application.findFirst({
+        where: {
+          id: input.id,
+          team: {
+            members: {
+              some: {
+                userId: ctx.user.id,
+              },
+            },
+          },
+        },
+        include: {
+          team: true,
+          clientId: true,
+        },
+      });
+
+      if (!application) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Application not found",
+        });
+      }
+
+      return application;
+    }),
+
+  updateApplication: protectedProcedure
+    .input(
+      z.object({
+        id: z.string().uuid(),
+        name: z.string().min(1).max(100),
+        description: z.string().max(255).optional(),
+        domains: z.array(z.string().max(255)),
+      })
+    )
+    .mutation(async ({ ctx, input }) => {
+      const application = await ctx.prisma.application.findFirst({
+        where: {
+          id: input.id,
+          team: {
+            members: {
+              some: {
+                userId: ctx.user.id,
+                role: {
+                  in: ["OWNER", "ADMIN"],
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!application) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            "Application not found or you don't have permission to update it",
+        });
+      }
+
+      return ctx.prisma.application.update({
+        where: { id: input.id },
+        data: {
+          name: input.name,
+          description: input.description,
+          domains: input.domains,
+        },
+      });
+    }),
+
+  deleteApplication: protectedProcedure
+    .input(z.object({ id: z.string().uuid() }))
+    .mutation(async ({ ctx, input }) => {
+      const application = await ctx.prisma.application.findFirst({
+        where: {
+          id: input.id,
+          team: {
+            members: {
+              some: {
+                userId: ctx.user.id,
+                role: {
+                  in: ["OWNER", "ADMIN"],
+                },
+              },
+            },
+          },
+        },
+      });
+
+      if (!application) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message:
+            "Application not found or you don't have permission to delete it",
+        });
+      }
+
+      return ctx.prisma.application.delete({
+        where: { id: input.id },
+      });
+    }),
 };

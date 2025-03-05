@@ -3,14 +3,15 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { User } from "@supabase/supabase-js";
+import { useRouter } from "next/navigation";
 
 interface HeaderProps {
   user: User;
-  onRefresh: () => void;
   onLogout: () => void;
 }
 
-export default function Header({ user, onRefresh, onLogout }: HeaderProps) {
+export default function Header({ user, onLogout }: HeaderProps) {
+  const router = useRouter();
   const pathname = usePathname();
 
   const NavLink = ({
@@ -40,7 +41,10 @@ export default function Header({ user, onRefresh, onLogout }: HeaderProps) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
           <div className="flex items-center">
-            <div className="flex-shrink-0">
+            <div
+              className="flex-shrink-0 cursor-pointer"
+              onClick={() => router.push("/dashboard")}
+            >
               <span className="text-white font-bold">Wander Embedded</span>
             </div>
             <div className="hidden md:block">
@@ -61,25 +65,6 @@ export default function Header({ user, onRefresh, onLogout }: HeaderProps) {
                 </div>
               </div>
             )}
-            <button
-              onClick={onRefresh}
-              className="inline-flex items-center px-3 py-1.5 border border-gray-400 text-sm font-medium rounded-md text-gray-200 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
-            >
-              <svg
-                className="w-4 h-4 mr-2"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-              Refresh
-            </button>
             <button
               onClick={onLogout}
               className="inline-flex items-center px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-red-500"
