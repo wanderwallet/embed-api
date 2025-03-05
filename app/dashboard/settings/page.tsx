@@ -46,7 +46,7 @@ export default function SettingsPage() {
             </div>
             <button
               onClick={handleRefresh}
-              className="inline-flex items-center px-3 py-1.5 border border-gray-400 text-sm font-medium rounded-md text-gray-200 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
+              className="cursor-pointer inline-flex items-center px-3 py-1.5 border border-gray-400 text-sm font-medium rounded-md text-gray-200 bg-gray-700 hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
             >
               <svg
                 className="w-4 h-4 mr-2"

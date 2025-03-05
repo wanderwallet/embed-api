@@ -26,7 +26,7 @@ export default function DashboardPage() {
   }) => (
     <button
       onClick={() => setActiveView(view)}
-      className={`w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium rounded-md transition-colors duration-200 cursor-pointer
+      className={`cursor-pointer w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium rounded-md transition-colors duration-200
         ${
           activeView === view
             ? "bg-blue-50 text-blue-700 border border-blue-100"
@@ -197,7 +197,7 @@ function TeamsView() {
         <h2 className="text-xl font-semibold text-gray-900">Teams</h2>
         <button
           onClick={() => setShowCreateForm(true)}
-          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 cursor-pointer"
+          className="cursor-pointer inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
         >
           Create Team
         </button>
@@ -239,14 +239,14 @@ function TeamsView() {
               <button
                 type="button"
                 onClick={() => setShowCreateForm(false)}
-                className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className="cursor-pointer px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 disabled={createTeamMutation.isLoading}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-6 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center space-x-2"
+                className="cursor-pointer px-6 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center space-x-2"
                 disabled={createTeamMutation.isLoading}
               >
                 {createTeamMutation.isLoading ? (
@@ -489,7 +489,7 @@ function ApplicationsView() {
                 <button
                   type="button"
                   onClick={handleAddDomain}
-                  className="px-6 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                  className="cursor-pointer px-6 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors"
                 >
                   Add
                 </button>
@@ -504,7 +504,7 @@ function ApplicationsView() {
                     <button
                       type="button"
                       onClick={() => handleRemoveDomain(domain)}
-                      className="ml-2 inline-flex text-blue-600 hover:text-blue-800"
+                      className="ml-2 inline-flex text-blue-600 hover:text-blue-800 cursor-pointer"
                     >
                       ×
                     </button>
@@ -517,14 +517,14 @@ function ApplicationsView() {
               <button
                 type="button"
                 onClick={() => setShowCreateForm(false)}
-                className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                className="cursor-pointer px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
                 disabled={createAppMutation.isLoading}
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-6 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center space-x-2"
+                className="cursor-pointer px-6 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center space-x-2"
                 disabled={createAppMutation.isLoading}
               >
                 {createAppMutation.isLoading ? (

@@ -5,7 +5,7 @@ import "./globals.css";
 
 import { trpc } from "@/client/utils/trpc/trpc-client";
 import { useAuth } from "@/client/hooks/useAuth";
-import { usePathname, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useState, useEffect } from "react";
 import Header from "@/client/components/Header";
 import { Toaster } from "sonner";
@@ -23,22 +23,22 @@ function RootLayout({ children }: { children: React.ReactNode }) {
 
 function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const pathname = usePathname();
   const { user, isLoading: isAuthLoading } = useAuth();
   const logoutMutation = trpc.logout.useMutation();
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    if (!isAuthLoading && !user && pathname !== "/") {
+    if (!isAuthLoading && !user) {
       router.push("/");
     }
-  }, [isAuthLoading, user, router, pathname]);
+  }, [isAuthLoading, user, router]);
 
   const handleLogout = async () => {
     try {
       setIsLoading(true);
       await logoutMutation.mutateAsync();
       await supabase.auth.signOut();
+      setIsLoading(false);
       router.push("/");
     } catch (error) {
       setIsLoading(false);

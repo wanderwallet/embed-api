@@ -8,6 +8,7 @@ import {
   LoadingSpinner,
   LoadingPage,
 } from "@/client/components/LoadingSpinner";
+import { Modal } from "@/client/components/Modal";
 
 const inputStyles =
   "mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3";
@@ -63,7 +64,7 @@ export default function TeamDetailsPage({
             <div className="mt-2">
               <button
                 onClick={() => router.push("/dashboard")}
-                className="text-blue-600 hover:text-blue-800"
+                className="cursor-pointer text-blue-600 hover:text-blue-800"
               >
                 ← Back to Dashboard
               </button>
@@ -187,41 +188,40 @@ export default function TeamDetailsPage({
             )}
 
             {/* Delete Confirmation Modal */}
-            {showDeleteConfirm && (
-              <div className="fixed inset-0 bg-gray-500 bg-opacity-75 flex items-center justify-center p-4">
-                <div className="bg-white rounded-lg p-6 max-w-sm w-full">
-                  <h3 className="text-lg font-medium text-gray-900">
-                    Delete Team
-                  </h3>
-                  <p className="mt-2 text-sm text-gray-500">
-                    Are you sure you want to delete this team? This action
-                    cannot be undone.
-                  </p>
-                  <div className="mt-4 flex justify-end space-x-3">
-                    <button
-                      onClick={() => setShowDeleteConfirm(false)}
-                      className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={handleDelete}
-                      className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed inline-flex items-center space-x-2"
-                      disabled={deleteTeamMutation.isLoading}
-                    >
-                      {deleteTeamMutation.isLoading ? (
-                        <>
-                          <LoadingSpinner />
-                          <span>Deleting...</span>
-                        </>
-                      ) : (
-                        "Delete"
-                      )}
-                    </button>
-                  </div>
+            <Modal
+              isOpen={showDeleteConfirm}
+              onClose={() => setShowDeleteConfirm(false)}
+              title="Delete Team"
+            >
+              <div>
+                <p className="text-sm text-gray-500">
+                  Are you sure you want to delete this team? This action cannot
+                  be undone.
+                </p>
+                <div className="mt-4 flex justify-end space-x-3">
+                  <button
+                    onClick={() => setShowDeleteConfirm(false)}
+                    className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDelete}
+                    className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 cursor-pointer disabled:opacity-75 disabled:cursor-not-allowed inline-flex items-center space-x-2"
+                    disabled={deleteTeamMutation.isLoading}
+                  >
+                    {deleteTeamMutation.isLoading ? (
+                      <>
+                        <LoadingSpinner />
+                        <span>Deleting...</span>
+                      </>
+                    ) : (
+                      "Delete"
+                    )}
+                  </button>
                 </div>
               </div>
-            )}
+            </Modal>
           </div>
         </div>
       </div>
