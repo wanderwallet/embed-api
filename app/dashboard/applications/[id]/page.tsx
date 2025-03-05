@@ -155,6 +155,14 @@ export default function ApplicationDetailsPage({
             {/* Application Info */}
             {!isEditing && (
               <div className="space-y-4">
+                <div>
+                  <h3 className="text-sm font-medium text-gray-700">
+                    ApplicationID
+                  </h3>
+                  <div className="mt-2">
+                    <CopyButton text={app.id} label={app.id} />
+                  </div>
+                </div>
                 {app.description && (
                   <div>
                     <h3 className="text-sm font-medium text-gray-700">

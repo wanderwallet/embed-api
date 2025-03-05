@@ -23,6 +23,7 @@ export const dashboardRouter = {
     .mutation(async ({ ctx, input }) => {
       let org = await ctx.prisma.organization.findFirst({
         where: { ownerId: ctx.user.id },
+        select: { id: true },
       });
 
       if (!org) {
@@ -35,6 +36,7 @@ export const dashboardRouter = {
             slug: `org-${slug}`,
             ownerId: ctx.user.id,
           },
+          select: { id: true },
         });
       }
 
@@ -52,7 +54,8 @@ export const dashboardRouter = {
               },
             },
           },
-          include: {
+          select: {
+            id: true,
             members: true,
           },
         });
@@ -87,8 +90,14 @@ export const dashboardRouter = {
             },
           },
         },
-        include: {
-          organization: true,
+        select: {
+          id: true,
+          name: true,
+          organization: {
+            select: {
+              name: true,
+            },
+          },
           _count: {
             select: {
               members: true,
@@ -110,7 +119,6 @@ export const dashboardRouter = {
       })
     )
     .mutation(async ({ ctx, input }) => {
-      // Verify user has permission to create application in team
       const teamMember = await ctx.prisma.teamMember.findFirst({
         where: {
           userId: ctx.user.id,
@@ -119,6 +127,7 @@ export const dashboardRouter = {
             in: ["OWNER", "ADMIN"],
           },
         },
+        select: { id: true },
       });
 
       if (!teamMember) {
@@ -142,8 +151,14 @@ export const dashboardRouter = {
             },
           },
         },
-        include: {
-          team: true,
+        select: {
+          id: true,
+          name: true,
+          team: {
+            select: {
+              name: true,
+            },
+          },
         },
       });
     }),
@@ -168,30 +183,27 @@ export const dashboardRouter = {
             },
           },
         },
-        include: {
-          team: true,
-          clientId: true,
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          team: {
+            select: {
+              name: true,
+            },
+          },
+          clientId: {
+            select: {
+              id: true,
+            },
+          },
         },
       });
     }),
 
   // Stats for dashboard
   getStats: protectedProcedure.query(async ({ ctx }) => {
-    const [organizations, teams, applications, apiKeys] = await Promise.all([
-      ctx.prisma.organization.count({
-        where: {
-          OR: [
-            { ownerId: ctx.user.id },
-            {
-              TeamMember: {
-                some: {
-                  userId: ctx.user.id,
-                },
-              },
-            },
-          ],
-        },
-      }),
+    const [teams, applications] = await Promise.all([
       ctx.prisma.team.count({
         where: {
           members: {
@@ -212,26 +224,11 @@ export const dashboardRouter = {
           },
         },
       }),
-      ctx.prisma.clientId.count({
-        where: {
-          application: {
-            team: {
-              members: {
-                some: {
-                  userId: ctx.user.id,
-                },
-              },
-            },
-          },
-        },
-      }),
     ]);
 
     return {
-      organizations,
       teams,
       applications,
-      apiKeys,
     };
   }),
 
@@ -247,8 +244,14 @@ export const dashboardRouter = {
             },
           },
         },
-        include: {
-          organization: true,
+        select: {
+          id: true,
+          name: true,
+          organization: {
+            select: {
+              name: true,
+            },
+          },
           _count: {
             select: {
               members: true,
@@ -344,9 +347,21 @@ export const dashboardRouter = {
             },
           },
         },
-        include: {
-          team: true,
-          clientId: true,
+        select: {
+          id: true,
+          name: true,
+          description: true,
+          domains: true,
+          team: {
+            select: {
+              name: true,
+            },
+          },
+          clientId: {
+            select: {
+              id: true,
+            },
+          },
         },
       });
 
