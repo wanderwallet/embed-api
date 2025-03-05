@@ -1,154 +1,606 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/client/utils/trpc/trpc-client";
-import { ProtectedApiInteraction } from "../../client/components/ProtectedApiInteraction";
-import { useAuth } from "@/client/hooks/useAuth";
-import { supabase } from "@/client/utils/supabase/supabase-client-client";
+import { toast } from "sonner";
+
+type ActiveView = "teams" | "applications";
 
 export default function DashboardPage() {
-  const router = useRouter();
-  const { user, isLoading: isAuthLoading } = useAuth();
-  const logoutMutation = trpc.logout.useMutation();
-  const [isLoading, setIsLoading] = useState(false);
+  const [activeView, setActiveView] = useState<ActiveView>("teams");
+  const { data: stats } = trpc.getStats.useQuery();
 
-  useEffect(() => {
-    if (!isAuthLoading && !user) {
-      router.push("/");
-    }
-  }, [isAuthLoading, user, router]);
+  const NavIcon = ({ children }: { children: React.ReactNode }) => (
+    <div className="w-5 h-5 flex-shrink-0">{children}</div>
+  );
 
-  const handleRefresh = async () => {
-    await supabase.auth.refreshSession();
-  };
+  const SideNavItem = ({
+    view,
+    label,
+    icon,
+  }: {
+    view: ActiveView;
+    label: string;
+    icon: React.ReactNode;
+  }) => (
+    <button
+      onClick={() => setActiveView(view)}
+      className={`w-full flex items-center space-x-3 px-4 py-3 text-sm font-medium rounded-md transition-colors duration-200
+        ${
+          activeView === view
+            ? "bg-blue-50 text-blue-700 border border-blue-100"
+            : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+        }`}
+    >
+      <NavIcon>{icon}</NavIcon>
+      <span>{label}</span>
+    </button>
+  );
 
-  const handleLogout = async () => {
-    try {
-      setIsLoading(true);
+  const renderViewHeader = () => {
+    const headers = {
+      teams: "Team Management",
+      applications: "Application Management",
+    };
 
-      await logoutMutation.mutateAsync();
-      await supabase.auth.signOut();
-    } catch (error) {
-      setIsLoading(false);
-
-      console.error("Logout failed:", error);
-    }
-  };
-
-  if (isAuthLoading || !user) {
     return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="p-8 bg-white rounded-lg shadow-md">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="w-8 h-8 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
-            <p className="text-gray-600">Loading dashboard...</p>
-          </div>
+      <div className="border-b border-gray-200 px-6 py-4">
+        <h1 className="text-xl font-semibold text-gray-900">
+          {headers[activeView]}
+        </h1>
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="lg:grid lg:grid-cols-12 lg:gap-8">
+          {/* Sidebar Navigation */}
+          <aside className="lg:col-span-3">
+            <nav className="space-y-2 bg-white p-4 rounded-lg shadow-sm">
+              <SideNavItem
+                view="teams"
+                label="Teams"
+                icon={
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"
+                    />
+                  </svg>
+                }
+              />
+              <SideNavItem
+                view="applications"
+                label="Applications"
+                icon={
+                  <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M9 3v2m6-2v2M9 19v2m6-2v2M5 9H3m2 6H3m18-6h-2m2 6h-2M7 19h10a2 2 0 002-2V7a2 2 0 00-2-2H7a2 2 0 00-2 2v10a2 2 0 002 2zM9 9h6v6H9V9z"
+                    />
+                  </svg>
+                }
+              />
+            </nav>
+
+            {/* Quick Stats */}
+            <div className="mt-6 bg-white p-4 rounded-lg shadow-sm space-y-4">
+              <h3 className="text-sm font-medium text-gray-500">Quick Stats</h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-3 bg-gray-50 rounded-md">
+                  <p className="text-xs text-gray-500">Teams</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {stats?.teams || 0}
+                  </p>
+                </div>
+                <div className="p-3 bg-gray-50 rounded-md">
+                  <p className="text-xs text-gray-500">Applications</p>
+                  <p className="text-lg font-semibold text-gray-900">
+                    {stats?.applications || 0}
+                  </p>
+                </div>
+              </div>
+            </div>
+          </aside>
+
+          {/* Main Content Area */}
+          <main className="mt-8 lg:mt-0 lg:col-span-9">
+            <div className="bg-white shadow rounded-lg overflow-hidden">
+              {renderViewHeader()}
+              <div className="divide-y divide-gray-200">
+                {activeView === "teams" && <TeamsView />}
+                {activeView === "applications" && <ApplicationsView />}
+              </div>
+            </div>
+          </main>
         </div>
+      </div>
+    </div>
+  );
+}
+
+const inputStyles =
+  "mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3";
+const selectStyles =
+  "mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3";
+const textareaStyles =
+  "mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3";
+
+function TeamsView() {
+  const router = useRouter();
+  const utils = trpc.useUtils();
+  const createTeamMutation = trpc.createTeam.useMutation({
+    onSuccess: () => {
+      toast.success("Team created successfully");
+      utils.listTeams.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to create team");
+    },
+  });
+
+  const { data: teams, isLoading: isLoadingTeams } = trpc.listTeams.useQuery();
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newTeam, setNewTeam] = useState({
+    name: "",
+    slug: "",
+  });
+
+  const handleCreateTeam = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+
+      // Show loading toast
+      const loadingToast = toast.loading("Creating team...");
+
+      try {
+        const slug = newTeam.name
+          .toLowerCase()
+          .replace(/[^a-z0-9-]/g, "-")
+          .replace(/-+/g, "-")
+          .replace(/^-|-$/g, "");
+
+        await createTeamMutation.mutateAsync({
+          name: newTeam.name,
+          slug: slug,
+        });
+
+        // Dismiss loading toast and show success
+        toast.dismiss(loadingToast);
+        toast.success("Team created successfully!");
+
+        setNewTeam({ name: "", slug: "" });
+        setShowCreateForm(false);
+      } catch (error) {
+        // Dismiss loading toast and show error
+        toast.dismiss(loadingToast);
+        toast.error(error.message || "Failed to create team");
+      }
+    },
+    [newTeam, createTeamMutation]
+  );
+
+  if (isLoadingTeams) {
+    return (
+      <div className="p-6 flex justify-center">
+        <div className="animate-pulse text-gray-500">Loading teams...</div>
       </div>
     );
   }
 
-  if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-50">
-        <div className="p-8 bg-white rounded-lg shadow-md">
-          <div className="flex flex-col items-center space-y-4">
-            <div className="w-8 h-8 border-t-2 border-b-2 border-blue-500 rounded-full animate-spin"></div>
-            <p className="text-gray-600">Signing out...</p>
+  return (
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold text-gray-900">Teams</h2>
+        <button
+          onClick={() => setShowCreateForm(true)}
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+        >
+          Create Team
+        </button>
+      </div>
+
+      {showCreateForm && (
+        <form
+          onSubmit={handleCreateTeam}
+          className="mb-6 p-6 bg-gray-50 rounded-lg"
+        >
+          <div className="space-y-6">
+            <div>
+              <label
+                htmlFor="teamName"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Team Name
+              </label>
+              <input
+                type="text"
+                id="teamName"
+                value={newTeam.name}
+                onChange={(e) =>
+                  setNewTeam({ ...newTeam, name: e.target.value })
+                }
+                className={inputStyles}
+                required
+                disabled={createTeamMutation.isLoading}
+                placeholder="Enter team name"
+              />
+              <p className="mt-2 text-sm text-gray-500">
+                Slug:{" "}
+                {newTeam.name
+                  ? newTeam.name.toLowerCase().replace(/[^a-z0-9-]/g, "-")
+                  : ""}
+              </p>
+            </div>
+            <div className="flex justify-end space-x-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowCreateForm(false)}
+                className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                disabled={createTeamMutation.isLoading}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center space-x-2"
+                disabled={createTeamMutation.isLoading}
+              >
+                {createTeamMutation.isLoading ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    <span>Creating...</span>
+                  </>
+                ) : (
+                  "Create Team"
+                )}
+              </button>
+            </div>
           </div>
+        </form>
+      )}
+
+      <div className="space-y-4">
+        {teams?.length === 0 ? (
+          <div className="text-center py-6 text-gray-500">
+            No teams created yet. Create your first team to get started.
+          </div>
+        ) : (
+          teams?.map((team) => (
+            <div
+              key={team.id}
+              className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+            >
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">
+                  {team.name}
+                </h3>
+                <p className="text-sm text-gray-500">
+                  Organization: {team.organization.name}
+                </p>
+              </div>
+              <button
+                onClick={() => router.push(`/dashboard/teams/${team.id}`)}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                Manage →
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+    </div>
+  );
+}
+
+function ApplicationsView() {
+  const router = useRouter();
+  const utils = trpc.useUtils();
+  const createAppMutation = trpc.createApplication.useMutation({
+    onSuccess: () => {
+      toast.success("Application created successfully");
+      utils.listApplications.invalidate();
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to create application");
+    },
+  });
+
+  const { data: applications, isLoading: isLoadingApps } =
+    trpc.listApplications.useQuery();
+  const { data: teams, isLoading: isLoadingTeams } = trpc.listTeams.useQuery();
+  const [showCreateForm, setShowCreateForm] = useState(false);
+  const [newApp, setNewApp] = useState({
+    name: "",
+    description: "",
+    teamId: "",
+    domains: [] as string[],
+  });
+
+  const [newDomain, setNewDomain] = useState("");
+
+  const handleAddDomain = useCallback(() => {
+    if (newDomain && !newApp.domains.includes(newDomain)) {
+      setNewApp((prev) => ({
+        ...prev,
+        domains: [...prev.domains, newDomain],
+      }));
+      setNewDomain("");
+    }
+  }, [newDomain, newApp.domains]);
+
+  const handleRemoveDomain = useCallback((domain: string) => {
+    setNewApp((prev) => ({
+      ...prev,
+      domains: prev.domains.filter((d) => d !== domain),
+    }));
+  }, []);
+
+  const handleCreateApp = useCallback(
+    async (e: React.FormEvent) => {
+      e.preventDefault();
+
+      // Show loading toast
+      const loadingToast = toast.loading("Creating application...");
+
+      try {
+        await createAppMutation.mutateAsync({
+          name: newApp.name,
+          description: newApp.description || undefined,
+          teamId: newApp.teamId,
+          domains: newApp.domains,
+        });
+
+        // Dismiss loading toast and show success
+        toast.dismiss(loadingToast);
+        toast.success("Application created successfully!");
+
+        setNewApp({ name: "", description: "", teamId: "", domains: [] });
+        setShowCreateForm(false);
+      } catch (error) {
+        // Dismiss loading toast and show error
+        toast.dismiss(loadingToast);
+        toast.error(error.message || "Failed to create application");
+      }
+    },
+    [newApp, createAppMutation]
+  );
+
+  if (isLoadingApps || isLoadingTeams) {
+    return (
+      <div className="p-6 flex justify-center">
+        <div className="animate-pulse text-gray-500">
+          Loading applications...
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <nav className="bg-white shadow-sm">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center h-16">
-            <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
-            <div className="flex items-center space-x-4">
-              <button
-                onClick={handleRefresh}
-                className="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
-              >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                  />
-                </svg>
-                Refresh Session
-              </button>
-              <button
-                onClick={handleLogout}
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-colors duration-200"
-              >
-                <svg
-                  className="w-4 h-4 mr-2"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-                  />
-                </svg>
-                Sign Out
-              </button>
-            </div>
-          </div>
-        </div>
-      </nav>
+    <div className="p-6">
+      <div className="flex justify-between items-center mb-6">
+        <h2 className="text-xl font-semibold text-gray-900">Applications</h2>
+        <button
+          onClick={() => setShowCreateForm(true)}
+          className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700"
+        >
+          Create Application
+        </button>
+      </div>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="bg-white shadow rounded-lg p-6 mb-8">
-          <div className="flex items-center space-x-4">
-            <div className="bg-blue-100 rounded-full p-3">
-              <svg
-                className="w-6 h-6 text-blue-600"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
-                />
-              </svg>
-            </div>
+      {showCreateForm && (
+        <form
+          onSubmit={handleCreateApp}
+          className="mb-6 p-6 bg-gray-50 rounded-lg"
+        >
+          <div className="space-y-6">
             <div>
-              <h2 className="text-lg font-medium text-gray-900">
-                User Profile
-              </h2>
-              <p className="text-sm text-gray-500">ID: {user.id}</p>
-              {user.email && (
-                <p className="text-sm text-gray-500">Email: {user.email}</p>
-              )}
+              <label
+                htmlFor="appName"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Application Name
+              </label>
+              <input
+                type="text"
+                id="appName"
+                value={newApp.name}
+                onChange={(e) => setNewApp({ ...newApp, name: e.target.value })}
+                className={inputStyles}
+                required
+                placeholder="Enter application name"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="description"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Description
+              </label>
+              <textarea
+                id="description"
+                value={newApp.description}
+                onChange={(e) =>
+                  setNewApp({ ...newApp, description: e.target.value })
+                }
+                rows={3}
+                className={textareaStyles}
+                placeholder="Enter application description"
+              />
+            </div>
+
+            <div>
+              <label
+                htmlFor="teamId"
+                className="block text-sm font-medium text-gray-700 mb-1"
+              >
+                Team
+              </label>
+              <select
+                id="teamId"
+                value={newApp.teamId}
+                onChange={(e) =>
+                  setNewApp({ ...newApp, teamId: e.target.value })
+                }
+                className={selectStyles}
+                required
+              >
+                <option value="">Select a team</option>
+                {teams?.map((team) => (
+                  <option key={team.id} value={team.id}>
+                    {team.name} ({team.organization.name})
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Domains
+              </label>
+              <div className="mt-1 flex space-x-2">
+                <input
+                  type="text"
+                  value={newDomain}
+                  onChange={(e) => setNewDomain(e.target.value)}
+                  placeholder="example.com"
+                  className={inputStyles}
+                />
+                <button
+                  type="button"
+                  onClick={handleAddDomain}
+                  className="px-6 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 transition-colors"
+                >
+                  Add
+                </button>
+              </div>
+              <div className="mt-3 flex flex-wrap gap-2">
+                {newApp.domains.map((domain) => (
+                  <span
+                    key={domain}
+                    className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-100 text-blue-800"
+                  >
+                    {domain}
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveDomain(domain)}
+                      className="ml-2 inline-flex text-blue-600 hover:text-blue-800"
+                    >
+                      ×
+                    </button>
+                  </span>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowCreateForm(false)}
+                className="px-6 py-2.5 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+                disabled={createAppMutation.isLoading}
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                className="px-6 py-2.5 border border-transparent rounded-lg text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors inline-flex items-center space-x-2"
+                disabled={createAppMutation.isLoading}
+              >
+                {createAppMutation.isLoading ? (
+                  <>
+                    <svg
+                      className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                    >
+                      <circle
+                        className="opacity-25"
+                        cx="12"
+                        cy="12"
+                        r="10"
+                        stroke="currentColor"
+                        strokeWidth="4"
+                      ></circle>
+                      <path
+                        className="opacity-75"
+                        fill="currentColor"
+                        d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                      ></path>
+                    </svg>
+                    <span>Creating...</span>
+                  </>
+                ) : (
+                  "Create Application"
+                )}
+              </button>
             </div>
           </div>
-        </div>
+        </form>
+      )}
 
-        <div className="bg-white shadow rounded-lg p-6">
-          <h2 className="text-lg font-medium text-gray-900 mb-6">
-            API Interactions
-          </h2>
-          <ProtectedApiInteraction />
-        </div>
-      </main>
+      <div className="space-y-4">
+        {applications?.length === 0 ? (
+          <div className="text-center py-6 text-gray-500">
+            No applications created yet. Create your first application to get
+            started.
+          </div>
+        ) : (
+          applications?.map((app) => (
+            <div
+              key={app.id}
+              className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50"
+            >
+              <div>
+                <h3 className="text-lg font-medium text-gray-900">
+                  {app.name}
+                </h3>
+                <p className="text-sm text-gray-500">Team: {app.team.name}</p>
+                {app.description && (
+                  <p className="text-sm text-gray-500 mt-1">
+                    {app.description}
+                  </p>
+                )}
+              </div>
+              <button
+                onClick={() => router.push(`/dashboard/applications/${app.id}`)}
+                className="text-blue-600 hover:text-blue-800"
+              >
+                Manage →
+              </button>
+            </div>
+          ))
+        )}
+      </div>
     </div>
   );
 }
