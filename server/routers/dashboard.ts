@@ -3,6 +3,7 @@ import { z } from "zod";
 import { TRPCError } from "@trpc/server";
 import { Prisma } from "@prisma/client";
 import { customAlphabet } from "nanoid";
+import { domainValidator } from "@/shared/validators/domains";
 
 // Create a custom nanoid function that uses lowercase letters and numbers
 const generateSlug = customAlphabet("abcdefghijklmnopqrstuvwxyz0123456789", 12);
@@ -122,7 +123,7 @@ export const dashboardRouter = {
         name: z.string().min(1).max(100),
         description: z.string().max(255).optional(),
         teamId: z.string().uuid(),
-        domains: z.array(z.string().max(255)).optional(),
+        domains: domainValidator,
       })
     )
     .mutation(async ({ ctx, input }) => {
@@ -409,7 +410,7 @@ export const dashboardRouter = {
         id: z.string().uuid(),
         name: z.string().min(1).max(100),
         description: z.string().max(255).optional(),
-        domains: z.array(z.string().max(255)),
+        domains: domainValidator,
       })
     )
     .mutation(async ({ ctx, input }) => {

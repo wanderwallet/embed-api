@@ -10,6 +10,7 @@ import {
 } from "@/client/components/LoadingSpinner";
 import { CopyButton } from "@/client/components/CopyButton";
 import { Modal } from "@/client/components/Modal";
+import { validateDomains } from "@/shared/validators/domains";
 
 const inputStyles =
   "mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3";
@@ -107,9 +108,17 @@ export default function ApplicationDetailsPage({
 
   const handleAddDomain = () => {
     if (newDomain && !editForm.domains.includes(newDomain)) {
+      const updatedDomains = [...editForm.domains, newDomain];
+      const validationResult = validateDomains(updatedDomains);
+
+      if (!validationResult.valid) {
+        toast.error(validationResult.error);
+        return;
+      }
+
       setEditForm((prev) => ({
         ...prev,
-        domains: [...prev.domains, newDomain],
+        domains: updatedDomains,
       }));
       setNewDomain("");
     }

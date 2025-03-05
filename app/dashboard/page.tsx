@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { trpc } from "@/client/utils/trpc/trpc-client";
 import { toast } from "sonner";
+import { validateDomains } from "@/shared/validators/domains";
 
 type ActiveView = "teams" | "applications";
 
@@ -343,6 +344,13 @@ function ApplicationsView() {
 
   const handleAddDomain = useCallback(() => {
     if (newDomain && !newApp.domains.includes(newDomain)) {
+      const validationResult = validateDomains([...newApp.domains, newDomain]);
+
+      if (!validationResult.valid) {
+        toast.error(validationResult.error);
+        return;
+      }
+
       setNewApp((prev) => ({
         ...prev,
         domains: [...prev.domains, newDomain],
