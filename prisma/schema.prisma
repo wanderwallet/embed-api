@@ -237,7 +237,7 @@ model Application {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String   @db.VarChar(100)
   description String?  @db.VarChar(255)
-  clientId    String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  clientId    String   @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   domains     String[] @db.VarChar(255)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -254,7 +254,6 @@ model Application {
   teamId String @db.Uuid
 
   @@index([teamId])
-  @@index([clientId])
   @@map("Applications")
 }
 

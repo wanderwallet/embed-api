@@ -329,10 +329,10 @@ CREATE TABLE "Memberships" (
 CREATE INDEX "Bills_organizationId_idx" ON "Bills"("organizationId");
 
 -- CreateIndex
-CREATE INDEX "Applications_teamId_idx" ON "Applications"("teamId");
+CREATE UNIQUE INDEX "Applications_clientId_key" ON "Applications"("clientId");
 
 -- CreateIndex
-CREATE INDEX "Applications_clientId_idx" ON "Applications"("clientId");
+CREATE INDEX "Applications_teamId_idx" ON "Applications"("teamId");
 
 -- CreateIndex
 CREATE INDEX "Wallets_canRecoverAccountSetting_chain_address_idx" ON "Wallets"("canRecoverAccountSetting", "chain", "address");
