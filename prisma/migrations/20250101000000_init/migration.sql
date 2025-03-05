@@ -262,6 +262,15 @@ CREATE TABLE "Sessions" (
 );
 
 -- CreateTable
+CREATE TABLE "ApplicationSessions" (
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "applicationId" UUID NOT NULL,
+    "sessionId" UUID NOT NULL,
+
+    CONSTRAINT "ApplicationSessions_pkey" PRIMARY KEY ("applicationId","sessionId")
+);
+
+-- CreateTable
 CREATE TABLE "LoginAttempts" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "rejectionReason" VARCHAR(255) NOT NULL,
@@ -327,14 +336,6 @@ CREATE TABLE "ClientIds" (
     CONSTRAINT "ClientIds_pkey" PRIMARY KEY ("id")
 );
 
--- CreateTable
-CREATE TABLE "_ApplicationToSession" (
-    "A" UUID NOT NULL,
-    "B" UUID NOT NULL,
-
-    CONSTRAINT "_ApplicationToSession_AB_pkey" PRIMARY KEY ("A","B")
-);
-
 -- CreateIndex
 CREATE INDEX "Bills_organizationId_idx" ON "Bills"("organizationId");
 
@@ -390,6 +391,9 @@ CREATE INDEX "Sessions_updatedAt_idx" ON "Sessions"("updatedAt");
 CREATE UNIQUE INDEX "Sessions_userId_deviceNonce_key" ON "Sessions"("userId", "deviceNonce");
 
 -- CreateIndex
+CREATE INDEX "ApplicationSessions_updatedAt_idx" ON "ApplicationSessions"("updatedAt");
+
+-- CreateIndex
 CREATE INDEX "LoginAttempts_userId_idx" ON "LoginAttempts"("userId");
 
 -- CreateIndex
@@ -412,9 +416,6 @@ CREATE UNIQUE INDEX "TeamMembers_organizationId_teamId_userId_key" ON "TeamMembe
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ClientIds_applicationId_key" ON "ClientIds"("applicationId");
-
--- CreateIndex
-CREATE INDEX "_ApplicationToSession_B_index" ON "_ApplicationToSession"("B");
 
 -- AddForeignKey
 ALTER TABLE "Bills" ADD CONSTRAINT "Bills_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -495,6 +496,12 @@ ALTER TABLE "DevicesAndLocations" ADD CONSTRAINT "DevicesAndLocations_applicatio
 ALTER TABLE "Sessions" ADD CONSTRAINT "Sessions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "UserProfiles"("supId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "ApplicationSessions" ADD CONSTRAINT "ApplicationSessions_applicationId_fkey" FOREIGN KEY ("applicationId") REFERENCES "Applications"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ApplicationSessions" ADD CONSTRAINT "ApplicationSessions_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "Sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "LoginAttempts" ADD CONSTRAINT "LoginAttempts_userId_fkey" FOREIGN KEY ("userId") REFERENCES "UserProfiles"("supId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
@@ -517,9 +524,3 @@ ALTER TABLE "TeamMembers" ADD CONSTRAINT "TeamMembers_userId_fkey" FOREIGN KEY (
 
 -- AddForeignKey
 ALTER TABLE "ClientIds" ADD CONSTRAINT "ClientIds_applicationId_fkey" FOREIGN KEY ("applicationId") REFERENCES "Applications"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_ApplicationToSession" ADD CONSTRAINT "_ApplicationToSession_A_fkey" FOREIGN KEY ("A") REFERENCES "Applications"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "_ApplicationToSession" ADD CONSTRAINT "_ApplicationToSession_B_fkey" FOREIGN KEY ("B") REFERENCES "Sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE;

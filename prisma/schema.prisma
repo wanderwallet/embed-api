@@ -245,8 +245,8 @@ model Application {
   // TODO: Document its shape once defined.
   settings Json
 
+  sessions          ApplicationSession[]
   DeviceAndLocation DeviceAndLocation[]
-  Session           Session[]
   clientId          ClientId?
 
   // Each application belongs to exactly one team
@@ -547,8 +547,8 @@ model Session {
   countryCode String   @default("") @db.VarChar(2)
   userAgent   String   @db.VarChar(500)
 
-  applications  Application[]
   workKeyShares WorkKeyShare[]
+  applications  ApplicationSession[]
 
   userProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId      String      @db.Uuid
@@ -558,6 +558,20 @@ model Session {
   @@unique([userId, deviceNonce], name: "userSession")
   @@index([updatedAt])
   @@map("Sessions")
+}
+
+model ApplicationSession {
+  updatedAt DateTime @default(now()) @updatedAt
+
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId String      @db.Uuid
+
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String  @db.Uuid
+
+  @@id([applicationId, sessionId])
+  @@index([updatedAt])
+  @@map("ApplicationSessions")
 }
 
 model AuthenticationAttempt {
