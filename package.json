@@ -11,7 +11,7 @@
     "start": "next start",
     "db:migrate": "prisma migrate dev",
     "seed": "node -r ts-node/register --env-file=.env prisma/seed.ts",
-    "postinstall": "prisma generate",
+    "postinstall": "npx prisma generate",
     "db:postinstall": "prisma generate && prisma migrate deploy",
     "sdk:dev": "tsup --watch",
     "sdk:build": "tsup"
