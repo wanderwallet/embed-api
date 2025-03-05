@@ -186,7 +186,7 @@ model UserProfile {
   countryPrivacySetting          FilterPrivacySetting?       @default(HIDE_DETAILS)
 
   organizations          Organization[]
-  teamMemberships        TeamMember[]
+  memberships          Membership[]
   wallets                Wallet[]
   walletActivations      WalletActivation[]
   walletRecoveries       WalletRecovery[]
@@ -610,13 +610,9 @@ model Organization {
   /// ISO 3166-1 alpha-2 code
   billingCountryCode String? @db.VarChar(2)
 
-  teams Team[]
-  bills Bill[]
-
-  // Organization owner
-  owner      UserProfile  @relation(fields: [ownerId], references: [supId], onDelete: Cascade)
-  ownerId    String       @db.Uuid
-  teamMember TeamMember[]
+  teams        Team[]
+  bills        Bill[]
+  memberships  Membership[]
 
   @@map("Organizations")
 }
@@ -631,7 +627,7 @@ model Team {
   updatedAt     DateTime @updatedAt
 
   applications Application[]
-  members      TeamMember[]
+  memberships  Membership[]
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String       @db.Uuid
@@ -641,7 +637,7 @@ model Team {
   @@map("Teams")
 }
 
-model TeamMember {
+model Membership {
   role      Role     @default(MEMBER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -657,7 +653,7 @@ model TeamMember {
 
   @@id([organizationId, teamId, userId])
   @@index([userId])
-  @@map("TeamMembers")
+  @@map("Memberships")
 }
 
 model ClientId {
