@@ -186,7 +186,7 @@ model UserProfile {
   countryPrivacySetting          FilterPrivacySetting?       @default(HIDE_DETAILS)
 
   organizations          Organization[]
-  memberships          Membership[]
+  memberships            Membership[]
   wallets                Wallet[]
   walletActivations      WalletActivation[]
   walletRecoveries       WalletRecovery[]
@@ -237,6 +237,7 @@ model Application {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String   @db.VarChar(100)
   description String?  @db.VarChar(255)
+  clientId    String   @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   domains     String[] @db.VarChar(255)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -247,13 +248,13 @@ model Application {
 
   sessions          ApplicationSession[]
   DeviceAndLocation DeviceAndLocation[]
-  clientId          ClientId?
 
   // Each application belongs to exactly one team
   team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
   teamId String @db.Uuid
 
   @@index([teamId])
+  @@index([clientId])
   @@map("Applications")
 }
 
@@ -610,9 +611,11 @@ model Organization {
   /// ISO 3166-1 alpha-2 code
   billingCountryCode String? @db.VarChar(2)
 
-  teams        Team[]
-  bills        Bill[]
-  memberships  Membership[]
+  teams            Team[]
+  bills            Bill[]
+  memberships      Membership[]
+  UserProfile      UserProfile? @relation(fields: [userProfileSupId], references: [supId])
+  userProfileSupId String?      @db.Uuid
 
   @@map("Organizations")
 }
@@ -654,16 +657,4 @@ model Membership {
   @@id([organizationId, teamId, userId])
   @@index([userId])
   @@map("Memberships")
-}
-
-model ClientId {
-  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String    @db.VarChar(100)
-  createdAt DateTime  @default(now())
-  expiresAt DateTime?
-
-  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  applicationId String      @unique @db.Uuid
-
-  @@map("ClientIds")
 }
