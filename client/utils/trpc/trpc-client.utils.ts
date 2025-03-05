@@ -62,7 +62,7 @@ export function createTRPCClient({
           }
 
           return {
-            authorization: `Bearer ${authToken}`,
+            authorization: authToken ? `Bearer ${authToken}` : undefined,
             "x-device-nonce": deviceNonce,
             "x-api-key": apiKey,
           };

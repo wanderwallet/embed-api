@@ -28,7 +28,6 @@ export const registerAuthShare = protectedProcedure
     // TODO: This wallet needs to be regenerated as well and the authShare updated. If this is not done after X
     // "warnings", the Shards entry will be removed anyway.
 
-
     // This `SHARE_ROTATION` challenge will only exist if `activateWallet` created it automatically when
     // `shouldRotate = now - workKeyShare.sharesRotatedAt.getTime() >= Config.SHARE_ACTIVE_TTL_MS`, so we don't need to
     // check that condition again here. It's also `activateWallet` where shares are deleted if the rotation warnings
