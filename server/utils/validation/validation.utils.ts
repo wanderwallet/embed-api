@@ -85,6 +85,7 @@ export async function validateApplication(
     }
 
     if (sessionId) {
+      // Session IDs remain constant even when the session is refreshed (JWT refresh).
       await prisma.applicationSession
         .upsert({
           where: {
@@ -97,6 +98,7 @@ export async function validateApplication(
             applicationId,
             sessionId,
           },
+          // No updates needed as updatedAt is handled automatically
           update: {},
         })
         .catch((error) =>
