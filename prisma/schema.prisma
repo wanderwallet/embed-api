@@ -186,7 +186,7 @@ model UserProfile {
   countryPrivacySetting          FilterPrivacySetting?       @default(HIDE_DETAILS)
 
   organizations          Organization[]
-  teamMemberships        TeamMember[]
+  memberships            Membership[]
   wallets                Wallet[]
   walletActivations      WalletActivation[]
   walletRecoveries       WalletRecovery[]
@@ -226,7 +226,7 @@ model Bill {
   /// }
   userOverrides Json
 
-  Organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String       @db.Uuid
 
   @@index([organizationId])
@@ -237,6 +237,7 @@ model Application {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name        String   @db.VarChar(100)
   description String?  @db.VarChar(255)
+  clientId    String   @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   domains     String[] @db.VarChar(255)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -247,7 +248,6 @@ model Application {
 
   sessions          ApplicationSession[]
   DeviceAndLocation DeviceAndLocation[]
-  clientId          ClientId?
 
   // Each application belongs to exactly one team
   team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
@@ -610,13 +610,11 @@ model Organization {
   /// ISO 3166-1 alpha-2 code
   billingCountryCode String? @db.VarChar(2)
 
-  teams Team[]
-  bills Bill[]
-
-  // Organization owner
-  owner      UserProfile  @relation(fields: [ownerId], references: [supId], onDelete: Cascade)
-  ownerId    String       @db.Uuid
-  TeamMember TeamMember[]
+  teams            Team[]
+  bills            Bill[]
+  memberships      Membership[]
+  UserProfile      UserProfile? @relation(fields: [userProfileSupId], references: [supId])
+  userProfileSupId String?      @db.Uuid
 
   @@map("Organizations")
 }
@@ -631,7 +629,7 @@ model Team {
   updatedAt     DateTime @updatedAt
 
   applications Application[]
-  members      TeamMember[]
+  memberships  Membership[]
 
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String       @db.Uuid
@@ -641,8 +639,7 @@ model Team {
   @@map("Teams")
 }
 
-model TeamMember {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+model Membership {
   role      Role     @default(MEMBER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -656,19 +653,7 @@ model TeamMember {
   user   UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId String      @db.Uuid
 
-  @@unique([organizationId, teamId, userId])
+  @@id([organizationId, teamId, userId])
   @@index([userId])
-  @@map("TeamMembers")
-}
-
-model ClientId {
-  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  name      String    @db.VarChar(100)
-  createdAt DateTime  @default(now())
-  expiresAt DateTime?
-
-  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
-  applicationId String      @unique @db.Uuid
-
-  @@map("ClientIds")
+  @@map("Memberships")
 }

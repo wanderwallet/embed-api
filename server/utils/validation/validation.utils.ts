@@ -85,10 +85,21 @@ export async function validateApplication(
     }
 
     if (sessionId) {
-      await prisma.application
-        .update({
-          where: { id: applicationId },
-          data: { Session: { connect: { id: sessionId } } },
+      // Session IDs remain constant even when the session is refreshed (JWT refresh).
+      await prisma.applicationSession
+        .upsert({
+          where: {
+            applicationId_sessionId: {
+              applicationId,
+              sessionId,
+            },
+          },
+          create: {
+            applicationId,
+            sessionId,
+          },
+          // No updates needed as updatedAt is handled automatically
+          update: {},
         })
         .catch((error) =>
           console.error("Error linking session to application:", error)
