@@ -314,7 +314,6 @@ CREATE TABLE "Teams" (
 
 -- CreateTable
 CREATE TABLE "TeamMembers" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "role" "Role" NOT NULL DEFAULT 'MEMBER',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -322,7 +321,7 @@ CREATE TABLE "TeamMembers" (
     "teamId" UUID NOT NULL,
     "userId" UUID NOT NULL,
 
-    CONSTRAINT "TeamMembers_pkey" PRIMARY KEY ("id")
+    CONSTRAINT "TeamMembers_pkey" PRIMARY KEY ("organizationId","teamId","userId")
 );
 
 -- CreateTable
@@ -410,9 +409,6 @@ CREATE UNIQUE INDEX "Teams_organizationId_slug_key" ON "Teams"("organizationId",
 
 -- CreateIndex
 CREATE INDEX "TeamMembers_userId_idx" ON "TeamMembers"("userId");
-
--- CreateIndex
-CREATE UNIQUE INDEX "TeamMembers_organizationId_teamId_userId_key" ON "TeamMembers"("organizationId", "teamId", "userId");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "ClientIds_applicationId_key" ON "ClientIds"("applicationId");

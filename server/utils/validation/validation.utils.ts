@@ -85,10 +85,19 @@ export async function validateApplication(
     }
 
     if (sessionId) {
-      await prisma.application
-        .update({
-          where: { id: applicationId },
-          data: { Session: { connect: { id: sessionId } } },
+      await prisma.applicationSession
+        .upsert({
+          where: {
+            applicationId_sessionId: {
+              applicationId,
+              sessionId,
+            },
+          },
+          create: {
+            applicationId,
+            sessionId,
+          },
+          update: {},
         })
         .catch((error) =>
           console.error("Error linking session to application:", error)

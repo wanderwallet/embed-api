@@ -226,7 +226,7 @@ model Bill {
   /// }
   userOverrides Json
 
-  Organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   organizationId String       @db.Uuid
 
   @@index([organizationId])
@@ -616,7 +616,7 @@ model Organization {
   // Organization owner
   owner      UserProfile  @relation(fields: [ownerId], references: [supId], onDelete: Cascade)
   ownerId    String       @db.Uuid
-  TeamMember TeamMember[]
+  teamMember TeamMember[]
 
   @@map("Organizations")
 }
@@ -642,7 +642,6 @@ model Team {
 }
 
 model TeamMember {
-  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   role      Role     @default(MEMBER)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -656,7 +655,7 @@ model TeamMember {
   user   UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId String      @db.Uuid
 
-  @@unique([organizationId, teamId, userId])
+  @@id([organizationId, teamId, userId])
   @@index([userId])
   @@map("TeamMembers")
 }
