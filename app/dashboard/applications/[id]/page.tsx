@@ -177,10 +177,7 @@ export default function ApplicationDetailsPage({
                   </h3>
                   <div className="mt-2">
                     {app.clientId ? (
-                      <CopyButton
-                        text={app.clientId.id}
-                        label={app.clientId.id}
-                      />
+                      <CopyButton text={app.clientId} label={app.clientId} />
                     ) : (
                       <span className="text-sm text-gray-500">
                         No Client ID available

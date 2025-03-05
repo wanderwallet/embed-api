@@ -129,7 +129,7 @@ export default function TeamDetailsPage({
               <div className="p-4 bg-gray-50 rounded-lg">
                 <p className="text-sm text-gray-500">Members</p>
                 <p className="text-2xl font-semibold text-gray-900">
-                  {team._count.members}
+                  {team._count.memberships}
                 </p>
               </div>
               <div className="p-4 bg-gray-50 rounded-lg">

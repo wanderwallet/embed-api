@@ -21,20 +21,27 @@ export const dashboardRouter = {
       })
     )
     .mutation(async ({ ctx, input }) => {
+      // Find or create default organization for the user
       let org = await ctx.prisma.organization.findFirst({
-        where: { ownerId: ctx.user.id },
+        where: {
+          memberships: {
+            some: {
+              userId: ctx.user.id,
+            },
+          },
+        },
         select: { id: true },
       });
 
       if (!org) {
         const slug = generateSlug();
         const orgName =
-          (ctx.user?.email?.split("@")[0] || slug) + "'s Default Org";
+          (ctx.user?.email?.split("@")[0] || slug) + "'s Organization";
+
         org = await ctx.prisma.organization.create({
           data: {
             name: orgName,
             slug: `org-${slug}`,
-            ownerId: ctx.user.id,
           },
           select: { id: true },
         });
@@ -46,7 +53,7 @@ export const dashboardRouter = {
             name: input.name,
             slug: input.slug,
             organizationId: org.id,
-            members: {
+            memberships: {
               create: {
                 userId: ctx.user.id,
                 role: "OWNER",
@@ -56,7 +63,7 @@ export const dashboardRouter = {
           },
           select: {
             id: true,
-            members: true,
+            memberships: true,
           },
         });
       } catch (error) {
@@ -84,7 +91,7 @@ export const dashboardRouter = {
       return ctx.prisma.team.findMany({
         where: {
           organizationId: input?.organizationId,
-          members: {
+          memberships: {
             some: {
               userId: ctx.user.id,
             },
@@ -100,7 +107,7 @@ export const dashboardRouter = {
           },
           _count: {
             select: {
-              members: true,
+              memberships: true,
               applications: true,
             },
           },
@@ -119,7 +126,7 @@ export const dashboardRouter = {
       })
     )
     .mutation(async ({ ctx, input }) => {
-      const teamMember = await ctx.prisma.teamMember.findFirst({
+      const membership = await ctx.prisma.membership.findFirst({
         where: {
           userId: ctx.user.id,
           teamId: input.teamId,
@@ -127,14 +134,13 @@ export const dashboardRouter = {
             in: ["OWNER", "ADMIN"],
           },
         },
-        select: { id: true },
       });
 
-      if (!teamMember) {
+      if (!membership) {
         throw new TRPCError({
           code: "FORBIDDEN",
           message:
-            "You do not have permission to create applications in this team",
+            "You don't have permission to create applications in this team",
         });
       }
 
@@ -145,11 +151,6 @@ export const dashboardRouter = {
           domains: input.domains || [],
           teamId: input.teamId,
           settings: {},
-          clientId: {
-            create: {
-              name: `${input.name} Client Id`,
-            },
-          },
         },
         select: {
           id: true,
@@ -176,7 +177,7 @@ export const dashboardRouter = {
         where: {
           teamId: input?.teamId,
           team: {
-            members: {
+            memberships: {
               some: {
                 userId: ctx.user.id,
               },
@@ -187,14 +188,10 @@ export const dashboardRouter = {
           id: true,
           name: true,
           description: true,
+          clientId: true,
           team: {
             select: {
               name: true,
-            },
-          },
-          clientId: {
-            select: {
-              id: true,
             },
           },
         },
@@ -206,7 +203,7 @@ export const dashboardRouter = {
     const [teams, applications] = await Promise.all([
       ctx.prisma.team.count({
         where: {
-          members: {
+          memberships: {
             some: {
               userId: ctx.user.id,
             },
@@ -216,7 +213,7 @@ export const dashboardRouter = {
       ctx.prisma.application.count({
         where: {
           team: {
-            members: {
+            memberships: {
               some: {
                 userId: ctx.user.id,
               },
@@ -238,7 +235,7 @@ export const dashboardRouter = {
       const team = await ctx.prisma.team.findFirst({
         where: {
           id: input.id,
-          members: {
+          memberships: {
             some: {
               userId: ctx.user.id,
             },
@@ -254,7 +251,7 @@ export const dashboardRouter = {
           },
           _count: {
             select: {
-              members: true,
+              memberships: true,
               applications: true,
             },
           },
@@ -282,7 +279,7 @@ export const dashboardRouter = {
       const team = await ctx.prisma.team.findFirst({
         where: {
           id: input.id,
-          members: {
+          memberships: {
             some: {
               userId: ctx.user.id,
               role: {
@@ -314,10 +311,22 @@ export const dashboardRouter = {
       const team = await ctx.prisma.team.findFirst({
         where: {
           id: input.id,
-          members: {
+          memberships: {
             some: {
               userId: ctx.user.id,
               role: "OWNER",
+            },
+          },
+        },
+        include: {
+          organization: {
+            select: {
+              name: true,
+              teams: {
+                select: {
+                  id: true,
+                },
+              },
             },
           },
         },
@@ -326,7 +335,30 @@ export const dashboardRouter = {
       if (!team) {
         throw new TRPCError({
           code: "NOT_FOUND",
-          message: "Team not found or you don't have permission to delete it",
+          message: "Team not found or insufficient permissions",
+        });
+      }
+
+      if (team.organization.teams.length === 1) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot delete the organization's only team",
+        });
+      }
+
+      const otherMemberships = await ctx.prisma.membership.findFirst({
+        where: {
+          userId: ctx.user.id,
+          teamId: {
+            not: input.id,
+          },
+        },
+      });
+
+      if (!otherMemberships) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: "Cannot delete your only team membership",
         });
       }
 
@@ -340,7 +372,7 @@ export const dashboardRouter = {
         where: {
           id: input.id,
           team: {
-            members: {
+            memberships: {
               some: {
                 userId: ctx.user.id,
               },
@@ -357,11 +389,7 @@ export const dashboardRouter = {
               name: true,
             },
           },
-          clientId: {
-            select: {
-              id: true,
-            },
-          },
+          clientId: true,
         },
       });
 
@@ -389,7 +417,7 @@ export const dashboardRouter = {
         where: {
           id: input.id,
           team: {
-            members: {
+            memberships: {
               some: {
                 userId: ctx.user.id,
                 role: {
@@ -426,7 +454,7 @@ export const dashboardRouter = {
         where: {
           id: input.id,
           team: {
-            members: {
+            memberships: {
               some: {
                 userId: ctx.user.id,
                 role: {
