@@ -185,7 +185,6 @@ model UserProfile {
   /// If a request is rejected due to countryFilterSetting, include or hide the details in the error.
   countryPrivacySetting          FilterPrivacySetting?       @default(HIDE_DETAILS)
 
-  organizations          Organization[]
   memberships            Membership[]
   wallets                Wallet[]
   walletActivations      WalletActivation[]
@@ -610,11 +609,9 @@ model Organization {
   /// ISO 3166-1 alpha-2 code
   billingCountryCode String? @db.VarChar(2)
 
-  teams            Team[]
-  bills            Bill[]
-  memberships      Membership[]
-  UserProfile      UserProfile? @relation(fields: [userProfileSupId], references: [supId])
-  userProfileSupId String?      @db.Uuid
+  teams       Team[]
+  bills       Bill[]
+  memberships Membership[]
 
   @@map("Organizations")
 }

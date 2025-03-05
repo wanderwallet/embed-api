@@ -294,7 +294,6 @@ CREATE TABLE "Organizations" (
     "taxId" TEXT,
     "billingAddress" TEXT,
     "billingCountryCode" VARCHAR(2),
-    "userProfileSupId" UUID,
 
     CONSTRAINT "Organizations_pkey" PRIMARY KEY ("id")
 );
@@ -492,9 +491,6 @@ ALTER TABLE "LoginAttempts" ADD CONSTRAINT "LoginAttempts_userId_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "LoginAttempts" ADD CONSTRAINT "LoginAttempts_deviceAndLocationId_fkey" FOREIGN KEY ("deviceAndLocationId") REFERENCES "DevicesAndLocations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Organizations" ADD CONSTRAINT "Organizations_userProfileSupId_fkey" FOREIGN KEY ("userProfileSupId") REFERENCES "UserProfiles"("supId") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Teams" ADD CONSTRAINT "Teams_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
