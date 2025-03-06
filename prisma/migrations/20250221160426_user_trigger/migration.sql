@@ -43,7 +43,7 @@ begin
     set
       "supEmail" = coalesce(new.email, "supEmail"),
       "supPhone" = coalesce(new.phone, "supPhone")
-    where supId = new.id;
+    where "supId" = new.id;
     return new;
 end;
 
@@ -60,5 +60,31 @@ BEGIN
         EXECUTE 'CREATE TRIGGER on_auth_user_updated
                   AFTER UPDATE OF email, phone ON auth.users
                   FOR EACH ROW EXECUTE PROCEDURE public.handle_update_user_email_n_phone();';
+    END IF;
+END $$;
+
+
+-- Create a trigger to handle the deletion of a user
+
+create or replace function public.handle_delete_user()
+returns trigger as $$
+begin
+    delete from public."UserProfiles" where "supId" = old.id;
+    return old;
+end;
+
+-- Trigger the function above every time an auth.user is deleted
+
+-- $$ language plpgsql security definer set search_path = public;
+-- create trigger on_auth_user_deleted
+--     after delete on auth.users
+--     for each row execute procedure public.handle_delete_user();
+
+DO $$
+BEGIN
+    IF EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'auth') THEN
+        EXECUTE 'CREATE TRIGGER on_auth_user_deleted
+                  AFTER DELETE ON auth.users
+                  FOR EACH ROW EXECUTE PROCEDURE public.handle_delete_user();';
     END IF;
 END $$;

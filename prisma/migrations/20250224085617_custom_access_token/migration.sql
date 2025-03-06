@@ -9,6 +9,8 @@ DECLARE
   session_id uuid;
   session_data public."Sessions"%ROWTYPE;
   auth_session_data record;
+  application_ids uuid[];
+  MAX_APPLICATIONS constant int := 5;
 BEGIN
   -- Extract original claims and session_id
   claims := event->'claims';
@@ -75,6 +77,25 @@ BEGIN
     END IF;
   END IF;
 
+  -- Get the N most recent application ids from the session, ordered by session update time
+  SELECT COALESCE(array_agg(id), ARRAY[]::uuid[]) INTO application_ids
+  FROM (
+    SELECT DISTINCT ON (a.id) a.id
+    FROM public."Applications" a
+    INNER JOIN public."ApplicationSessions" ats ON a.id = ats."applicationId"
+    INNER JOIN public."Sessions" s ON s.id = ats."sessionId"
+    WHERE ats."sessionId" = session_id
+    ORDER BY a.id, ats."updatedAt" DESC
+    LIMIT MAX_APPLICATIONS
+  ) subq;
+
+  -- Add the application ids to the sessionData in claims
+  claims := jsonb_set(
+    claims, 
+    '{sessionData,applicationIds}', 
+    COALESCE(to_jsonb(application_ids), '[]'::jsonb)
+  );
+
   -- Update the claims in the event and return
   event := jsonb_set(event, '{claims}', claims);
   RETURN event;
@@ -86,6 +107,8 @@ GRANT USAGE ON SCHEMA public TO supabase_auth_admin;
 GRANT EXECUTE ON FUNCTION public.custom_access_token_hook TO supabase_auth_admin;
 REVOKE EXECUTE ON FUNCTION public.custom_access_token_hook FROM authenticated, anon, public;
 GRANT ALL ON TABLE public."Sessions" TO supabase_auth_admin;
+GRANT ALL ON TABLE public."Applications" TO supabase_auth_admin;
+GRANT ALL ON TABLE public."ApplicationSessions" TO supabase_auth_admin;
 
 -- Grant permissions on the auth schema and sessions table if they exist
 DO $$

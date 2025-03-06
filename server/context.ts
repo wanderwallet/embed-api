@@ -11,7 +11,12 @@ import {
 
 export async function createContext({ req }: { req: Request }) {
   const authHeader = req.headers.get("authorization");
-  if (!authHeader) return createEmptyContext();
+  const clientId = req.headers.get("x-client-id");
+  const applicationId = req.headers.get("x-application-id") || "";
+
+  if (!authHeader || !clientId) {
+    return createEmptyContext();
+  }
 
   const token = authHeader.split(" ")[1];
   if (!token) return createEmptyContext();
@@ -61,7 +66,7 @@ export async function createContext({ req }: { req: Request }) {
     return {
       prisma,
       user,
-      session: createSessionObject(sessionData),
+      session: createSessionObject(sessionData, applicationId),
     };
   } catch (error) {
     console.error("Error processing session:", error);
@@ -76,21 +81,13 @@ async function getAndUpdateSession(
   const { sub: userId, session_id: sessionId, sessionData } = decodeJwt(token);
 
   const sessionUpdates: Partial<typeof updates> = {};
-
-  if (updates?.userAgent && sessionData?.userAgent !== updates?.userAgent) {
-    sessionUpdates.userAgent = updates.userAgent;
-  }
-
-  if (updates?.deviceNonce && sessionData?.deviceNonce !== updates?.deviceNonce) {
-    sessionUpdates.deviceNonce = updates.deviceNonce;
-  }
-
-  if (updates?.ip && sessionData?.ip !== updates?.ip) {
-    sessionUpdates.ip = updates.ip;
-  }
-
-  if (updates?.countryCode && sessionData?.countryCode !== updates?.countryCode) {
-    sessionUpdates.countryCode = updates.countryCode;
+  for (const [key, value] of Object.entries(updates) as [
+    keyof typeof updates,
+    string
+  ][]) {
+    if (value && sessionData?.[key] !== value) {
+      sessionUpdates[key] = value;
+    }
   }
 
   if (Object.keys(sessionUpdates).length > 0) {
@@ -102,7 +99,7 @@ async function getAndUpdateSession(
         data: sessionUpdates,
       })
       .catch((error) => {
-        console.error("Error updating session:", error)
+        console.error("Error updating session:", error);
       });
   }
 
@@ -130,7 +127,10 @@ function createEmptyContext() {
   };
 }
 
-function createSessionObject(sessionData: Session | null): Session {
+function createSessionObject(
+  sessionData: Session | null,
+  applicationId?: string
+): Session & { applicationId: string } {
   // TODO: How to link `Session` to `Applications`?
   // Note the following data is used for challenge validation:
   //
@@ -149,6 +149,7 @@ function createSessionObject(sessionData: Session | null): Session {
     countryCode: sessionData?.countryCode || "",
     userAgent: sessionData?.userAgent || "",
     userId: sessionData?.userId || "",
+    applicationId: applicationId || "",
   };
 }
 

@@ -1,11 +1,13 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  provider   = "postgresql"
+  url        = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl  = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  extensions = [pgcrypto]
 }
 
 enum AuthProviderType {
@@ -108,6 +110,17 @@ enum ChallengePurpose {
   ACCOUNT_RECOVERY
 }
 
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+enum Plan {
+  FREE
+  PRO
+}
+
 // TODO: Document index usages.
 
 /**
@@ -149,7 +162,7 @@ model UserProfile {
   phone       String?   @db.VarChar(255)
   picture     String?   @db.VarChar(255)
   createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt()
+  updatedAt   DateTime  @updatedAt
   recoveredAt DateTime?
 
   // Settings:
@@ -172,8 +185,7 @@ model UserProfile {
   /// If a request is rejected due to countryFilterSetting, include or hide the details in the error.
   countryPrivacySetting          FilterPrivacySetting?       @default(HIDE_DETAILS)
 
-  developer              Developer?
-  // authMethods            AuthMethod[]
+  memberships            Membership[]
   wallets                Wallet[]
   walletActivations      WalletActivation[]
   walletRecoveries       WalletRecovery[]
@@ -186,31 +198,6 @@ model UserProfile {
   authenticationAttempts AuthenticationAttempt[]
 
   @@map("UserProfiles")
-}
-
-model Developer {
-  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
-  plan          String   @default("free") @db.VarChar(50)
-  planStartedAt String   @default("free") @db.VarChar(50)
-  apiKey        String   @unique @db.VarChar(255)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt()
-
-  // Billing Information:
-  name        String?
-  taxId       String?
-  address     String?
-  /// ISO 3166-1 alpha-2 code
-  countryCode String? @db.VarChar(2)
-
-  applications Application[]
-  bills        Bill[]
-
-  userProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId      String      @unique @db.Uuid
-
-  @@index([apiKey])
-  @@map("Developers")
 }
 
 model Bill {
@@ -238,33 +225,34 @@ model Bill {
   /// }
   userOverrides Json
 
-  developer   Developer @relation(fields: [developerId], references: [id], onDelete: Cascade)
-  developerId String    @db.Uuid
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @db.Uuid
 
-  @@index([developerId])
+  @@index([organizationId])
   @@map("Bills")
 }
 
 model Application {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String   @db.VarChar(100)
   description String?  @db.VarChar(255)
-  domains     String[] @db.VarChar(255) // TODO: Consider separating domains to add tags/label to them (e.g. staging, etc.)
+  clientId    String   @unique @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  domains     String[] @db.VarChar(255)
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt()
+  updatedAt   DateTime @updatedAt
 
-  /// Different customization options developers can set in their apps:
+  /// Different customization options teams can set in their apps:
   // TODO: Document its shape once defined.
   settings Json
 
+  sessions          ApplicationSession[]
   DeviceAndLocation DeviceAndLocation[]
-  Session           Session[]
 
-  // TODO: We might want to change this so that Applications can be shared to more than one Developer? But probably
-  // later, and consider adding teams at that point. Or replace Developer with Team.
-  developer   Developer @relation(fields: [developerId], references: [id], onDelete: Cascade)
-  developerId String    @db.Uuid
+  // Each application belongs to exactly one team
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String @db.Uuid
 
-  @@index([developerId])
+  @@index([teamId])
   @@map("Applications")
 }
 
@@ -273,7 +261,7 @@ model Wallet {
   /// This must be set to READONLY if publicKey is not set.
   status    WalletStatus @default(ENABLED)
   createdAt DateTime     @default(now())
-  updatedAt DateTime     @updatedAt()
+  updatedAt DateTime     @updatedAt
   chain     Chain
   address   String       @db.VarChar(255)
   /// Can (not must) be empty for READONLY wallets. B64 string. 1024 just to be safe (e.g. Arweave wallet.owner = 683 characters).
@@ -550,7 +538,7 @@ model DeviceAndLocation {
 model Session {
   id          String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt()
+  updatedAt   DateTime @updatedAt
   deviceNonce String   @default("") @db.VarChar(255)
   // IPv6 or IPv4-mapped address
   ip          String   @db.Inet
@@ -558,8 +546,8 @@ model Session {
   countryCode String   @default("") @db.VarChar(2)
   userAgent   String   @db.VarChar(500)
 
-  applications  Application[]
   workKeyShares WorkKeyShare[]
+  applications  ApplicationSession[]
 
   userProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId      String      @db.Uuid
@@ -569,6 +557,20 @@ model Session {
   @@unique([userId, deviceNonce], name: "userSession")
   @@index([updatedAt])
   @@map("Sessions")
+}
+
+model ApplicationSession {
+  updatedAt DateTime @default(now()) @updatedAt
+
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  applicationId String      @db.Uuid
+
+  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  sessionId String  @db.Uuid
+
+  @@id([applicationId, sessionId])
+  @@index([updatedAt])
+  @@map("ApplicationSessions")
 }
 
 model AuthenticationAttempt {
@@ -591,4 +593,64 @@ model AuthenticationAttempt {
   @@index([userId])
   @@index([createdAt])
   @@map("LoginAttempts")
+}
+
+model Organization {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String   @db.VarChar(100)
+  slug      String   @unique @db.VarChar(50)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Billing Information:
+  billingName        String?
+  taxId              String?
+  billingAddress     String?
+  /// ISO 3166-1 alpha-2 code
+  billingCountryCode String? @db.VarChar(2)
+
+  teams       Team[]
+  bills       Bill[]
+  memberships Membership[]
+
+  @@map("Organizations")
+}
+
+model Team {
+  id            String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name          String   @db.VarChar(100)
+  slug          String   @db.VarChar(50)
+  plan          Plan     @default(FREE)
+  planStartedAt DateTime @default(now())
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  applications Application[]
+  memberships  Membership[]
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @db.Uuid
+
+  @@unique([organizationId, slug])
+  @@index([organizationId])
+  @@map("Teams")
+}
+
+model Membership {
+  role      Role     @default(MEMBER)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId String       @db.Uuid
+
+  team   Team   @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  teamId String @db.Uuid
+
+  user   UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userId String      @db.Uuid
+
+  @@id([organizationId, teamId, userId])
+  @@index([userId])
+  @@map("Memberships")
 }
