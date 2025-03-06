@@ -7,6 +7,17 @@ import {
 } from "../services/auth";
 import { z } from "zod";
 import { createServerClient } from "../utils/supabase/supabase-server-client";
+import { Provider } from "@supabase/supabase-js";
+
+type AuthEmailPasswordInput = {
+  email: string;
+  authProviderType: AuthProviderType.EMAIL_N_PASSWORD;
+  password: string;
+}
+
+type AuthSocialInput = {
+  authProviderType: AuthProviderType.GOOGLE | AuthProviderType.FACEBOOK | AuthProviderType.X | AuthProviderType.APPLE;
+}
 
 enum AuthProviderType {
   PASSKEYS = "PASSKEYS",
@@ -16,6 +27,13 @@ enum AuthProviderType {
   X = "X",
   APPLE = "APPLE",
 }
+
+const SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE: Record<string, Provider> = {
+  [AuthProviderType.GOOGLE]: "google",
+  [AuthProviderType.FACEBOOK]: "facebook",
+  [AuthProviderType.X]: "twitter",
+  [AuthProviderType.APPLE]: "apple",
+};
 
 export const authenticateRouter = {
   debugSession: protectedProcedure.query(async ({ ctx }) => {
@@ -27,57 +45,52 @@ export const authenticateRouter = {
 
   authenticate: publicProcedure
     .input(
-      z.object({
-        authProviderType: z.string(),
-        options: z
-          .object({ email: z.string(), password: z.string() })
-          .optional(),
-      })
+      z.discriminatedUnion("authProviderType", [
+        z.object({
+          authProviderType: z.literal(AuthProviderType.EMAIL_N_PASSWORD),
+          email: z.string().email(),
+          // https://supabase.com/docs/guides/auth/password-security
+          // Unable to find password schema but no max length seems to be suggested and min length is 8
+          password: z.string().min(8)
+        }),
+        ...Object.values(AuthProviderType)
+          .filter((authProviderType) => authProviderType !== AuthProviderType.EMAIL_N_PASSWORD)
+          .map((authProviderType) =>
+            z.object({
+              authProviderType: z.literal(authProviderType),
+            }),
+          ),
+      ])
     )
-    .mutation(async ({ input }) => {
-      let url = "";
-
+    .mutation(async (opts) => {
+      const input = opts.input as AuthEmailPasswordInput | AuthSocialInput;
       const supabase = await createServerClient();
-      let response;
-      switch (input.authProviderType) {
-        case AuthProviderType.GOOGLE:
-          const url = await loginWithGoogle(input.authProviderType);
-          return { url };
 
-        case AuthProviderType.FACEBOOK:
-          response = await supabase.auth.signInWithOAuth({
-            provider: "facebook",
-          });
-          return { url: response.data.url };
-
-        case AuthProviderType.X:
-          response = await supabase.auth.signInWithOAuth({
-            provider: "twitter",
-          });
-          return { url: response.data.url };
-
-        case AuthProviderType.APPLE:
-          response = await supabase.auth.signInWithOAuth({ provider: "apple" });
-          return { url: response.data.url };
-
-        case AuthProviderType.EMAIL_N_PASSWORD:
-          if (!input?.options?.email || !input?.options?.password) {
-            throw new Error(
-              "Email and password are required for this login method"
-            );
-          }
-          const { error, data } = await supabase.auth.signInWithPassword({
-            email: input.options.email,
-            password: input.options.password,
-          });
-          if (error) {
-            throw new Error(error.message);
-          }
-          return { user: data.user };
-
-        default:
-          throw new Error("Unsupported auth provider type");
+      // social auth
+      if (input.authProviderType in SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE) {
+        supabase.auth.signInWithOAuth({
+          provider:
+            SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE[input.authProviderType],
+        });
       }
+
+      // email and password auth
+      if (
+        input.authProviderType === AuthProviderType.EMAIL_N_PASSWORD &&
+        input?.email &&
+        input?.password
+      ) {
+        const { error, data } = await supabase.auth.signInWithPassword({
+          email: input.email,
+          password: input.password,
+        });
+        if (error) {
+          throw new Error(error.message);
+        }
+        return { user: data.user };
+      }
+
+      throw new Error("Unsupported auth provider type");
     }),
 
   getUser: protectedProcedure.query(async () => {
