@@ -504,6 +504,12 @@ function ApplicationsView() {
                   type="text"
                   value={newDomain}
                   onChange={(e) => setNewDomain(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                      e.preventDefault();
+                      handleAddDomain();
+                    }
+                  }}
                   placeholder="example.com"
                   className={inputStyles}
                 />

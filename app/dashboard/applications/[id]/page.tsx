@@ -50,7 +50,7 @@ export default function ApplicationDetailsPage({
   const deleteAppMutation = trpc.deleteApplication.useMutation({
     onSuccess: () => {
       toast.success("Application deleted successfully");
-      router.push("/dashboard");
+      router.push("/dashboard?tab=applications");
       utils.listApplications.invalidate();
     },
     onError: (error) => {
@@ -190,16 +190,22 @@ export default function ApplicationDetailsPage({
 
                 <div>
                   <h3 className="text-sm font-medium text-gray-700">Domains</h3>
-                  <div className="mt-2 flex flex-wrap gap-2">
-                    {app.domains.map((domain) => (
-                      <span
-                        key={domain}
-                        className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-100 text-blue-800"
-                      >
-                        {domain}
-                      </span>
-                    ))}
-                  </div>
+                  {app.domains.length > 0 ? (
+                    <div className="mt-2 flex flex-wrap gap-2">
+                      {app.domains.map((domain) => (
+                        <span
+                          key={domain}
+                          className="inline-flex items-center px-3 py-1.5 rounded-lg text-sm font-medium bg-blue-100 text-blue-800"
+                        >
+                          {domain}
+                        </span>
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-sm text-gray-500">
+                      No domains added
+                    </span>
+                  )}
                 </div>
               </div>
             )}
@@ -253,6 +259,12 @@ export default function ApplicationDetailsPage({
                       type="text"
                       value={newDomain}
                       onChange={(e) => setNewDomain(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          e.preventDefault();
+                          handleAddDomain();
+                        }
+                      }}
                       placeholder="example.com"
                       className={inputStyles}
                     />

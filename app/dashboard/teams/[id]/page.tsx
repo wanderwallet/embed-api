@@ -42,7 +42,7 @@ export default function TeamDetailsPage({
   const deleteTeamMutation = trpc.deleteTeam.useMutation({
     onSuccess: () => {
       toast.success("Team deleted successfully");
-      router.push("/dashboard");
+      router.push("/dashboard?tab=teams");
       utils.listTeams.invalidate();
     },
     onError: (error) => {
