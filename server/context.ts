@@ -12,9 +12,9 @@ import {
 export async function createContext({ req }: { req: Request }) {
   const authHeader = req.headers.get("authorization");
   const clientId = req.headers.get("x-client-id");
-  const applicationId = req.headers.get("x-application-id");
+  const applicationId = req.headers.get("x-application-id") || "";
 
-  if (!authHeader || !clientId || !applicationId) {
+  if (!authHeader || !clientId) {
     return createEmptyContext();
   }
 
