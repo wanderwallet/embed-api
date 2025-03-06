@@ -68,10 +68,19 @@ export const authenticateRouter = {
 
       // social auth
       if (input.authProviderType in SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE) {
-        supabase.auth.signInWithOAuth({
+        let oauthOptions = {
           provider:
             SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE[input.authProviderType],
-        });
+        }
+        if(input.authProviderType === AuthProviderType.GOOGLE) {
+          oauthOptions = {
+            ...oauthOptions,
+            options: {
+              redirectTo: typeof window !== "undefined" ? `${window.location.origin}/auth/callback/google` : undefined,
+            }
+          }
+        }
+        supabase.auth.signInWithOAuth(oauthOptions);
       }
 
       // email and password auth
