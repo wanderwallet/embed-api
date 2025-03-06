@@ -11,41 +11,6 @@ export async function getUser() {
   return user
 }
 
-export async function loginWithGoogle(authProviderType: string) {
-  if (authProviderType !== "GOOGLE") {
-    throw new TRPCError({
-      code: "BAD_REQUEST",
-      message: "Invalid auth provider type",
-    })
-  }
-
-  const supabase = await createServerClient();
-
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: "google",
-    options: {
-      redirectTo: typeof window !== "undefined" ? `${window.location.origin}/auth/callback/google` : undefined,
-    },
-  })
-
-  if (error) {
-    console.error("Google sign-in error:", error)
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: error.message,
-    })
-  }
-
-  if (!data.url) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: "No redirect URL returned from Supabase",
-    })
-  }
-
-  return data.url
-}
-
 export async function refreshSession() {
   // TODO: This doesn't do anything. It should be syncing our own Session entity, unless we use triggers.
 

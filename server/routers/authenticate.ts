@@ -1,6 +1,5 @@
 import { publicProcedure, protectedProcedure } from "../trpc";
 import {
-  loginWithGoogle,
   logoutUser,
   refreshSession,
   getUser,
@@ -8,27 +7,11 @@ import {
 import { z } from "zod";
 import { createServerClient } from "../utils/supabase/supabase-server-client";
 import { Provider } from "@supabase/supabase-js";
+import { AuthProviderType } from "@prisma/client";
 
-type AuthEmailPasswordInput = {
-  email: string;
-  authProviderType: AuthProviderType.EMAIL_N_PASSWORD;
-  password: string;
-}
-
-type AuthSocialInput = {
-  authProviderType: AuthProviderType.GOOGLE | AuthProviderType.FACEBOOK | AuthProviderType.X | AuthProviderType.APPLE;
-}
-
-enum AuthProviderType {
-  PASSKEYS = "PASSKEYS",
-  EMAIL_N_PASSWORD = "EMAIL_N_PASSWORD",
-  GOOGLE = "GOOGLE",
-  FACEBOOK = "FACEBOOK",
-  X = "X",
-  APPLE = "APPLE",
-}
-
-const SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE: Record<string, Provider> = {
+const SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE: Record<AuthProviderType, Provider | null> = {
+  [AuthProviderType.PASSKEYS]: null,
+  [AuthProviderType.EMAIL_N_PASSWORD]: null,
   [AuthProviderType.GOOGLE]: "google",
   [AuthProviderType.FACEBOOK]: "facebook",
   [AuthProviderType.X]: "twitter",
@@ -49,9 +32,9 @@ export const authenticateRouter = {
         z.object({
           authProviderType: z.literal(AuthProviderType.EMAIL_N_PASSWORD),
           email: z.string().email(),
-          // https://supabase.com/docs/guides/auth/password-security
-          // Unable to find password schema but no max length seems to be suggested and min length is 8
-          password: z.string().min(8)
+          // See https://supabase.com/docs/guides/auth/password-security
+          // See `SELECT * FROM information_schema.columns WHERE table_schema = 'auth' AND table_name = 'users' AND column_name = 'encrypted_password'`
+          password: z.string().min(8).max(255),
         }),
         ...Object.values(AuthProviderType)
           .filter((authProviderType) => authProviderType !== AuthProviderType.EMAIL_N_PASSWORD)
@@ -62,45 +45,35 @@ export const authenticateRouter = {
           ),
       ])
     )
-    .mutation(async (opts) => {
-      const input = opts.input as AuthEmailPasswordInput | AuthSocialInput;
+    .mutation(async ({ input }) => {
       const supabase = await createServerClient();
 
-      // social auth
-      if (input.authProviderType in SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE) {
-        let oauthOptions = {
-          provider:
-            SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE[input.authProviderType],
-        }
-        if(input.authProviderType === AuthProviderType.GOOGLE) {
-          oauthOptions = {
-            ...oauthOptions,
-            options: {
-              redirectTo: typeof window !== "undefined" ? `${window.location.origin}/auth/callback/google` : undefined,
-            }
-          }
-        }
-        supabase.auth.signInWithOAuth(oauthOptions);
-      }
-
-      // email and password auth
-      if (
-        input.authProviderType === AuthProviderType.EMAIL_N_PASSWORD &&
-        input?.email &&
-        input?.password
-      ) {
+      if (input.authProviderType === AuthProviderType.EMAIL_N_PASSWORD) {
         const { error, data } = await supabase.auth.signInWithPassword({
           email: input.email,
           password: input.password,
         });
+
         if (error) {
           throw new Error(error.message);
         }
+
         return { user: data.user };
       }
 
-      throw new Error("Unsupported auth provider type");
-    }),
+      const provider = SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE[input.authProviderType];
+
+      if (!provider) throw new Error("Unsupported auth provider type");
+
+      supabase.auth.signInWithOAuth({
+        provider,
+        options: input.authProviderType === AuthProviderType.GOOGLE ? {
+          redirectTo: typeof window !== "undefined" ? `${window.location.origin}/auth/callback/google` : undefined,
+        } : undefined
+      });
+
+    throw new Error("Unsupported auth provider type");
+  }),
 
   getUser: protectedProcedure.query(async () => {
     const user = await getUser();
