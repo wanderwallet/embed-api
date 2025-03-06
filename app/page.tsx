@@ -37,6 +37,9 @@ const additionalProviders = [
   },
 ];
 
+const inputStyles =
+  "mt-1 block w-full rounded-lg border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 text-base py-2.5 px-3 h-[42px]";
+
 export default function Login() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -101,7 +104,7 @@ export default function Login() {
   return (
     <>
       <AuthHeader />
-      <div className="flex min-h-screen bg-gradient-to-b from-gray-50 to-white pt-16">
+      <div className="flex min-h-screen bg-gradient-to-b from-gray-50 to-white pt-8">
         <div className="flex-1 flex items-center justify-center px-4 sm:px-6 lg:px-8">
           <div className="w-full max-w-md">
             <div className="bg-white rounded-xl shadow-xl p-8">
@@ -184,7 +187,8 @@ export default function Login() {
                         id="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        className={inputStyles}
+                        placeholder="you@example.com"
                         required
                       />
                     </div>
@@ -200,7 +204,8 @@ export default function Login() {
                         id="password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
+                        className={inputStyles}
+                        placeholder="••••••••"
                         required
                       />
                     </div>

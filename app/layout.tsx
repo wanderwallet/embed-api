@@ -1,6 +1,7 @@
 import "./globals.css";
 import { Metadata } from "next";
-import Providers from "@/client/components/Providers";
+import AuthProvider from "@/client/components/AuthProvider";
+import AuthGuard from "@/client/components/AuthGuard";
 
 export const metadata: Metadata = {
   title: "Wander Embedded",
@@ -18,7 +19,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <Providers>{children}</Providers>
+        <AuthProvider>
+          <AuthGuard>{children}</AuthGuard>
+        </AuthProvider>
       </body>
     </html>
   );

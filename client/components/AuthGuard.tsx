@@ -1,34 +1,26 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { supabase } from "../utils/supabase/supabase-client-client";
 import { trpc } from "../utils/trpc/trpc-client";
 import Header from "./Header";
 
 export default function AuthGuard({ children }: { children: React.ReactNode }) {
-  const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
   const logoutMutation = trpc.logout.useMutation();
   const [isLoading, setIsLoading] = useState(false);
-
-  useEffect(() => {
-    if (!isAuthLoading && !user) {
-      router.push("/");
-    }
-  }, [isAuthLoading, user, router]);
 
   const handleLogout = async () => {
     try {
       setIsLoading(true);
       await logoutMutation.mutateAsync();
       await supabase.auth.signOut();
-      setIsLoading(false);
-      router.push("/");
+      window.location.href = "/";
     } catch (error) {
-      setIsLoading(false);
       console.error("Logout failed:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
