@@ -12,7 +12,7 @@
 # next.js
 .next
 /out/
-/dist
+# /dist
 
 # production
 /build
@@ -40,4 +40,4 @@ next-env.d.ts
 .env
 
 ## supabase
-supabase
+/supabase/
