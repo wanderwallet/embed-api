@@ -28,15 +28,14 @@ function isDomainAllowed(
 }
 
 export async function validateApplication(
-  applicationId: string,
   clientId: string,
   origin: string,
   sessionId?: string
-): Promise<boolean> {
+): Promise<string> {
   try {
     const application = await prisma.application
       .findUnique({
-        where: { id: applicationId, clientId },
+        where: { clientId },
         select: {
           id: true,
           domains: true,
@@ -47,7 +46,7 @@ export async function validateApplication(
     if (!application) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: `Application not found. Please verify your applicationId and clientId...`,
+        message: `Application not found. Please verify your clientId.`,
       });
     }
 
@@ -76,12 +75,12 @@ export async function validateApplication(
         .upsert({
           where: {
             applicationId_sessionId: {
-              applicationId,
+              applicationId: application.id,
               sessionId,
             },
           },
           create: {
-            applicationId,
+            applicationId: application.id,
             sessionId,
           },
           update: {},
@@ -91,7 +90,7 @@ export async function validateApplication(
         });
     }
 
-    return true;
+    return application.id;
   } catch (error) {
     if (error instanceof TRPCError) {
       throw error;

@@ -6,19 +6,13 @@ export const validationRouter = {
   validateApplication: publicProcedure
     .input(
       z.object({
-        applicationId: z.string(),
         clientId: z.string(),
         applicationOrigin: z.string().url(),
         sessionId: z.string().optional(),
       })
     )
     .query(async ({ input }) => {
-      const { applicationId, clientId, applicationOrigin, sessionId } = input;
-      return validateApplication(
-        applicationId,
-        clientId,
-        applicationOrigin,
-        sessionId
-      );
+      const { clientId, applicationOrigin, sessionId } = input;
+      return validateApplication(clientId, applicationOrigin, sessionId);
     }),
 };
