@@ -1,5 +1,5 @@
-import { Application } from "@prisma/client";
 import { prisma } from "../prisma/prisma-client";
+import { TRPCError } from "@trpc/server";
 
 function extractDomain(origin: string | null): string | null {
   if (origin) {
@@ -32,60 +32,44 @@ export async function validateApplication(
   clientId: string,
   origin: string,
   sessionId?: string
-): Promise<{
-  application: Pick<Application, "id" | "domains"> | null;
-  valid: boolean;
-}> {
+): Promise<boolean> {
   try {
-    // Get clientId with a single query
-    const clientIdRecord = await prisma.clientId.findUnique({
-      where: { id: clientId },
+    const application = await prisma.application.findUnique({
+      where: { id: applicationId, clientId },
       select: {
         id: true,
-        expiresAt: true,
-        applicationId: true,
-        application: { select: { id: true, domains: true } },
+        domains: true,
       },
     });
 
-    // Validate clientId
-    if (
-      !clientIdRecord ||
-      (clientIdRecord.expiresAt && clientIdRecord.expiresAt < new Date())
-    ) {
-      console.error("Invalid or expired clientId");
-      return { application: null, valid: false };
-    }
-
-    // Check application binding
-    if (clientIdRecord.applicationId !== applicationId) {
-      console.error("clientId is not valid for this application");
-      return { application: null, valid: false };
-    }
-
-    const application = clientIdRecord.application;
-
     if (!application) {
-      console.error("Application not found or not associated with the team");
-      return { application: null, valid: false };
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: `Application not found. Please verify your applicationId and clientId...`,
+      });
     }
 
     // Domain validation
     if (application.domains.length > 0) {
       const requestDomain = extractDomain(origin);
-      if (
-        !requestDomain ||
-        !isDomainAllowed(requestDomain, application.domains)
-      ) {
-        console.error(
-          `Request domain ${requestDomain} not allowed for this application`
-        );
-        return { application: null, valid: false };
+      if (!requestDomain) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Invalid origin URL provided: ${origin}`,
+        });
+      }
+
+      if (!isDomainAllowed(requestDomain, application.domains)) {
+        throw new TRPCError({
+          code: "FORBIDDEN",
+          message: `Domain '${requestDomain}' is not allowed. Allowed domains are: ${application.domains.join(
+            ", "
+          )}`,
+        });
       }
     }
 
     if (sessionId) {
-      // Session IDs remain constant even when the session is refreshed (JWT refresh).
       await prisma.applicationSession
         .upsert({
           where: {
@@ -98,17 +82,24 @@ export async function validateApplication(
             applicationId,
             sessionId,
           },
-          // No updates needed as updatedAt is handled automatically
           update: {},
         })
-        .catch((error) =>
-          console.error("Error linking session to application:", error)
-        );
+        .catch((error) => {
+          console.error("Error linking session to application:", error);
+        });
     }
 
-    return { application, valid: true };
+    return true;
   } catch (error) {
-    console.error("Error validating clientId or application:", error);
-    return { application: null, valid: false };
+    if (error instanceof TRPCError) {
+      throw error;
+    }
+    console.error("Error validating application:", error);
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: `An unexpected error occurred while validating the application. Error: ${
+        (error as Error).message
+      }`,
+    });
   }
 }
