@@ -34,13 +34,15 @@ export async function validateApplication(
   sessionId?: string
 ): Promise<boolean> {
   try {
-    const application = await prisma.application.findUnique({
-      where: { id: applicationId, clientId },
-      select: {
-        id: true,
-        domains: true,
-      },
-    });
+    const application = await prisma.application
+      .findUnique({
+        where: { id: applicationId, clientId },
+        select: {
+          id: true,
+          domains: true,
+        },
+      })
+      .catch(() => null);
 
     if (!application) {
       throw new TRPCError({
