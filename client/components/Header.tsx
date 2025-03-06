@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { User } from "@supabase/supabase-js";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 interface HeaderProps {
   user: User;
@@ -40,7 +41,8 @@ export default function Header({ user, onLogout }: HeaderProps) {
     <nav className="bg-gray-800">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          <div className="flex items-center">
+          <div className="flex items-center gap-2">
+            <Image src="/icon.png" alt="Wander Logo" width={40} height={40} />
             <div
               className="flex-shrink-0 cursor-pointer"
               onClick={() => router.push("/dashboard")}

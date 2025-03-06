@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useCallback } from "react";
-import { useRouter } from "next/navigation";
+import { useState, useCallback, useEffect } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
 import { trpc } from "@/client/utils/trpc/trpc-client";
 import { toast } from "sonner";
 import { validateDomains } from "@/shared/validators/domains";
@@ -9,8 +9,10 @@ import { validateDomains } from "@/shared/validators/domains";
 type ActiveView = "teams" | "applications";
 
 export default function DashboardPage() {
+  const params = useSearchParams();
   const [activeView, setActiveView] = useState<ActiveView>("teams");
   const { data: stats } = trpc.getStats.useQuery();
+  const router = useRouter();
 
   const NavIcon = ({ children }: { children: React.ReactNode }) => (
     <div className="w-5 h-5 flex-shrink-0">{children}</div>
@@ -53,6 +55,17 @@ export default function DashboardPage() {
       </div>
     );
   };
+
+  useEffect(() => {
+    const viewType = params.get("tab");
+    if (viewType === "applications" || viewType === "teams") {
+      setActiveView(viewType);
+    }
+  }, [params]);
+
+  useEffect(() => {
+    router.push(`/dashboard?tab=${activeView}`);
+  }, [activeView, router]);
 
   return (
     <div className="min-h-screen bg-gray-50">

@@ -10,6 +10,7 @@ import {
 } from "@/client/components/LoadingSpinner";
 import { CopyButton } from "@/client/components/CopyButton";
 import { Modal } from "@/client/components/Modal";
+import { PageHeader } from "@/client/components/PageHeader";
 import { validateDomains } from "@/shared/validators/domains";
 
 const inputStyles =
@@ -63,22 +64,11 @@ export default function ApplicationDetailsPage({
 
   if (!app) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <h3 className="text-lg font-medium text-gray-900">
-              Application not found
-            </h3>
-            <div className="mt-2">
-              <button
-                onClick={() => router.push("/dashboard")}
-                className="cursor-pointer text-blue-600 hover:text-blue-800"
-              >
-                ← Back to Dashboard
-              </button>
-            </div>
-          </div>
-        </div>
+      <div className="min-h-screen bg-gray-50">
+        <PageHeader
+          title="Application not found"
+          backUrl="/dashboard?tab=applications"
+        />
       </div>
     );
   }
@@ -131,47 +121,49 @@ export default function ApplicationDetailsPage({
     }));
   };
 
-  return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="bg-white shadow rounded-lg">
-          {/* Header */}
-          <div className="px-6 py-4 border-b border-gray-200 flex items-center justify-between">
-            <div>
-              <h1 className="text-2xl font-semibold text-gray-900">
-                {app.name}
-              </h1>
-              <p className="text-sm text-gray-500">Team: {app.team.name}</p>
-            </div>
-            <div className="flex space-x-3">
-              <button
-                onClick={handleEdit}
-                className="px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 cursor-pointer"
-              >
-                Edit
-              </button>
-              <button
-                onClick={() => setShowDeleteConfirm(true)}
-                className="px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700 cursor-pointer"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
+  const headerActions = (
+    <>
+      <button
+        onClick={handleEdit}
+        className="cursor-pointer px-4 py-2 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50"
+      >
+        Edit
+      </button>
+      <button
+        onClick={() => setShowDeleteConfirm(true)}
+        className="cursor-pointer px-4 py-2 border border-transparent rounded-md text-sm font-medium text-white bg-red-600 hover:bg-red-700"
+      >
+        Delete
+      </button>
+    </>
+  );
 
-          {/* Content */}
+  return (
+    <div className="min-h-screen bg-gray-50">
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 mt-8">
+        <PageHeader
+          title={app.name}
+          subtitle={`Team: ${app.team.name}`}
+          actions={headerActions}
+          backUrl="/dashboard?tab=applications"
+        />
+      </div>
+
+      <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white shadow rounded-lg">
           <div className="px-6 py-4">
             {/* Application Info */}
             {!isEditing && (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <div>
                   <h3 className="text-sm font-medium text-gray-700">
-                    ApplicationID
+                    Application ID
                   </h3>
                   <div className="mt-2">
                     <CopyButton text={app.id} label={app.id} />
                   </div>
                 </div>
+
                 {app.description && (
                   <div>
                     <h3 className="text-sm font-medium text-gray-700">
@@ -180,6 +172,7 @@ export default function ApplicationDetailsPage({
                     <p className="mt-1 text-gray-600">{app.description}</p>
                   </div>
                 )}
+
                 <div>
                   <h3 className="text-sm font-medium text-gray-700">
                     Client ID
@@ -194,6 +187,7 @@ export default function ApplicationDetailsPage({
                     )}
                   </div>
                 </div>
+
                 <div>
                   <h3 className="text-sm font-medium text-gray-700">Domains</h3>
                   <div className="mt-2 flex flex-wrap gap-2">
