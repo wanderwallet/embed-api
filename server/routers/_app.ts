@@ -24,11 +24,13 @@ import { rotateAuthShare } from "@/server/routers/work-shares/rotateAuthShare";
 import { registerWalletExport } from "@/server/routers/backup/registerWalletExport";
 import { authenticateRouter } from "@/server/routers/authenticate";
 import { validationRouter } from "./validation";
+import { dashboardRouter } from "./dashboard";
 // import { supabase } from '@/utils/supabaseClient';
 
 export const appRouter = router({
   ...authenticateRouter,
   ...validationRouter,
+  ...dashboardRouter,
 
   // Wallets:
   fetchWallets,

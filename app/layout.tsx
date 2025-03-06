@@ -1,14 +1,28 @@
-"use client"
+import "./globals.css";
+import { Metadata } from "next";
+import AuthProvider from "@/client/components/AuthProvider";
+import AuthGuard from "@/client/components/AuthGuard";
 
-import { trpc } from "@/client/utils/trpc/trpc-client"
+export const metadata: Metadata = {
+  title: "Wander Embedded",
+  description: "Set up teams and apps for your embedded wallet",
+  icons: {
+    icon: "favicon.png",
+  },
+};
 
-function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AuthProvider>
+          <AuthGuard>{children}</AuthGuard>
+        </AuthProvider>
+      </body>
     </html>
-  )
+  );
 }
-
-export default trpc.withTRPC(RootLayout)
-

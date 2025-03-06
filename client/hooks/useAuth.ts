@@ -1,65 +1,21 @@
-import { useState, useEffect } from "react"
-import { setAuthToken, trpc } from "@/client/utils/trpc/trpc-client"
-import { User } from "@supabase/supabase-js"
-import { supabase } from "@/client/utils/supabase/supabase-client-client"
+import { User } from "@supabase/supabase-js";
+import { createContext, useContext } from "react";
 
-export function useAuth() {
-  const [isLoading, setIsLoading] = useState(true)
-  const [token, setToken] = useState<string | null>(null)
-
-  useEffect(() => {
-    const checkSession = async () => {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-
-      console.log("Session init =", session);
-
-      const accessToken = session?.access_token ?? null;
-
-      setToken(accessToken);
-      setAuthToken(accessToken);
-      setIsLoading(false)
-    }
-
-    checkSession()
-
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      console.log("Session change =", session);
-
-      const accessToken = session?.access_token ?? null;
-
-      setToken(accessToken);
-      setAuthToken(accessToken);
-      setIsLoading(false)
-    });
-
-    return () => subscription.unsubscribe()
-  }, [])
-
-  const {
-    data,
-    isLoading: isUserLoading,
-    error: userError,
-  } = trpc.getUser.useQuery(undefined, {
-    enabled: !!token,
-    retry: false,
-  });
-
-  const user: User | null = data?.user || null;
-
-  return token ? {
-    token,
-    user,
-    isLoading: isLoading || isUserLoading,
-    error: userError,
-  } : {
-    token: null,
-    user: null,
-    isLoading,
-    error: null,
-  }
+export interface AuthContextType {
+  token: string | null;
+  user: User | null;
+  isLoading: boolean;
+  error: Error | null;
 }
 
+export const AuthContext = createContext<AuthContextType | undefined>(
+  undefined
+);
+
+export function useAuth() {
+  const context = useContext(AuthContext);
+  if (context === undefined) {
+    throw new Error("useAuth must be used within an AuthProvider");
+  }
+  return context;
+}
