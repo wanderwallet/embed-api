@@ -60,7 +60,8 @@ export default function Login() {
 
       await loginMutation.mutateAsync({
         authProviderType: "EMAIL_N_PASSWORD",
-        options: { email, password }
+        email,
+        password,
       });
 
       // If successful, the useEffect will handle redirection
