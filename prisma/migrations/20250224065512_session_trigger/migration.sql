@@ -17,8 +17,8 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-    INSERT INTO "Sessions" (id, "createdAt", "updatedAt", ip, "userAgent", "userId")
-    SELECT NEW.id, NEW.created_at, NEW.updated_at, NEW.ip, NEW.user_agent, NEW.user_id;
+    INSERT INTO "Sessions" (id, "createdAt", "updatedAt", ip, "userAgent", "userId", "deviceNonce")
+    SELECT NEW.id, NEW.created_at, NEW.updated_at, NEW.ip, NEW.user_agent, NEW.user_id, gen_random_uuid();
     RETURN NULL;
 END;
 $$;
@@ -65,7 +65,7 @@ BEGIN
         EXECUTE 'DROP TRIGGER IF EXISTS on_auth_session_created ON auth.sessions;
                 DROP TRIGGER IF EXISTS on_auth_session_updated ON auth.sessions;
                 DROP TRIGGER IF EXISTS on_auth_session_deleted ON auth.sessions;
-                
+
                 CREATE TRIGGER on_auth_session_created
                     AFTER INSERT ON auth.sessions
                     FOR EACH ROW
