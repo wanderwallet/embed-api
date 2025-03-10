@@ -54,7 +54,8 @@ function createTRPCClient({
 }) {
   let authToken = params.authToken || null;
   let deviceNonce = params.deviceNonce || "";
-  let apiKey = params.apiKey || "";
+  let clientId = params.clientId || "";
+  let applicationId = params.applicationId || "";
   function getAuthTokenHeader() {
     return authToken;
   }
@@ -67,11 +68,17 @@ function createTRPCClient({
   function setDeviceNonceHeader(nextDeviceNonce) {
     deviceNonce = nextDeviceNonce;
   }
-  function getApiKeyHeader() {
-    return apiKey;
+  function getClientIdHeader() {
+    return clientId;
   }
-  function setApiKeyHeader(nextApiKey) {
-    apiKey = nextApiKey;
+  function setClientIdHeader(nextClientId) {
+    clientId = nextClientId;
+  }
+  function getApplicationIdHeader() {
+    return applicationId;
+  }
+  function setApplicationIdHeader(nextApplicationId) {
+    applicationId = nextApplicationId;
   }
   const url = trpcURL || (baseURL ? `${baseURL}/api/trpc` : "");
   if (!url) throw new Error("No `baseURL` or `trpcURL` provided.");
@@ -84,13 +91,14 @@ function createTRPCClient({
           if (!deviceNonce) {
             throw new Error(`Missing device nonce header.`);
           }
-          if (!apiKey) {
-            throw new Error(`Missing API key header.`);
+          if (!clientId) {
+            throw new Error(`Missing client ID header.`);
           }
           return {
-            authorization: `Bearer ${authToken}`,
+            authorization: authToken ? `Bearer ${authToken}` : void 0,
             "x-device-nonce": deviceNonce,
-            "x-api-key": apiKey
+            "x-client-id": clientId,
+            "x-application-id": applicationId
           };
         }
       })
@@ -102,8 +110,10 @@ function createTRPCClient({
     setAuthTokenHeader,
     getDeviceNonceHeader,
     setDeviceNonceHeader,
-    getApiKeyHeader,
-    setApiKeyHeader
+    getClientIdHeader,
+    setClientIdHeader,
+    getApplicationIdHeader,
+    setApplicationIdHeader
   };
 }
 

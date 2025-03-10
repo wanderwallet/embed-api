@@ -40,7 +40,8 @@ interface CreateTRPCClientOptions {
     trpcURL?: string;
     authToken?: string | null;
     deviceNonce?: string;
-    apiKey?: string;
+    clientId?: string;
+    applicationId?: string;
 }
 declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCClientOptions): {
     client: {
@@ -59,6 +60,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -72,6 +75,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -89,9 +94,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -102,9 +109,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -115,9 +124,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -128,9 +139,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: typeof _trpc_server.unsetMarker;
                 _input_out: typeof _trpc_server.unsetMarker;
@@ -155,6 +168,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -168,6 +183,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -185,9 +202,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -198,9 +217,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -211,9 +232,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -224,9 +247,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: {
                     walletId: string;
@@ -255,6 +280,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -268,6 +295,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -285,9 +314,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -298,9 +329,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -311,9 +344,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -324,9 +359,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: {
                     status: "ENABLED" | "DISABLED";
@@ -385,6 +422,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -398,6 +437,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -415,9 +456,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -428,9 +471,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -441,9 +486,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -454,9 +501,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: {
                     status: "ENABLED" | "DISABLED";
@@ -511,6 +560,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -524,6 +575,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -541,9 +594,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -554,9 +609,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -567,9 +624,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -580,9 +639,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: {
                     status: "READONLY" | "LOST";
@@ -623,6 +684,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -636,6 +699,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -653,9 +718,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -666,9 +733,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -679,9 +748,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -692,9 +763,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: {
                     walletPrivacySetting: "PRIVATE";
@@ -725,6 +798,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -738,6 +813,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -755,9 +832,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -768,9 +847,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -781,9 +862,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -794,9 +877,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: {
                     chain: "ARWEAVE" | "ETHEREUM";
@@ -833,6 +918,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -846,6 +933,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -863,9 +952,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -876,9 +967,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -889,9 +982,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -902,9 +997,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: {
                     walletId: string;
@@ -941,6 +1038,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -954,6 +1053,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -971,9 +1072,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -984,9 +1087,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -997,9 +1102,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1010,9 +1117,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: {
                     canRecoverAccountSetting: boolean;
@@ -1043,6 +1152,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -1056,6 +1167,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -1073,9 +1186,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1086,9 +1201,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1099,9 +1216,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1112,9 +1231,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: {
                     status: "ENABLED" | "DISABLED" | "READONLY" | "LOST";
@@ -1145,6 +1266,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -1158,6 +1281,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -1175,9 +1300,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1188,9 +1315,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1201,9 +1330,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1214,9 +1345,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: {
                     walletId: string;
@@ -1243,6 +1376,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -1256,6 +1391,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -1273,9 +1410,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1286,9 +1425,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1299,9 +1440,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1312,9 +1455,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: {
                     walletId: string;
@@ -1352,6 +1497,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -1365,6 +1512,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -1382,9 +1531,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1395,9 +1546,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1408,9 +1561,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1421,9 +1576,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: {
                     walletId: string;
@@ -1465,6 +1622,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -1478,6 +1637,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -1495,9 +1656,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1508,9 +1671,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1521,9 +1686,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1534,9 +1701,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: {
                     walletId: string;
@@ -1573,6 +1742,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -1586,6 +1757,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -1603,9 +1776,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1616,9 +1791,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1629,9 +1806,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1642,9 +1821,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: {
                     walletId: string;
@@ -1680,6 +1861,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -1693,6 +1876,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -1710,9 +1895,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1723,9 +1910,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1736,9 +1925,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1749,9 +1940,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: {
                     walletId: string;
@@ -1782,6 +1975,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -1795,6 +1990,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -1812,9 +2009,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1825,9 +2024,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1838,9 +2039,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1851,9 +2054,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: {
                     walletId: string;
@@ -1891,6 +2096,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -1904,6 +2111,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -1921,9 +2130,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1934,9 +2145,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1947,9 +2160,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -1960,9 +2175,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: {
                     walletId: string;
@@ -2014,6 +2231,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -2027,6 +2246,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -2044,9 +2265,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -2057,9 +2280,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -2070,9 +2295,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -2083,9 +2310,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: {
                     walletId: string;
@@ -2123,6 +2352,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -2136,6 +2367,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -2155,6 +2388,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
                 } | {
                     prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -2168,6 +2403,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
                 };
                 _input_in: {
@@ -2206,6 +2443,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -2219,6 +2458,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -2238,6 +2479,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
                 } | {
                     prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -2251,6 +2494,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
                 };
                 _input_in: {
@@ -2282,6 +2527,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -2295,6 +2542,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -2314,6 +2563,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
                 } | {
                     prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -2327,6 +2578,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
                 };
                 _input_in: {
@@ -2369,6 +2622,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -2382,6 +2637,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -2401,6 +2658,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
                 } | {
                     prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -2414,6 +2673,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
                 };
                 _input_in: {
@@ -2455,7 +2716,7 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                 }];
             }>>;
         };
-        debugSession: {
+        validateApplication: {
             query: _trpc_client.Resolver<_trpc_server.BuildProcedure<"query", {
                 _config: _trpc_server.RootConfig<{
                     ctx: {
@@ -2470,6 +2731,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -2483,112 +2746,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
-                        };
-                    };
-                    meta: object;
-                    errorShape: _trpc_server.DefaultErrorShape;
-                    transformer: typeof superjson__default;
-                }>;
-                _meta: object;
-                _ctx_out: {
-                    session: {
-                        id: string;
-                        createdAt: Date;
-                        updatedAt: Date;
-                        userId: string;
-                        deviceNonce: string;
-                        ip: string;
-                        countryCode: string;
-                        userAgent: string;
-                    };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
-                    user: _supabase_supabase_js.AuthUser;
-                } | {
-                    session: {
-                        id: string;
-                        createdAt: Date;
-                        updatedAt: Date;
-                        userId: string;
-                        deviceNonce: string;
-                        ip: string;
-                        countryCode: string;
-                        userAgent: string;
-                    };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
-                    user: _supabase_supabase_js.AuthUser;
-                } | {
-                    session: {
-                        id: string;
-                        createdAt: Date;
-                        updatedAt: Date;
-                        userId: string;
-                        deviceNonce: string;
-                        ip: string;
-                        countryCode: string;
-                        userAgent: string;
-                    };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
-                    user: _supabase_supabase_js.AuthUser;
-                } | {
-                    session: {
-                        id: string;
-                        createdAt: Date;
-                        updatedAt: Date;
-                        userId: string;
-                        deviceNonce: string;
-                        ip: string;
-                        countryCode: string;
-                        userAgent: string;
-                    };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
-                    user: _supabase_supabase_js.AuthUser;
-                };
-                _input_in: typeof _trpc_server.unsetMarker;
-                _input_out: typeof _trpc_server.unsetMarker;
-                _output_in: typeof _trpc_server.unsetMarker;
-                _output_out: typeof _trpc_server.unsetMarker;
-            }, {
-                user: _supabase_supabase_js.AuthUser;
-                session: {
-                    id: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    userId: string;
-                    deviceNonce: string;
-                    ip: string;
-                    countryCode: string;
-                    userAgent: string;
-                };
-            }>>;
-        };
-        authenticate: {
-            mutate: _trpc_client.Resolver<_trpc_server.BuildProcedure<"mutation", {
-                _config: _trpc_server.RootConfig<{
-                    ctx: {
-                        prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
-                        user: null;
-                        session: {
-                            id: string;
-                            createdAt: Date;
-                            updatedAt: Date;
-                            userId: string;
-                            deviceNonce: string;
-                            ip: string;
-                            countryCode: string;
-                            userAgent: string;
-                        };
-                    } | {
-                        prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
-                        user: _supabase_supabase_js.AuthUser;
-                        session: {
-                            id: string;
-                            createdAt: Date;
-                            updatedAt: Date;
-                            userId: string;
-                            deviceNonce: string;
-                            ip: string;
-                            countryCode: string;
-                            userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -2608,6 +2767,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
                 } | {
                     prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -2621,21 +2782,25 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
                 };
                 _input_in: {
-                    authProviderType: string;
+                    clientId: string;
+                    applicationOrigin: string;
+                    sessionId?: string | undefined;
                 };
                 _input_out: {
-                    authProviderType: string;
+                    clientId: string;
+                    applicationOrigin: string;
+                    sessionId?: string | undefined;
                 };
                 _output_in: typeof _trpc_server.unsetMarker;
                 _output_out: typeof _trpc_server.unsetMarker;
-            }, {
-                url: string;
-            }>>;
+            }, string>>;
         };
-        getUser: {
+        debugSession: {
             query: _trpc_client.Resolver<_trpc_server.BuildProcedure<"query", {
                 _config: _trpc_server.RootConfig<{
                     ctx: {
@@ -2650,6 +2815,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -2663,6 +2830,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -2680,9 +2849,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -2693,9 +2864,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -2706,9 +2879,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -2719,9 +2894,221 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
+                    user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+                };
+                _input_in: typeof _trpc_server.unsetMarker;
+                _input_out: typeof _trpc_server.unsetMarker;
+                _output_in: typeof _trpc_server.unsetMarker;
+                _output_out: typeof _trpc_server.unsetMarker;
+            }, {
+                user: _supabase_supabase_js.AuthUser;
+                session: {
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    userId: string;
+                    deviceNonce: string;
+                    ip: string;
+                    countryCode: string;
+                    userAgent: string;
+                } & {
+                    applicationId: string;
+                };
+            }>>;
+        };
+        authenticate: {
+            mutate: _trpc_client.Resolver<_trpc_server.BuildProcedure<"mutation", {
+                _config: _trpc_server.RootConfig<{
+                    ctx: {
+                        prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+                        user: null;
+                        session: {
+                            id: string;
+                            createdAt: Date;
+                            updatedAt: Date;
+                            userId: string;
+                            deviceNonce: string;
+                            ip: string;
+                            countryCode: string;
+                            userAgent: string;
+                        } & {
+                            applicationId: string;
+                        };
+                    } | {
+                        prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+                        user: _supabase_supabase_js.AuthUser;
+                        session: {
+                            id: string;
+                            createdAt: Date;
+                            updatedAt: Date;
+                            userId: string;
+                            deviceNonce: string;
+                            ip: string;
+                            countryCode: string;
+                            userAgent: string;
+                        } & {
+                            applicationId: string;
+                        };
+                    };
+                    meta: object;
+                    errorShape: _trpc_server.DefaultErrorShape;
+                    transformer: typeof superjson__default;
+                }>;
+                _meta: object;
+                _ctx_out: {
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+                    user: null;
+                    session: {
+                        id: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        userId: string;
+                        deviceNonce: string;
+                        ip: string;
+                        countryCode: string;
+                        userAgent: string;
+                    } & {
+                        applicationId: string;
+                    };
+                } | {
                     prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    session: {
+                        id: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        userId: string;
+                        deviceNonce: string;
+                        ip: string;
+                        countryCode: string;
+                        userAgent: string;
+                    } & {
+                        applicationId: string;
+                    };
+                };
+                _input_in: {
+                    email: string;
+                    authProviderType: "EMAIL_N_PASSWORD";
+                    password: string;
+                } | {
+                    authProviderType: "PASSKEYS" | "GOOGLE" | "FACEBOOK" | "X" | "APPLE";
+                };
+                _input_out: {
+                    email: string;
+                    authProviderType: "EMAIL_N_PASSWORD";
+                    password: string;
+                } | {
+                    authProviderType: "PASSKEYS" | "GOOGLE" | "FACEBOOK" | "X" | "APPLE";
+                };
+                _output_in: typeof _trpc_server.unsetMarker;
+                _output_out: typeof _trpc_server.unsetMarker;
+            }, {
+                user: _supabase_supabase_js.AuthUser;
+            }>>;
+        };
+        getUser: {
+            query: _trpc_client.Resolver<_trpc_server.BuildProcedure<"query", {
+                _config: _trpc_server.RootConfig<{
+                    ctx: {
+                        prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+                        user: null;
+                        session: {
+                            id: string;
+                            createdAt: Date;
+                            updatedAt: Date;
+                            userId: string;
+                            deviceNonce: string;
+                            ip: string;
+                            countryCode: string;
+                            userAgent: string;
+                        } & {
+                            applicationId: string;
+                        };
+                    } | {
+                        prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+                        user: _supabase_supabase_js.AuthUser;
+                        session: {
+                            id: string;
+                            createdAt: Date;
+                            updatedAt: Date;
+                            userId: string;
+                            deviceNonce: string;
+                            ip: string;
+                            countryCode: string;
+                            userAgent: string;
+                        } & {
+                            applicationId: string;
+                        };
+                    };
+                    meta: object;
+                    errorShape: _trpc_server.DefaultErrorShape;
+                    transformer: typeof superjson__default;
+                }>;
+                _meta: object;
+                _ctx_out: {
+                    session: {
+                        id: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        userId: string;
+                        deviceNonce: string;
+                        ip: string;
+                        countryCode: string;
+                        userAgent: string;
+                    } & {
+                        applicationId: string;
+                    };
+                    user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+                } | {
+                    session: {
+                        id: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        userId: string;
+                        deviceNonce: string;
+                        ip: string;
+                        countryCode: string;
+                        userAgent: string;
+                    } & {
+                        applicationId: string;
+                    };
+                    user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+                } | {
+                    session: {
+                        id: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        userId: string;
+                        deviceNonce: string;
+                        ip: string;
+                        countryCode: string;
+                        userAgent: string;
+                    } & {
+                        applicationId: string;
+                    };
+                    user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+                } | {
+                    session: {
+                        id: string;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        userId: string;
+                        deviceNonce: string;
+                        ip: string;
+                        countryCode: string;
+                        userAgent: string;
+                    } & {
+                        applicationId: string;
+                    };
+                    user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: typeof _trpc_server.unsetMarker;
                 _input_out: typeof _trpc_server.unsetMarker;
@@ -2746,6 +3133,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -2759,6 +3148,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -2776,9 +3167,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -2789,9 +3182,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -2802,9 +3197,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -2815,9 +3212,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: typeof _trpc_server.unsetMarker;
                 _input_out: typeof _trpc_server.unsetMarker;
@@ -2843,6 +3242,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     } | {
                         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -2856,6 +3257,8 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                             ip: string;
                             countryCode: string;
                             userAgent: string;
+                        } & {
+                            applicationId: string;
                         };
                     };
                     meta: object;
@@ -2873,9 +3276,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -2886,9 +3291,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -2899,9 +3306,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 } | {
                     session: {
                         id: string;
@@ -2912,9 +3321,11 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
                         ip: string;
                         countryCode: string;
                         userAgent: string;
+                    } & {
+                        applicationId: string;
                     };
-                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                     user: _supabase_supabase_js.AuthUser;
+                    prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
                 };
                 _input_in: typeof _trpc_server.unsetMarker;
                 _input_out: typeof _trpc_server.unsetMarker;
@@ -2934,8 +3345,10 @@ declare function createTRPCClient({ baseURL, trpcURL, ...params }: CreateTRPCCli
     setAuthTokenHeader: (nextAuthToken: string | null) => void;
     getDeviceNonceHeader: () => string;
     setDeviceNonceHeader: (nextDeviceNonce: string) => void;
-    getApiKeyHeader: () => string;
-    setApiKeyHeader: (nextApiKey: string) => void;
+    getClientIdHeader: () => string;
+    setClientIdHeader: (nextClientId: string) => void;
+    getApplicationIdHeader: () => string;
+    setApplicationIdHeader: (nextApplicationId: string) => void;
 };
 
 declare function createSupabaseClient(supabaseUrl?: string, supabaseKey?: string, supabaseOptions?: SupabaseClientOptions<"public">): _supabase_supabase_js.SupabaseClient<any, "public", any>;
@@ -2973,6 +3386,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
             ip: string;
             countryCode: string;
             userAgent: string;
+        } & {
+            applicationId: string;
         };
     } | {
         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -2986,6 +3401,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
             ip: string;
             countryCode: string;
             userAgent: string;
+        } & {
+            applicationId: string;
         };
     };
     meta: object;
@@ -3006,6 +3423,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -3019,6 +3438,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -3036,9 +3457,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3049,9 +3472,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3062,9 +3487,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3075,9 +3502,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: typeof _trpc_server.unsetMarker;
         _input_out: typeof _trpc_server.unsetMarker;
@@ -3100,6 +3529,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -3113,6 +3544,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -3130,9 +3563,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3143,9 +3578,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3156,9 +3593,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3169,9 +3608,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: {
             walletId: string;
@@ -3198,6 +3639,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -3211,6 +3654,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -3228,9 +3673,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3241,9 +3688,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3254,9 +3703,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3267,9 +3718,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: {
             status: "ENABLED" | "DISABLED";
@@ -3326,6 +3779,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -3339,6 +3794,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -3356,9 +3813,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3369,9 +3828,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3382,9 +3843,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3395,9 +3858,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: {
             status: "ENABLED" | "DISABLED";
@@ -3450,6 +3915,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -3463,6 +3930,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -3480,9 +3949,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3493,9 +3964,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3506,9 +3979,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3519,9 +3994,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: {
             status: "READONLY" | "LOST";
@@ -3560,6 +4037,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -3573,6 +4052,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -3590,9 +4071,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3603,9 +4086,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3616,9 +4101,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3629,9 +4116,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: {
             walletPrivacySetting: "PRIVATE";
@@ -3660,6 +4149,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -3673,6 +4164,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -3690,9 +4183,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3703,9 +4198,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3716,9 +4213,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3729,9 +4228,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: {
             chain: "ARWEAVE" | "ETHEREUM";
@@ -3766,6 +4267,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -3779,6 +4282,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -3796,9 +4301,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3809,9 +4316,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3822,9 +4331,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3835,9 +4346,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: {
             walletId: string;
@@ -3872,6 +4385,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -3885,6 +4400,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -3902,9 +4419,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3915,9 +4434,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3928,9 +4449,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -3941,9 +4464,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: {
             canRecoverAccountSetting: boolean;
@@ -3972,6 +4497,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -3985,6 +4512,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -4002,9 +4531,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4015,9 +4546,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4028,9 +4561,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4041,9 +4576,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: {
             status: "ENABLED" | "DISABLED" | "READONLY" | "LOST";
@@ -4072,6 +4609,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -4085,6 +4624,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -4102,9 +4643,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4115,9 +4658,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4128,9 +4673,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4141,9 +4688,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: {
             walletId: string;
@@ -4168,6 +4717,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -4181,6 +4732,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -4198,9 +4751,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4211,9 +4766,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4224,9 +4781,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4237,9 +4796,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: {
             walletId: string;
@@ -4275,6 +4836,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -4288,6 +4851,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -4305,9 +4870,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4318,9 +4885,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4331,9 +4900,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4344,9 +4915,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: {
             walletId: string;
@@ -4386,6 +4959,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -4399,6 +4974,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -4416,9 +4993,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4429,9 +5008,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4442,9 +5023,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4455,9 +5038,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: {
             walletId: string;
@@ -4492,6 +5077,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -4505,6 +5092,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -4522,9 +5111,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4535,9 +5126,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4548,9 +5141,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4561,9 +5156,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: {
             walletId: string;
@@ -4597,6 +5194,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -4610,6 +5209,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -4627,9 +5228,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4640,9 +5243,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4653,9 +5258,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4666,9 +5273,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: {
             walletId: string;
@@ -4697,6 +5306,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -4710,6 +5321,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -4727,9 +5340,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4740,9 +5355,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4753,9 +5370,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4766,9 +5385,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: {
             walletId: string;
@@ -4804,6 +5425,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -4817,6 +5440,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -4834,9 +5459,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4847,9 +5474,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4860,9 +5489,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4873,9 +5504,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: {
             walletId: string;
@@ -4925,6 +5558,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -4938,6 +5573,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -4955,9 +5592,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4968,9 +5607,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4981,9 +5622,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -4994,9 +5637,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: {
             walletId: string;
@@ -5032,6 +5677,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -5045,6 +5692,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -5064,6 +5713,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
         } | {
             prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -5077,6 +5728,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
         };
         _input_in: {
@@ -5113,6 +5766,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -5126,6 +5781,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -5145,6 +5802,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
         } | {
             prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -5158,6 +5817,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
         };
         _input_in: {
@@ -5187,6 +5848,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -5200,6 +5863,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -5219,6 +5884,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
         } | {
             prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -5232,6 +5899,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
         };
         _input_in: {
@@ -5272,6 +5941,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -5285,6 +5956,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -5304,6 +5977,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
         } | {
             prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -5317,6 +5992,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
         };
         _input_in: {
@@ -5357,7 +6034,7 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
             version: string;
         }];
     }>;
-    debugSession: _trpc_server.BuildProcedure<"query", {
+    validateApplication: _trpc_server.BuildProcedure<"query", {
         _config: _trpc_server.RootConfig<{
             ctx: {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -5371,6 +6048,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -5384,110 +6063,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
-                };
-            };
-            meta: object;
-            errorShape: _trpc_server.DefaultErrorShape;
-            transformer: typeof superjson.default;
-        }>;
-        _meta: object;
-        _ctx_out: {
-            session: {
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                userId: string;
-                deviceNonce: string;
-                ip: string;
-                countryCode: string;
-                userAgent: string;
-            };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
-            user: _supabase_supabase_js.AuthUser;
-        } | {
-            session: {
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                userId: string;
-                deviceNonce: string;
-                ip: string;
-                countryCode: string;
-                userAgent: string;
-            };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
-            user: _supabase_supabase_js.AuthUser;
-        } | {
-            session: {
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                userId: string;
-                deviceNonce: string;
-                ip: string;
-                countryCode: string;
-                userAgent: string;
-            };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
-            user: _supabase_supabase_js.AuthUser;
-        } | {
-            session: {
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                userId: string;
-                deviceNonce: string;
-                ip: string;
-                countryCode: string;
-                userAgent: string;
-            };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
-            user: _supabase_supabase_js.AuthUser;
-        };
-        _input_in: typeof _trpc_server.unsetMarker;
-        _input_out: typeof _trpc_server.unsetMarker;
-        _output_in: typeof _trpc_server.unsetMarker;
-        _output_out: typeof _trpc_server.unsetMarker;
-    }, {
-        user: _supabase_supabase_js.AuthUser;
-        session: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            deviceNonce: string;
-            ip: string;
-            countryCode: string;
-            userAgent: string;
-        };
-    }>;
-    authenticate: _trpc_server.BuildProcedure<"mutation", {
-        _config: _trpc_server.RootConfig<{
-            ctx: {
-                prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
-                user: null;
-                session: {
-                    id: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    userId: string;
-                    deviceNonce: string;
-                    ip: string;
-                    countryCode: string;
-                    userAgent: string;
-                };
-            } | {
-                prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
-                user: _supabase_supabase_js.AuthUser;
-                session: {
-                    id: string;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    userId: string;
-                    deviceNonce: string;
-                    ip: string;
-                    countryCode: string;
-                    userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -5507,6 +6084,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
         } | {
             prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -5520,20 +6099,24 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
         };
         _input_in: {
-            authProviderType: string;
+            clientId: string;
+            applicationOrigin: string;
+            sessionId?: string | undefined;
         };
         _input_out: {
-            authProviderType: string;
+            clientId: string;
+            applicationOrigin: string;
+            sessionId?: string | undefined;
         };
         _output_in: typeof _trpc_server.unsetMarker;
         _output_out: typeof _trpc_server.unsetMarker;
-    }, {
-        url: string;
-    }>;
-    getUser: _trpc_server.BuildProcedure<"query", {
+    }, string>;
+    debugSession: _trpc_server.BuildProcedure<"query", {
         _config: _trpc_server.RootConfig<{
             ctx: {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -5547,6 +6130,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -5560,6 +6145,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -5577,9 +6164,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -5590,9 +6179,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -5603,9 +6194,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -5616,9 +6209,217 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
+            user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+        };
+        _input_in: typeof _trpc_server.unsetMarker;
+        _input_out: typeof _trpc_server.unsetMarker;
+        _output_in: typeof _trpc_server.unsetMarker;
+        _output_out: typeof _trpc_server.unsetMarker;
+    }, {
+        user: _supabase_supabase_js.AuthUser;
+        session: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
+            deviceNonce: string;
+            ip: string;
+            countryCode: string;
+            userAgent: string;
+        } & {
+            applicationId: string;
+        };
+    }>;
+    authenticate: _trpc_server.BuildProcedure<"mutation", {
+        _config: _trpc_server.RootConfig<{
+            ctx: {
+                prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+                user: null;
+                session: {
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    userId: string;
+                    deviceNonce: string;
+                    ip: string;
+                    countryCode: string;
+                    userAgent: string;
+                } & {
+                    applicationId: string;
+                };
+            } | {
+                prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+                user: _supabase_supabase_js.AuthUser;
+                session: {
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    userId: string;
+                    deviceNonce: string;
+                    ip: string;
+                    countryCode: string;
+                    userAgent: string;
+                } & {
+                    applicationId: string;
+                };
+            };
+            meta: object;
+            errorShape: _trpc_server.DefaultErrorShape;
+            transformer: typeof superjson.default;
+        }>;
+        _meta: object;
+        _ctx_out: {
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+            user: null;
+            session: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                userId: string;
+                deviceNonce: string;
+                ip: string;
+                countryCode: string;
+                userAgent: string;
+            } & {
+                applicationId: string;
+            };
+        } | {
             prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            session: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                userId: string;
+                deviceNonce: string;
+                ip: string;
+                countryCode: string;
+                userAgent: string;
+            } & {
+                applicationId: string;
+            };
+        };
+        _input_in: {
+            email: string;
+            authProviderType: "EMAIL_N_PASSWORD";
+            password: string;
+        } | {
+            authProviderType: "PASSKEYS" | "GOOGLE" | "FACEBOOK" | "X" | "APPLE";
+        };
+        _input_out: {
+            email: string;
+            authProviderType: "EMAIL_N_PASSWORD";
+            password: string;
+        } | {
+            authProviderType: "PASSKEYS" | "GOOGLE" | "FACEBOOK" | "X" | "APPLE";
+        };
+        _output_in: typeof _trpc_server.unsetMarker;
+        _output_out: typeof _trpc_server.unsetMarker;
+    }, {
+        user: _supabase_supabase_js.AuthUser;
+    }>;
+    getUser: _trpc_server.BuildProcedure<"query", {
+        _config: _trpc_server.RootConfig<{
+            ctx: {
+                prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+                user: null;
+                session: {
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    userId: string;
+                    deviceNonce: string;
+                    ip: string;
+                    countryCode: string;
+                    userAgent: string;
+                } & {
+                    applicationId: string;
+                };
+            } | {
+                prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+                user: _supabase_supabase_js.AuthUser;
+                session: {
+                    id: string;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    userId: string;
+                    deviceNonce: string;
+                    ip: string;
+                    countryCode: string;
+                    userAgent: string;
+                } & {
+                    applicationId: string;
+                };
+            };
+            meta: object;
+            errorShape: _trpc_server.DefaultErrorShape;
+            transformer: typeof superjson.default;
+        }>;
+        _meta: object;
+        _ctx_out: {
+            session: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                userId: string;
+                deviceNonce: string;
+                ip: string;
+                countryCode: string;
+                userAgent: string;
+            } & {
+                applicationId: string;
+            };
+            user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+        } | {
+            session: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                userId: string;
+                deviceNonce: string;
+                ip: string;
+                countryCode: string;
+                userAgent: string;
+            } & {
+                applicationId: string;
+            };
+            user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+        } | {
+            session: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                userId: string;
+                deviceNonce: string;
+                ip: string;
+                countryCode: string;
+                userAgent: string;
+            } & {
+                applicationId: string;
+            };
+            user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+        } | {
+            session: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                userId: string;
+                deviceNonce: string;
+                ip: string;
+                countryCode: string;
+                userAgent: string;
+            } & {
+                applicationId: string;
+            };
+            user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: typeof _trpc_server.unsetMarker;
         _input_out: typeof _trpc_server.unsetMarker;
@@ -5641,6 +6442,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -5654,6 +6457,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -5671,9 +6476,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -5684,9 +6491,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -5697,9 +6506,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -5710,9 +6521,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: typeof _trpc_server.unsetMarker;
         _input_out: typeof _trpc_server.unsetMarker;
@@ -5736,6 +6549,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             } | {
                 prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
@@ -5749,6 +6564,8 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     ip: string;
                     countryCode: string;
                     userAgent: string;
+                } & {
+                    applicationId: string;
                 };
             };
             meta: object;
@@ -5766,9 +6583,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -5779,9 +6598,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -5792,9 +6613,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         } | {
             session: {
                 id: string;
@@ -5805,9 +6628,11 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 ip: string;
                 countryCode: string;
                 userAgent: string;
+            } & {
+                applicationId: string;
             };
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: _supabase_supabase_js.AuthUser;
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         };
         _input_in: typeof _trpc_server.unsetMarker;
         _input_out: typeof _trpc_server.unsetMarker;

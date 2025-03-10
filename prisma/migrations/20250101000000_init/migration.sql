@@ -1,3 +1,6 @@
+-- CreateExtension
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
 -- CreateEnum
 CREATE TYPE "AuthProviderType" AS ENUM ('PASSKEYS', 'EMAIL_N_PASSWORD', 'GOOGLE', 'FACEBOOK', 'X', 'APPLE');
 
@@ -43,6 +46,12 @@ CREATE TYPE "ChallengeType" AS ENUM ('HASH', 'SIGNATURE');
 -- CreateEnum
 CREATE TYPE "ChallengePurpose" AS ENUM ('ACTIVATION', 'SHARE_RECOVERY', 'SHARE_ROTATION', 'ACCOUNT_RECOVERY');
 
+-- CreateEnum
+CREATE TYPE "Role" AS ENUM ('OWNER', 'ADMIN', 'MEMBER');
+
+-- CreateEnum
+CREATE TYPE "Plan" AS ENUM ('FREE', 'PRO');
+
 -- CreateTable
 CREATE TABLE "UserProfiles" (
     "supId" UUID NOT NULL DEFAULT gen_random_uuid(),
@@ -65,23 +74,6 @@ CREATE TABLE "UserProfiles" (
 );
 
 -- CreateTable
-CREATE TABLE "Developers" (
-    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
-    "plan" VARCHAR(50) NOT NULL DEFAULT 'free',
-    "planStartedAt" VARCHAR(50) NOT NULL DEFAULT 'free',
-    "apiKey" VARCHAR(255) NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "name" TEXT,
-    "taxId" TEXT,
-    "address" TEXT,
-    "countryCode" VARCHAR(2),
-    "userId" UUID NOT NULL,
-
-    CONSTRAINT "Developers_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
 CREATE TABLE "Bills" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "type" "BillType" NOT NULL,
@@ -92,7 +84,7 @@ CREATE TABLE "Bills" (
     "monthlySessions" INTEGER NOT NULL,
     "details" JSONB NOT NULL,
     "userOverrides" JSONB NOT NULL,
-    "developerId" UUID NOT NULL,
+    "organizationId" UUID NOT NULL,
 
     CONSTRAINT "Bills_pkey" PRIMARY KEY ("id")
 );
@@ -100,12 +92,14 @@ CREATE TABLE "Bills" (
 -- CreateTable
 CREATE TABLE "Applications" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "name" VARCHAR(100) NOT NULL,
     "description" VARCHAR(255),
+    "clientId" UUID NOT NULL DEFAULT gen_random_uuid(),
     "domains" VARCHAR(255)[],
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "settings" JSONB NOT NULL,
-    "developerId" UUID NOT NULL,
+    "teamId" UUID NOT NULL,
 
     CONSTRAINT "Applications_pkey" PRIMARY KEY ("id")
 );
@@ -269,6 +263,15 @@ CREATE TABLE "Sessions" (
 );
 
 -- CreateTable
+CREATE TABLE "ApplicationSessions" (
+    "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "applicationId" UUID NOT NULL,
+    "sessionId" UUID NOT NULL,
+
+    CONSTRAINT "ApplicationSessions_pkey" PRIMARY KEY ("applicationId","sessionId")
+);
+
+-- CreateTable
 CREATE TABLE "LoginAttempts" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "rejectionReason" VARCHAR(255) NOT NULL,
@@ -281,27 +284,54 @@ CREATE TABLE "LoginAttempts" (
 );
 
 -- CreateTable
-CREATE TABLE "_ApplicationToSession" (
-    "A" UUID NOT NULL,
-    "B" UUID NOT NULL,
+CREATE TABLE "Organizations" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "name" VARCHAR(100) NOT NULL,
+    "slug" VARCHAR(50) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "billingName" TEXT,
+    "taxId" TEXT,
+    "billingAddress" TEXT,
+    "billingCountryCode" VARCHAR(2),
 
-    CONSTRAINT "_ApplicationToSession_AB_pkey" PRIMARY KEY ("A","B")
+    CONSTRAINT "Organizations_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Teams" (
+    "id" UUID NOT NULL DEFAULT gen_random_uuid(),
+    "name" VARCHAR(100) NOT NULL,
+    "slug" VARCHAR(50) NOT NULL,
+    "plan" "Plan" NOT NULL DEFAULT 'FREE',
+    "planStartedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "organizationId" UUID NOT NULL,
+
+    CONSTRAINT "Teams_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "Memberships" (
+    "role" "Role" NOT NULL DEFAULT 'MEMBER',
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updatedAt" TIMESTAMP(3) NOT NULL,
+    "organizationId" UUID NOT NULL,
+    "teamId" UUID NOT NULL,
+    "userId" UUID NOT NULL,
+
+    CONSTRAINT "Memberships_pkey" PRIMARY KEY ("organizationId","teamId","userId")
 );
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Developers_apiKey_key" ON "Developers"("apiKey");
+CREATE INDEX "Bills_organizationId_idx" ON "Bills"("organizationId");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "Developers_userId_key" ON "Developers"("userId");
+CREATE UNIQUE INDEX "Applications_clientId_key" ON "Applications"("clientId");
 
 -- CreateIndex
-CREATE INDEX "Developers_apiKey_idx" ON "Developers"("apiKey");
-
--- CreateIndex
-CREATE INDEX "Bills_developerId_idx" ON "Bills"("developerId");
-
--- CreateIndex
-CREATE INDEX "Applications_developerId_idx" ON "Applications"("developerId");
+CREATE INDEX "Applications_teamId_idx" ON "Applications"("teamId");
 
 -- CreateIndex
 CREATE INDEX "Wallets_canRecoverAccountSetting_chain_address_idx" ON "Wallets"("canRecoverAccountSetting", "chain", "address");
@@ -352,22 +382,31 @@ CREATE INDEX "Sessions_updatedAt_idx" ON "Sessions"("updatedAt");
 CREATE UNIQUE INDEX "Sessions_userId_deviceNonce_key" ON "Sessions"("userId", "deviceNonce");
 
 -- CreateIndex
+CREATE INDEX "ApplicationSessions_updatedAt_idx" ON "ApplicationSessions"("updatedAt");
+
+-- CreateIndex
 CREATE INDEX "LoginAttempts_userId_idx" ON "LoginAttempts"("userId");
 
 -- CreateIndex
 CREATE INDEX "LoginAttempts_createdAt_idx" ON "LoginAttempts"("createdAt");
 
 -- CreateIndex
-CREATE INDEX "_ApplicationToSession_B_index" ON "_ApplicationToSession"("B");
+CREATE UNIQUE INDEX "Organizations_slug_key" ON "Organizations"("slug");
+
+-- CreateIndex
+CREATE INDEX "Teams_organizationId_idx" ON "Teams"("organizationId");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "Teams_organizationId_slug_key" ON "Teams"("organizationId", "slug");
+
+-- CreateIndex
+CREATE INDEX "Memberships_userId_idx" ON "Memberships"("userId");
 
 -- AddForeignKey
-ALTER TABLE "Developers" ADD CONSTRAINT "Developers_userId_fkey" FOREIGN KEY ("userId") REFERENCES "UserProfiles"("supId") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Bills" ADD CONSTRAINT "Bills_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Bills" ADD CONSTRAINT "Bills_developerId_fkey" FOREIGN KEY ("developerId") REFERENCES "Developers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Applications" ADD CONSTRAINT "Applications_developerId_fkey" FOREIGN KEY ("developerId") REFERENCES "Developers"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Applications" ADD CONSTRAINT "Applications_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Teams"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Wallets" ADD CONSTRAINT "Wallets_userId_fkey" FOREIGN KEY ("userId") REFERENCES "UserProfiles"("supId") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -442,13 +481,25 @@ ALTER TABLE "DevicesAndLocations" ADD CONSTRAINT "DevicesAndLocations_applicatio
 ALTER TABLE "Sessions" ADD CONSTRAINT "Sessions_userId_fkey" FOREIGN KEY ("userId") REFERENCES "UserProfiles"("supId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
+ALTER TABLE "ApplicationSessions" ADD CONSTRAINT "ApplicationSessions_applicationId_fkey" FOREIGN KEY ("applicationId") REFERENCES "Applications"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "ApplicationSessions" ADD CONSTRAINT "ApplicationSessions_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "Sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
 ALTER TABLE "LoginAttempts" ADD CONSTRAINT "LoginAttempts_userId_fkey" FOREIGN KEY ("userId") REFERENCES "UserProfiles"("supId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "LoginAttempts" ADD CONSTRAINT "LoginAttempts_deviceAndLocationId_fkey" FOREIGN KEY ("deviceAndLocationId") REFERENCES "DevicesAndLocations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_ApplicationToSession" ADD CONSTRAINT "_ApplicationToSession_A_fkey" FOREIGN KEY ("A") REFERENCES "Applications"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Teams" ADD CONSTRAINT "Teams_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "_ApplicationToSession" ADD CONSTRAINT "_ApplicationToSession_B_fkey" FOREIGN KEY ("B") REFERENCES "Sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "Memberships" ADD CONSTRAINT "Memberships_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Memberships" ADD CONSTRAINT "Memberships_teamId_fkey" FOREIGN KEY ("teamId") REFERENCES "Teams"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Memberships" ADD CONSTRAINT "Memberships_userId_fkey" FOREIGN KEY ("userId") REFERENCES "UserProfiles"("supId") ON DELETE CASCADE ON UPDATE CASCADE;
