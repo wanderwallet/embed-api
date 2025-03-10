@@ -65,15 +65,21 @@ export const authenticateRouter = {
 
       if (!provider) throw new Error("Unsupported auth provider type");
 
-      supabase.auth.signInWithOAuth({
+      const { data } = await supabase.auth.signInWithOAuth({
         provider,
-        options: input.authProviderType === AuthProviderType.GOOGLE ? {
-          redirectTo: typeof window !== "undefined" ? `${window.location.origin}/auth/callback/google` : undefined,
-        } : undefined
+        options: {
+          redirectTo: typeof window !== "undefined" 
+            ? `${window.location.origin}/auth/callback/${provider}` 
+            : undefined,
+        }
       });
 
-    throw new Error("Unsupported auth provider type");
-  }),
+      if (!data.url) {
+        throw new Error("Failed to get OAuth URL");
+      }
+
+      return { url: data.url };
+    }),
 
   getUser: protectedProcedure.query(async () => {
     const user = await getUser();
