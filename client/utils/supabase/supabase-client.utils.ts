@@ -9,11 +9,7 @@ export function createSupabaseClient(
       persistSession: true,
       detectSessionInUrl: true,
     },
-  },
+  }
 ) {
-  return createClient(
-    supabaseUrl,
-    supabaseKey,
-    supabaseOptions,
-  );
+  return createClient(supabaseUrl, supabaseKey, supabaseOptions);
 }

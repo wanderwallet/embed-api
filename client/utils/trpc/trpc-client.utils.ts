@@ -1,6 +1,7 @@
-import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
+import { createTRPCProxyClient, httpBatchLink, TRPCLink } from "@trpc/client";
 import type { AppRouter } from "@/server/routers/_app";
 import superjson from "superjson";
+import { observable } from "@trpc/server/observable";
 
 export interface CreateTRPCClientOptions {
   baseURL?: string;
@@ -9,11 +10,63 @@ export interface CreateTRPCClientOptions {
   deviceNonce?: string;
   clientId?: string;
   applicationId?: string;
+  onAuthError?: () => void;
 }
+
+interface AuthLinkOptions {
+  /**
+   * Callback function to handle authentication errors
+   */
+  onAuthError?: () => void | Promise<void>;
+  /**
+   * Function to get the current auth token
+   */
+  getAuthTokenHeader: () => string | null;
+  /**
+   * Function to set the auth token
+   */
+  setAuthTokenHeader: (token: string | null) => void;
+}
+
+export const authErrorLink = <TRouter extends AppRouter = AppRouter>(
+  opts: AuthLinkOptions
+): TRPCLink<TRouter> => {
+  return () => {
+    return ({ next, op }) => {
+      return observable((observer) => {
+        const unsubscribe = next(op).subscribe({
+          next(value) {
+            observer.next(value);
+          },
+          async error(err) {
+            if (err.data?.code === "UNAUTHORIZED") {
+              console.warn("🚫 Unauthorized access detected:", {
+                path: op.path,
+                type: op.type,
+              });
+              const currentAuthToken = opts.getAuthTokenHeader();
+              if (currentAuthToken) {
+                await opts.onAuthError?.();
+                opts.setAuthTokenHeader(null);
+              }
+            }
+            observer.error(err);
+          },
+          complete() {
+            observer.complete();
+          },
+        });
+
+        return unsubscribe;
+      });
+    };
+  };
+};
 
 export function createTRPCClient({
   baseURL,
   trpcURL,
+  onAuthError,
   ...params
 }: CreateTRPCClientOptions) {
   let authToken = params.authToken || null;
@@ -60,6 +113,11 @@ export function createTRPCClient({
   const client = createTRPCProxyClient<AppRouter>({
     transformer: superjson,
     links: [
+      authErrorLink({
+        onAuthError,
+        getAuthTokenHeader,
+        setAuthTokenHeader,
+      }),
       httpBatchLink({
         url,
         headers() {
