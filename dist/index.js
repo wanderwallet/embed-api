@@ -47,9 +47,42 @@ var import_client3 = require("@prisma/client");
 // client/utils/trpc/trpc-client.utils.ts
 var import_client = require("@trpc/client");
 var import_superjson = __toESM(require("superjson"));
+var import_observable = require("@trpc/server/observable");
+var authErrorLink = (opts) => {
+  return () => {
+    return ({ next, op }) => {
+      return (0, import_observable.observable)((observer) => {
+        const unsubscribe = next(op).subscribe({
+          next(value) {
+            observer.next(value);
+          },
+          async error(err) {
+            if (err.data?.code === "UNAUTHORIZED") {
+              console.warn("\u{1F6AB} Unauthorized access detected:", {
+                path: op.path,
+                type: op.type
+              });
+              const currentAuthToken = opts.getAuthTokenHeader();
+              if (currentAuthToken) {
+                await opts.onAuthError?.();
+                opts.setAuthTokenHeader(null);
+              }
+            }
+            observer.error(err);
+          },
+          complete() {
+            observer.complete();
+          }
+        });
+        return unsubscribe;
+      });
+    };
+  };
+};
 function createTRPCClient({
   baseURL,
   trpcURL,
+  onAuthError,
   ...params
 }) {
   let authToken = params.authToken || null;
@@ -85,6 +118,11 @@ function createTRPCClient({
   const client = (0, import_client.createTRPCProxyClient)({
     transformer: import_superjson.default,
     links: [
+      authErrorLink({
+        onAuthError,
+        getAuthTokenHeader,
+        setAuthTokenHeader
+      }),
       (0, import_client.httpBatchLink)({
         url,
         headers() {
@@ -126,11 +164,7 @@ function createSupabaseClient(supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     detectSessionInUrl: true
   }
 }) {
-  return (0, import_supabase_js.createClient)(
-    supabaseUrl,
-    supabaseKey,
-    supabaseOptions
-  );
+  return (0, import_supabase_js.createClient)(supabaseUrl, supabaseKey, supabaseOptions);
 }
 
 // server/utils/challenge/clients/challenge-client-v1.ts
