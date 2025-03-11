@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { trpc } from "@/client/utils/trpc/trpc-client"
 import { useAuth } from "@/client/hooks/useAuth"
+import { AuthProviderType } from "@prisma/client"
 
 export default function Login() {
   const router = useRouter();
@@ -33,7 +34,7 @@ export default function Login() {
     }
   }
 
-  const handleOAuthSignIn = async (provider: string) => {
+  const handleOAuthSignIn = async (provider: Exclude<AuthProviderType, "EMAIL_N_PASSWORD">) => {
     try {
       setIsLoading(true);
 
@@ -57,11 +58,12 @@ export default function Login() {
     try {
       setIsLoading(true);
 
-      await loginMutation.mutateAsync({ 
-        authProviderType: "EMAIL_N_PASSWORD", 
-        options: { email, password } 
+      await loginMutation.mutateAsync({
+        authProviderType: "EMAIL_N_PASSWORD",
+        email,
+        password,
       });
-      
+
       // If successful, the useEffect will handle redirection
     } catch (error) {
       console.error("Email/password sign-in failed:", error)
@@ -80,7 +82,7 @@ export default function Login() {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100">
       <h1 className="text-4xl font-bold mb-8">Welcome to Our App</h1>
-      
+
       <div className="flex flex-col space-y-4 w-64">
         {showEmailForm ? (
           <form onSubmit={handleEmailPasswordSignIn} className="space-y-4">
@@ -130,7 +132,7 @@ export default function Login() {
             >
               Sign in with Email & Password
             </button>
-            
+
             <button
               onClick={handleGoogleSignIn}
               disabled={loginMutation.isLoading || isLoading}
@@ -138,7 +140,7 @@ export default function Login() {
             >
               Sign in with Google
             </button>
-            
+
             <button
               onClick={() => handleOAuthSignIn("FACEBOOK")}
               disabled={loginMutation.isLoading || isLoading}
@@ -146,7 +148,7 @@ export default function Login() {
             >
               Sign in with Facebook
             </button>
-            
+
             <button
               onClick={() => handleOAuthSignIn("X")}
               disabled={loginMutation.isLoading || isLoading}
@@ -154,7 +156,7 @@ export default function Login() {
             >
               Sign in with X
             </button>
-            
+
             <button
               onClick={() => handleOAuthSignIn("APPLE")}
               disabled={loginMutation.isLoading || isLoading}
