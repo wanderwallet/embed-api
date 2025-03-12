@@ -12,9 +12,42 @@ import {
 // client/utils/trpc/trpc-client.utils.ts
 import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
+import { observable } from "@trpc/server/observable";
+var authErrorLink = (opts) => {
+  return () => {
+    return ({ next, op }) => {
+      return observable((observer) => {
+        const unsubscribe = next(op).subscribe({
+          next(value) {
+            observer.next(value);
+          },
+          async error(err) {
+            if (err.data?.code === "UNAUTHORIZED") {
+              console.warn("\u{1F6AB} Unauthorized access detected:", {
+                path: op.path,
+                type: op.type
+              });
+              const currentAuthToken = opts.getAuthTokenHeader();
+              if (currentAuthToken) {
+                await opts.onAuthError?.();
+                opts.setAuthTokenHeader(null);
+              }
+            }
+            observer.error(err);
+          },
+          complete() {
+            observer.complete();
+          }
+        });
+        return unsubscribe;
+      });
+    };
+  };
+};
 function createTRPCClient({
   baseURL,
   trpcURL,
+  onAuthError,
   ...params
 }) {
   let authToken = params.authToken || null;
@@ -50,6 +83,11 @@ function createTRPCClient({
   const client = createTRPCProxyClient({
     transformer: superjson,
     links: [
+      authErrorLink({
+        onAuthError,
+        getAuthTokenHeader,
+        setAuthTokenHeader
+      }),
       httpBatchLink({
         url,
         headers() {
@@ -91,11 +129,7 @@ function createSupabaseClient(supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     detectSessionInUrl: true
   }
 }) {
-  return createClient(
-    supabaseUrl,
-    supabaseKey,
-    supabaseOptions
-  );
+  return createClient(supabaseUrl, supabaseKey, supabaseOptions);
 }
 
 // server/utils/challenge/clients/challenge-client-v1.ts

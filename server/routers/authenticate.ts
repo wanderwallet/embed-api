@@ -58,14 +58,17 @@ export const authenticateRouter = {
           throw new Error(error.message);
         }
 
-        return { user: data.user };
+        return {
+          user: data.user,
+          url: null,
+        };
       }
 
       const provider = SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE[input.authProviderType];
 
       if (!provider) throw new Error("Unsupported auth provider type");
 
-      const { data } = await supabase.auth.signInWithOAuth({
+      const { error, data } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
           redirectTo: typeof window !== "undefined" 
@@ -74,11 +77,14 @@ export const authenticateRouter = {
         }
       });
 
-      if (!data.url) {
-        throw new Error("Failed to get OAuth URL");
+      if (error) {
+        throw new Error(error.message);
       }
 
-      return { url: data.url };
+      return {
+        user: null,
+        data: data.url,
+      };
     }),
 
   getUser: protectedProcedure.query(async () => {
