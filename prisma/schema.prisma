@@ -617,6 +617,18 @@ model Passkey {
   @@unique([userId, credentialId], name: "userPasskey")
   @@map("Passkeys")
 }
+
+model PasskeyChallenge {
+  id        String   @id @default(uuid())
+  userId    String   @db.VarChar(255)
+  value     String   @db.VarChar(255)
+  version   String   @db.VarChar(255)
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@map("PasskeyChallenges")
+}
+
 model Organization {
   id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   name      String   @db.VarChar(100)

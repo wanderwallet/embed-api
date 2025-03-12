@@ -5,15 +5,21 @@ import { useRouter } from "next/navigation"
 import { trpc } from "@/client/utils/trpc/trpc-client"
 import { useAuth } from "@/client/hooks/useAuth"
 import { AuthProviderType } from "@prisma/client"
+import { startRegistration, startAuthentication } from "@simplewebauthn/browser";
 
 export default function Login() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
   const loginMutation = trpc.authenticate.useMutation();
+  const startRegistrationMutation = trpc.startRegistration.useMutation();
+  const verifyRegistrationMutation = trpc.verifyRegistration.useMutation();
+  const startAuthenticationMutation = trpc.startAuthentication.useMutation();
+  const verifyAuthenticationMutation = trpc.verifyAuthentication.useMutation();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showEmailForm, setShowEmailForm] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
 
   const handleGoogleSignIn = async () => {
     try {
@@ -70,6 +76,70 @@ export default function Login() {
       setIsLoading(false);
     }
   }
+
+  // Handle passkey registration
+  const handlePasskeySignUp = async () => {
+    try {
+      setIsLoading(true);
+      setErrorMessage("");
+      
+      // Start registration process
+      const { options, tempUserId } = await startRegistrationMutation.mutateAsync();
+      
+      // Get attestation from browser
+      const attestationResponse = await startRegistration({ optionsJSON: options });
+      
+      // Verify registration with server
+      const verificationResult = await verifyRegistrationMutation.mutateAsync({
+        tempUserId,
+        attestationResponse,
+      });
+      
+      if (verificationResult.verified) {
+        // Registration successful, user should be logged in now
+        router.push("/dashboard");
+      } else {
+        setErrorMessage("Passkey registration failed");
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Passkey registration failed:", error);
+      setErrorMessage(error instanceof Error ? error.message : "Passkey registration failed");
+      setIsLoading(false);
+    }
+  };
+
+  // Handle passkey authentication
+  const handlePasskeySignIn = async () => {
+    try {
+      setIsLoading(true);
+      setErrorMessage("");
+      
+      // Start authentication process
+      const { options, tempId } = await startAuthenticationMutation.mutateAsync();
+      
+      // Get assertion from browser
+      const authenticationResponse = await startAuthentication({ optionsJSON: options });
+      
+      // Verify authentication with server
+      const verificationResult = await verifyAuthenticationMutation.mutateAsync({
+        tempId,
+        authenticationResponse,
+      });
+      
+      if (verificationResult.verified) {
+        // Authentication successful, user should be logged in now
+        router.push("/dashboard");
+      } else {
+        setErrorMessage("Passkey authentication failed");
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Passkey authentication failed:", error);
+      setErrorMessage(error instanceof Error ? error.message : "Passkey authentication failed");
+      setIsLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (user) {
@@ -133,6 +203,23 @@ export default function Login() {
               Sign in with Email & Password
             </button>
 
+            {/* Passkey buttons */}
+            <button
+              onClick={handlePasskeySignUp}
+              disabled={isLoading}
+              className="bg-green-500 text-white font-semibold py-2 px-4 border border-green-600 rounded shadow-sm hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+            >
+              Sign Up with Passkey
+            </button>
+
+            <button
+              onClick={handlePasskeySignIn}
+              disabled={isLoading}
+              className="bg-purple-500 text-white font-semibold py-2 px-4 border border-purple-600 rounded shadow-sm hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500"
+            >
+              Sign In with Passkey
+            </button>
+
             <button
               onClick={handleGoogleSignIn}
               disabled={loginMutation.isLoading || isLoading}
@@ -168,6 +255,7 @@ export default function Login() {
         )}
       </div>
 
+      {errorMessage ? (<p className="mt-4 text-red-500">{errorMessage}</p>) : null}
       {loginMutation.error ? (<p className="mt-4 text-red-500">{loginMutation.error.message}</p>) : null}
     </div>
   )

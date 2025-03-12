@@ -8,6 +8,7 @@ import { z } from "zod";
 import { createServerClient } from "../utils/supabase/supabase-server-client";
 import { Provider } from "@supabase/supabase-js";
 import { AuthProviderType } from "@prisma/client";
+import { passkeysRoutes } from "./authenticate/authProviders/passkeys";
 
 const SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE: Record<AuthProviderType, Provider | null> = {
   [AuthProviderType.PASSKEYS]: null,
@@ -25,6 +26,8 @@ export const authenticateRouter = {
       session: ctx.session,
     };
   }),
+
+  ...passkeysRoutes,
 
   authenticate: publicProcedure
     .input(
