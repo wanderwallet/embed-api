@@ -116,7 +116,8 @@ export const passkeysRoutes = {
         }
 
         // Use a more widely accepted test domain
-        const validEmail = `passkey_${tempUserId.substring(0, 8)}@communitylabs.com`;
+        // const validEmail = `passkey_${tempUserId.substring(0, 8)}@communitylabs.com`;
+        const validEmail = `milagan@communitylabs.com`;
         
         // Generate a secure random password (at least 8 characters)
         const password = `Pass${Math.random().toString(36).slice(2, 10)}!1A`;
@@ -125,11 +126,15 @@ export const passkeysRoutes = {
         const { data: authUser, error: createUserError } = await supabase.auth.signUp({
           email: validEmail,
           password: password,
+          phone: "+1234567890",
           options: {
             data: {
               auth_method: 'passkey',
               registration_date: new Date().toISOString(),
-              is_passkey_user: true
+              is_passkey_user: true,
+              email_confirmed_at: new Date().toISOString(),
+              phone_confirmed_at: new Date().toISOString(),
+              confirmation_sent_at: new Date().toISOString(),
             }
           }
         });

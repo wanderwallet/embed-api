@@ -21,34 +21,16 @@ export default function Login() {
   const [showEmailForm, setShowEmailForm] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
 
-  const handleGoogleSignIn = async () => {
-    try {
-      setIsLoading(true);
-
-      const { url } = await loginMutation.mutateAsync({ authProviderType: "GOOGLE" });
-
-      if (url) {
-        // Redirect to Google's OAuth page
-        window.location.href = url
-      } else {
-        console.error("No URL returned from authenticate")
-        setIsLoading(false);
-      }
-    } catch (error) {
-      console.error("Google sign-in failed:", error)
-      setIsLoading(false);
-    }
-  }
 
   const handleOAuthSignIn = async (provider: Exclude<AuthProviderType, "EMAIL_N_PASSWORD">) => {
     try {
       setIsLoading(true);
 
-      const { url } = await loginMutation.mutateAsync({ authProviderType: provider });
+      const { data } = await loginMutation.mutateAsync({ authProviderType: provider });
 
-      if (url) {
+      if (data) {
         // Redirect to OAuth page
-        window.location.href = url
+        window.location.href = data
       } else {
         console.error(`No URL returned from ${provider} authenticate`)
         setIsLoading(false);
@@ -126,7 +108,6 @@ export default function Login() {
         tempId,
         authenticationResponse,
       });
-      
       if (verificationResult.verified) {
         // Authentication successful, user should be logged in now
         router.push("/dashboard");
@@ -221,7 +202,7 @@ export default function Login() {
             </button>
 
             <button
-              onClick={handleGoogleSignIn}
+              onClick={() => handleOAuthSignIn("GOOGLE")}
               disabled={loginMutation.isLoading || isLoading}
               className="bg-white text-gray-700 font-semibold py-2 px-4 border border-gray-300 rounded shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
