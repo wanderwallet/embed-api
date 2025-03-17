@@ -420,6 +420,8 @@ model WorkKeyShare {
   /// RSA-PSS with a 4096 modulusLength => 550 bytes public key as SPKI => 736 characters in base64. 1024 just to be safe.
   deviceSharePublicKey String @db.VarChar(1024)
 
+  deviceNonce String @db.VarChar(255)
+
   walletActivations WalletActivation[]
 
   userProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
@@ -428,16 +430,13 @@ model WorkKeyShare {
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String @db.Uuid
 
-  deviceAndLocation   DeviceAndLocation @relation(fields: [deviceAndLocationId], references: [id], onDelete: Cascade)
-  deviceAndLocationId String            @db.Uuid
-
   session   Session? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
   sessionId String?  @db.Uuid
 
   /// This unique constraint means that if the users loses the deviceShare but, for whatever reason, not the
   /// device nonce, after requesting the recoveryAuthShare and sending the new authShare and deviceShareHash, this will
   /// replace the previous one (as deviceNonce is the same):
-  @@unique([userId, walletId, deviceAndLocationId], name: "userSessionWorkShare")
+  @@unique([userId, walletId, deviceNonce], name: "userDeviceWorkShare")
   @@map("WorkKeyShares")
 }
 
@@ -521,7 +520,6 @@ model DeviceAndLocation {
   walletActivations      WalletActivation[]
   walletRecoveries       WalletRecovery[]
   walletExports          WalletExport[]
-  workKeyShares          WorkKeyShare[]
   recoveryKeyShares      RecoveryKeyShare[]
   authenticationAttempts AuthenticationAttempt[]
 

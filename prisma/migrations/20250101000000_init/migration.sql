@@ -187,9 +187,10 @@ CREATE TABLE "WorkKeyShares" (
     "authShare" VARCHAR(4096) NOT NULL,
     "deviceShareHash" VARCHAR(44) NOT NULL,
     "deviceSharePublicKey" VARCHAR(1024) NOT NULL,
+    "deviceNonce" VARCHAR(255) NOT NULL,
     "userId" UUID NOT NULL,
     "walletId" UUID NOT NULL,
-    "sessionId" UUID NOT NULL,
+    "sessionId" UUID,
 
     CONSTRAINT "WorkKeyShares_pkey" PRIMARY KEY ("id")
 );
@@ -358,7 +359,7 @@ CREATE INDEX "WalletExports_userId_idx" ON "WalletExports"("userId");
 CREATE INDEX "WalletExports_exportedAt_idx" ON "WalletExports"("exportedAt");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "WorkKeyShares_userId_sessionId_walletId_key" ON "WorkKeyShares"("userId", "sessionId", "walletId");
+CREATE UNIQUE INDEX "WorkKeyShares_userId_walletId_deviceNonce_key" ON "WorkKeyShares"("userId", "walletId", "deviceNonce");
 
 -- CreateIndex
 CREATE INDEX "RecoveryKeyShares_userId_createdAt_idx" ON "RecoveryKeyShares"("userId", "createdAt");
@@ -454,7 +455,7 @@ ALTER TABLE "WorkKeyShares" ADD CONSTRAINT "WorkKeyShares_userId_fkey" FOREIGN K
 ALTER TABLE "WorkKeyShares" ADD CONSTRAINT "WorkKeyShares_walletId_fkey" FOREIGN KEY ("walletId") REFERENCES "Wallets"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "WorkKeyShares" ADD CONSTRAINT "WorkKeyShares_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "Sessions"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "WorkKeyShares" ADD CONSTRAINT "WorkKeyShares_sessionId_fkey" FOREIGN KEY ("sessionId") REFERENCES "Sessions"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "RecoveryKeyShares" ADD CONSTRAINT "RecoveryKeyShares_userId_fkey" FOREIGN KEY ("userId") REFERENCES "UserProfiles"("supId") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -1,11 +1,15 @@
-import { protectedProcedure } from "@/server/trpc"
-import { z } from "zod"
-import { ChallengePurpose } from '@prisma/client';
+import { protectedProcedure } from "@/server/trpc";
+import { z } from "zod";
+import { ChallengePurpose } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
-import { getShareHashValidator, getSharePublicKeyValidator, getShareValidator } from "@/server/utils/share/share.validators";
+import {
+  getShareHashValidator,
+  getSharePublicKeyValidator,
+  getShareValidator,
+} from "@/server/utils/share/share.validators";
 
 export const RotateAuthShareSchema = z.object({
   walletId: z.string().uuid(),
@@ -70,15 +74,17 @@ export const rotateAuthShare = protectedProcedure
     }
 
     const dateNow = new Date();
-    const nextRotationAt = new Date(dateNow.getTime() + Config.SHARE_ACTIVE_TTL_MS);
+    const nextRotationAt = new Date(
+      dateNow.getTime() + Config.SHARE_ACTIVE_TTL_MS
+    );
 
     await ctx.prisma.$transaction(async (tx) => {
       const rotateWorkKeySharePromise = tx.workKeyShare.update({
         where: {
-          userSessionWorkShare: {
+          userDeviceWorkShare: {
             userId: ctx.user.id,
-            sessionId: ctx.session.id,
             walletId: input.walletId,
+            deviceNonce: ctx.session.deviceNonce,
           },
         },
         data: {
@@ -87,17 +93,14 @@ export const rotateAuthShare = protectedProcedure
           authShare: input.authShare,
           deviceShareHash: input.deviceShareHash,
           deviceSharePublicKey: input.deviceSharePublicKey,
-        }
+        },
       });
 
       const deleteChallengePromise = tx.challenge.delete({
         where: { id: challenge.id },
       });
 
-      return Promise.all([
-        rotateWorkKeySharePromise,
-        deleteChallengePromise,
-      ]);
+      return Promise.all([rotateWorkKeySharePromise, deleteChallengePromise]);
     });
 
     return {
