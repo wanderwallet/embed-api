@@ -32,6 +32,7 @@ export async function createContext({ req }: { req: Request }) {
   // See https://supabase.com/docs/reference/javascript/auth-getuser
 
   const { data, error } = await supabase.auth.getUser(token);
+
   if (error) {
     console.error("Error verifying session:", error);
 

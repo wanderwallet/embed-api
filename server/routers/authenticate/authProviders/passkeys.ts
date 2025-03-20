@@ -3,7 +3,7 @@ import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
   generateAuthenticationOptions,
-  verifyAuthenticationResponse
+  verifyAuthenticationResponse,
 } from "@simplewebauthn/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -13,50 +13,47 @@ import {
   relyingPartyName,
   relyingPartyOrigin,
 } from "@/server/services/webauthnConfig";
-import { 
-  stringToUint8Array,
-  uint8ArrayToString
-} from "@/server/services/auth";
+import { stringToUint8Array, uint8ArrayToString } from "@/server/services/auth";
 import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import { prisma } from "@/server/utils/prisma/prisma-client";
+import { createWebAuthnAccessTokenForUser } from "@/server/utils/passkey/session";
 
 export const passkeysRoutes = {
   // Start registration without requiring a pre-existing user
-  startRegistration: publicProcedure
-    .mutation(async () => {
-      // Generate a temporary UUID for this registration attempt
-      const tempUserId = crypto.randomUUID();
-      
-      // Generate registration options
-      const options = await generateRegistrationOptions({
-        rpName: relyingPartyName,
-        rpID: relyingPartyID,
-        userID: stringToUint8Array(tempUserId),
-        userName: tempUserId, // Will be updated later by the user
-        attestationType: "direct",
-        authenticatorSelection: {
-          residentKey: "preferred",
-          userVerification: "preferred",
-          authenticatorAttachment: "platform",
-        },
-      });
+  startRegistration: publicProcedure.mutation(async () => {
+    // Generate a temporary UUID for this registration attempt
+    const tempUserId = crypto.randomUUID();
 
-      // Store the challenge in the database
-      await prisma.passkeyChallenge.create({
-        data: {
-          userId: tempUserId,
-          value: options.challenge,
-          createdAt: new Date(),
-          version: "1" // In case we need to change the challenge format
-        }
-      });
+    // Generate registration options
+    const options = await generateRegistrationOptions({
+      rpName: relyingPartyName,
+      rpID: relyingPartyID,
+      userID: stringToUint8Array(tempUserId),
+      userName: tempUserId, // Will be updated later by the user
+      attestationType: "direct",
+      authenticatorSelection: {
+        residentKey: "preferred",
+        userVerification: "preferred",
+        authenticatorAttachment: "platform",
+      },
+    });
 
-      // Return both the options and the temporary user ID
-      return {
-        options,
-        tempUserId
-      };
-    }),
+    // Store the challenge in the database
+    await prisma.passkeyChallenge.create({
+      data: {
+        userId: tempUserId,
+        value: options.challenge,
+        createdAt: new Date(),
+        version: "1", // In case we need to change the challenge format
+      },
+    });
+
+    // Return both the options and the temporary user ID
+    return {
+      options,
+      tempUserId,
+    };
+  }),
 
   verifyRegistration: publicProcedure
     .input(
@@ -67,21 +64,27 @@ export const passkeysRoutes = {
     )
     .mutation(async ({ input }) => {
       const { tempUserId, attestationResponse } = input;
-      const supabase = await createServerClient();
+      const supabase = await createServerClient(
+        undefined,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!
+      );
 
       try {
         // Get the challenge from the database
         const challenge = await prisma.passkeyChallenge.findFirst({
           where: {
-            userId: tempUserId
+            userId: tempUserId,
           },
           orderBy: {
-            createdAt: 'desc'
-          }
+            createdAt: "desc",
+          },
         });
 
         if (!challenge) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Challenge not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Challenge not found",
+          });
         }
 
         // Check if challenge is expired (e.g., 5 minutes)
@@ -89,15 +92,18 @@ export const passkeysRoutes = {
         if (challengeAge > 5 * 60 * 1000) {
           // Delete expired challenge
           await prisma.passkeyChallenge.delete({
-            where: { id: challenge.id }
+            where: { id: challenge.id },
           });
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Challenge expired" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Challenge expired",
+          });
         }
 
         // Store the challenge value and immediately delete the challenge from the database
         const challengeValue = challenge.value;
         await prisma.passkeyChallenge.delete({
-          where: { id: challenge.id }
+          where: { id: challenge.id },
         });
 
         // Verify the response
@@ -115,34 +121,37 @@ export const passkeysRoutes = {
           });
         }
 
-        // Use a more widely accepted test domain
-        // const validEmail = `passkey_${tempUserId.substring(0, 8)}@communitylabs.com`;
-        const validEmail = `milagan@communitylabs.com`;
-        
+        const validEmail = `${
+          process.env.SIGNUP_EMAIL_ADDRESS
+        }+${crypto.randomUUID()}@communitylabs.com`;
+
         // Generate a secure random password (at least 8 characters)
         const password = `Pass${Math.random().toString(36).slice(2, 10)}!1A`;
-        
+
         // Use signUp instead of admin.createUser
-        const { data: authUser, error: createUserError } = await supabase.auth.signUp({
-          email: validEmail,
-          password: password,
-          phone: "+1234567890",
-          options: {
-            data: {
-              auth_method: 'passkey',
-              registration_date: new Date().toISOString(),
-              is_passkey_user: true,
-              email_confirmed_at: new Date().toISOString(),
-              phone_confirmed_at: new Date().toISOString(),
-              confirmation_sent_at: new Date().toISOString(),
-            }
-          }
-        });
+        const { data: authUser, error: createUserError } =
+          await supabase.auth.signUp({
+            email: validEmail,
+            password: password,
+            phone: "+1234567890",
+            options: {
+              data: {
+                auth_method: "passkey",
+                registration_date: new Date().toISOString(),
+                is_passkey_user: true,
+                email_confirmed_at: new Date().toISOString(),
+                phone_confirmed_at: new Date().toISOString(),
+                confirmation_sent_at: new Date().toISOString(),
+              },
+            },
+          });
 
         if (createUserError || !authUser.user) {
           throw new TRPCError({
             code: "INTERNAL_SERVER_ERROR",
-            message: `Failed to create auth user: ${createUserError?.message || 'Unknown error'}`,
+            message: `Failed to create auth user: ${
+              createUserError?.message || "Unknown error"
+            }`,
           });
         }
 
@@ -151,27 +160,29 @@ export const passkeysRoutes = {
         const userProfile = await prisma.userProfile.upsert({
           where: { supId: authUser.user.id },
           update: {
-            updatedAt: new Date()
+            updatedAt: new Date(),
           },
           create: {
             supId: authUser.user.id,
             createdAt: new Date(),
-            updatedAt: new Date()
-          }
+            updatedAt: new Date(),
+          },
         });
 
         // Save the credential to Passkey table
         await prisma.passkey.create({
           data: {
             credentialId: verification.registrationInfo.credential.id,
-            publicKey: uint8ArrayToString(verification.registrationInfo.credential.publicKey),
+            publicKey: uint8ArrayToString(
+              verification.registrationInfo.credential.publicKey
+            ),
             signCount: verification.registrationInfo.credential.counter,
             label: `Passkey created ${new Date().toLocaleString()}`,
             userId: userProfile.supId,
           },
         });
 
-        return { 
+        return {
           verified: true,
           userId: userProfile.supId,
         };
@@ -182,30 +193,29 @@ export const passkeysRoutes = {
     }),
 
   // Add authentication endpoints
-  startAuthentication: publicProcedure
-    .mutation(async () => {
-      const options = await generateAuthenticationOptions({
-        rpID: relyingPartyID,
-        userVerification: "preferred",
-        // No allowCredentials since we want to allow any registered passkey
-      });
+  startAuthentication: publicProcedure.mutation(async () => {
+    const options = await generateAuthenticationOptions({
+      rpID: relyingPartyID,
+      userVerification: "preferred",
+      // No allowCredentials since we want to allow any registered passkey
+    });
 
-      // Store the challenge temporarily
-      const tempId = crypto.randomUUID();
-      await prisma.passkeyChallenge.create({
-        data: {
-          userId: tempId, // This is just a placeholder, not a real user ID
-          value: options.challenge,
-          createdAt: new Date(),
-          version: "1" // In case we need to change the challenge format
-        }
-      });
+    // Store the challenge temporarily
+    const tempId = crypto.randomUUID();
+    await prisma.passkeyChallenge.create({
+      data: {
+        userId: tempId, // This is just a placeholder, not a real user ID
+        value: options.challenge,
+        createdAt: new Date(),
+        version: "1", // In case we need to change the challenge format
+      },
+    });
 
-      return {
-        options,
-        tempId
-      };
-    }),
+    return {
+      options,
+      tempId,
+    };
+  }),
 
   verifyAuthentication: publicProcedure
     .input(
@@ -216,20 +226,24 @@ export const passkeysRoutes = {
     )
     .mutation(async ({ input }) => {
       const { tempId, authenticationResponse } = input;
+      const supabase = await createServerClient();
 
       try {
         // Get the challenge
         const challenge = await prisma.passkeyChallenge.findFirst({
           where: {
-            userId: tempId
+            userId: tempId,
           },
           orderBy: {
-            createdAt: 'desc'
-          }
+            createdAt: "desc",
+          },
         });
 
         if (!challenge) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Challenge not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Challenge not found",
+          });
         }
 
         // Check if challenge is expired (e.g., 5 minutes)
@@ -237,29 +251,35 @@ export const passkeysRoutes = {
         if (challengeAge > 5 * 60 * 1000) {
           // Delete expired challenge
           await prisma.passkeyChallenge.delete({
-            where: { id: challenge.id }
+            where: { id: challenge.id },
           });
-          throw new TRPCError({ code: "BAD_REQUEST", message: "Challenge expired" });
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Challenge expired",
+          });
         }
 
         // Store the challenge value and immediately delete the challenge from the database
         const challengeValue = challenge.value;
         await prisma.passkeyChallenge.delete({
-          where: { id: challenge.id }
+          where: { id: challenge.id },
         });
 
         // Find the passkey by credential ID
         const passkey = await prisma.passkey.findFirst({
           where: {
-            credentialId: authenticationResponse.id
+            credentialId: authenticationResponse.id,
           },
           include: {
-            UserProfile: true
-          }
+            UserProfile: true,
+          },
         });
 
         if (!passkey) {
-          throw new TRPCError({ code: "NOT_FOUND", message: "Passkey not found" });
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Passkey not found",
+          });
         }
 
         // Verify the authentication response
@@ -270,7 +290,7 @@ export const passkeysRoutes = {
           expectedRPID: relyingPartyID,
           credential: {
             id: passkey.credentialId,
-            publicKey: new Uint8Array(Buffer.from(passkey.publicKey, 'base64')),
+            publicKey: new Uint8Array(Buffer.from(passkey.publicKey, "base64")),
             counter: passkey.signCount,
           },
         });
@@ -287,14 +307,72 @@ export const passkeysRoutes = {
           where: { id: passkey.id },
           data: {
             signCount: verification.authenticationInfo.newCounter,
-            lastUsedAt: new Date()
-          }
+            lastUsedAt: new Date(),
+          },
+        });
+
+        // Get the user from Supabase Auth
+        const userProfile = await prisma.userProfile.findUnique({
+          where: { supId: passkey.userId },
+        });
+
+        if (!userProfile) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: "Failed to get user",
+          });
+        }
+        
+        // Create a JWT token for the user
+        const accessToken = createWebAuthnAccessTokenForUser(userProfile);
+        
+        // Create a session for the user
+        const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
+          access_token: accessToken,
+          refresh_token: "", // Supabase requires this but we don't use it for passkeys
+        });
+
+        if (sessionError) {
+          throw new TRPCError({
+            code: "INTERNAL_SERVER_ERROR",
+            message: `Failed to create session: ${sessionError?.message || 'Unknown error'}`,
+          });
+        }
+        
+        // Create or update the session in our database
+        const deviceNonce = crypto.randomUUID(); // Generate a unique device nonce
+        const ip = "::1"; // In a real app, get this from the request
+        const countryCode = "US"; // In a real app, get this from IP geolocation
+        const userAgent = "Unknown"; // In a real app, get this from the request
+        
+        await prisma.session.upsert({
+          where: {
+            userSession: {
+              userId: userProfile.supId,
+              deviceNonce: deviceNonce,
+            },
+          },
+          update: {
+            ip,
+            countryCode,
+            userAgent,
+            updatedAt: new Date(),
+          },
+          create: {
+            userId: userProfile.supId,
+            deviceNonce,
+            ip,
+            countryCode,
+            userAgent,
+          },
         });
 
         return {
           verified: true,
           userId: passkey.userId,
-          user: passkey.UserProfile
+          user: userProfile,
+          session: sessionData,
+          deviceNonce, // Return this so client can store it
         };
       } catch (error) {
         throw error;
