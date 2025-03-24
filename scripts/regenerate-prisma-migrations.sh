@@ -3,6 +3,7 @@ npx prisma generate
 npx prisma migrate dev --name init
 mv prisma/migrations/*_init prisma/migrations/20250101000000_init
 mv prisma/migrations-old/20250221160426_user_trigger prisma/migrations/
+mv prisma/migrations-old/20250224065511_ip_trigger prisma/migrations/
 mv prisma/migrations-old/20250224065512_session_trigger prisma/migrations/
 mv prisma/migrations-old/20250224085617_custom_access_token prisma/migrations/
 rm -rf prisma/migrations-old/

@@ -16,9 +16,26 @@ LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+    country_code VARCHAR(2);
 BEGIN
-    INSERT INTO "Sessions" (id, "createdAt", "updatedAt", ip, "userAgent", "userId", "deviceNonce")
-    SELECT NEW.id, NEW.created_at, NEW.updated_at, NEW.ip, NEW.user_agent, NEW.user_id, gen_random_uuid();
+    SELECT "countryCode" INTO country_code from "IpGeolocation" where ip = NEW.ip;
+
+    INSERT INTO "Sessions" (id, "createdAt", "updatedAt", ip, "userAgent", "userId", "deviceNonce", "countryCode")
+    SELECT NEW.id, NEW.created_at, NEW.updated_at, NEW.ip, NEW.user_agent, NEW.user_id, gen_random_uuid(), COALESCE(country_code, '');
+
+    -- If country code wasn't in cache, fetch it asynchronously
+    IF country_code IS NULL THEN
+        BEGIN
+            PERFORM net.http_get('https://freeipapi.com/api/json/' || host(NEW.ip));
+        EXCEPTION
+            WHEN OTHERS THEN
+                -- Silently ignore any errors during the HTTP request
+                NULL;
+        END;
+    END IF;
+    
+
     RETURN NULL;
 END;
 $$;

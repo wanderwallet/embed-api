@@ -7,7 +7,7 @@ datasource db {
   provider   = "postgresql"
   url        = env("POSTGRES_PRISMA_URL") // uses connection pooling
   directUrl  = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
-  extensions = [pgcrypto]
+  extensions = [pgcrypto, pg_net]
 }
 
 enum AuthProviderType {
@@ -655,4 +655,15 @@ model Membership {
   @@id([organizationId, teamId, userId])
   @@index([userId])
   @@map("Memberships")
+}
+
+// IP Geolocation Cache model for looking up country codes from IPs
+model IpGeolocation {
+  // IPv6 or IPv4-mapped address
+  ip          String @id @db.Inet
+  // ISO 3166-1 alpha-2 code
+  countryCode String @db.VarChar(2)
+
+  @@index([ip])
+  @@map("IpGeolocation")
 }

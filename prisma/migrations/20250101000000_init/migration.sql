@@ -1,4 +1,7 @@
 -- CreateExtension
+CREATE EXTENSION IF NOT EXISTS "pg_net";
+
+-- CreateExtension
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- CreateEnum
@@ -325,6 +328,14 @@ CREATE TABLE "Memberships" (
     CONSTRAINT "Memberships_pkey" PRIMARY KEY ("organizationId","teamId","userId")
 );
 
+-- CreateTable
+CREATE TABLE "IpGeolocation" (
+    "ip" INET NOT NULL,
+    "countryCode" VARCHAR(2) NOT NULL,
+
+    CONSTRAINT "IpGeolocation_pkey" PRIMARY KEY ("ip")
+);
+
 -- CreateIndex
 CREATE INDEX "Bills_organizationId_idx" ON "Bills"("organizationId");
 
@@ -402,6 +413,9 @@ CREATE UNIQUE INDEX "Teams_organizationId_slug_key" ON "Teams"("organizationId",
 
 -- CreateIndex
 CREATE INDEX "Memberships_userId_idx" ON "Memberships"("userId");
+
+-- CreateIndex
+CREATE INDEX "IpGeolocation_ip_idx" ON "IpGeolocation"("ip");
 
 -- AddForeignKey
 ALTER TABLE "Bills" ADD CONSTRAINT "Bills_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
