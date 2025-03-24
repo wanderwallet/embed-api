@@ -11,6 +11,7 @@ export default function DashboardPage() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
   const logoutMutation = trpc.logout.useMutation();
+  const refreshPasskeySessionMutation = trpc.refreshPasskeySession.useMutation();
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
@@ -20,7 +21,28 @@ export default function DashboardPage() {
   }, [isAuthLoading, user, router])
 
   const handleRefresh = async () => {
-    await supabase.auth.refreshSession();
+    try {
+      // Check if we have a refresh token from Supabase
+      const { data } = await supabase.auth.getSession();
+      const refreshToken = data.session?.refresh_token;
+      
+      if (refreshToken) {
+        // Use Supabase's built-in refresh
+        await supabase.auth.refreshSession();
+      } else {
+        // Fall back to our custom refresh mechanism
+        const deviceNonce = localStorage.getItem('deviceNonce');
+        
+        if (user?.id && deviceNonce) {
+          await refreshPasskeySessionMutation.mutateAsync({
+            userId: user.id,
+            deviceNonce,
+          });
+        }
+      }
+    } catch (error) {
+      console.error("Failed to refresh session:", error);
+    }
   }
 
   const handleLogout = async () => {
@@ -29,9 +51,13 @@ export default function DashboardPage() {
 
       await logoutMutation.mutateAsync();
       await supabase.auth.signOut();
+      
+      // Clear any stored device nonce
+      localStorage.removeItem('deviceNonce');
+      
+      router.push("/");
     } catch (error) {
       setIsLoading(false);
-
       console.error("Logout failed:", error)
     }
   }
@@ -45,7 +71,7 @@ export default function DashboardPage() {
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <button
           onClick={handleRefresh}
-          className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
+          className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline mr-4"
         >
           Refresh Session
         </button>

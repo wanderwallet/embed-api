@@ -9,7 +9,9 @@ import { createServerClient } from "@/server/utils/supabase/supabase-server-clie
 import { Provider } from "@supabase/supabase-js";
 import { AuthProviderType } from "@prisma/client";
 import { passkeysRoutes } from "./authenticate/authProviders/passkeys";
-import { createWebAuthnAccessTokenForUser } from "@/server/utils/passkey/session";
+import { createWebAuthnAccessTokenForUser, createWebAuthnRefreshTokenForUser } from "@/server/utils/passkey/session";
+import { getClientIp, getClientCountryCode } from "@/server/utils/ip/ip.utils";
+import { TRPCError } from "@trpc/server";
 
 const SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE: Record<AuthProviderType, Provider | null> = {
   [AuthProviderType.PASSKEYS]: null,
@@ -126,9 +128,46 @@ export const authenticateRouter = {
     return { user };
   }),
 
-  logout: protectedProcedure.mutation(async () => {
-    await logoutUser();
-    return { success: true, message: "Logged out successfully" };
+  logout: protectedProcedure.mutation(async ({ ctx }) => {
+    try {
+      const { user, session } = ctx;
+      
+      if (!user) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Not authenticated",
+        });
+      }
+      
+      // Only try to update the session if we have a valid session ID
+      if (session?.id) {
+        try {
+          // Try to update the session, but don't fail if it doesn't exist
+          await ctx.prisma.session.update({
+            where: {
+              id: session.id,
+            },
+            data: {
+              updatedAt: new Date(),
+            },
+          });
+        } catch (error) {
+          // Log the error but don't fail the logout
+          console.error("Error updating session:", error);
+        }
+      }
+      
+      // Always proceed with Supabase logout
+      const supabase = await createServerClient();
+      await supabase.auth.signOut();
+      
+      return {
+        success: true,
+      };
+    } catch (error) {
+      console.error("Logout error:", error);
+      throw error;
+    }
   }),
 
   refreshSession: protectedProcedure.mutation(async () => {
@@ -146,13 +185,42 @@ export const authenticateRouter = {
   refreshPasskeySession: publicProcedure
     .input(
       z.object({
-        userId: z.string(),
-        deviceNonce: z.string(),
+        refreshToken: z.string().optional(),
+        userId: z.string().optional(),
+        deviceNonce: z.string().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { userId, deviceNonce } = input;
+      const { userId } = input;
+      const refreshTokenFromInput = input.refreshToken;
       const supabase = await createServerClient();
+      
+      // Get device nonce from input or request headers
+      let deviceNonce = input.deviceNonce;
+      if (!deviceNonce && ctx.req) {
+        deviceNonce = ctx.req.headers.get("x-device-nonce") || undefined;
+      }
+      
+      // If refresh token is provided, use it
+      if (refreshTokenFromInput) {
+        const { data, error } = await supabase.auth.refreshSession({
+          refresh_token: refreshTokenFromInput,
+        });
+        
+        if (error) {
+          throw new Error(`Failed to refresh session: ${error.message}`);
+        }
+        
+        return {
+          message: "Session refreshed successfully.",
+          session: data.session,
+        };
+      }
+      
+      // Otherwise, use userId and deviceNonce
+      if (!userId || !deviceNonce) {
+        throw new Error("Either refreshToken or both userId and deviceNonce must be provided");
+      }
       
       // Verify the session exists in our database
       const session = await ctx.prisma.session.findUnique({
@@ -171,18 +239,25 @@ export const authenticateRouter = {
         throw new Error("Session not found");
       }
       
-      // Create a new JWT token
+      // Create new tokens
       const accessToken = createWebAuthnAccessTokenForUser(session.userProfile);
+      const refreshToken = createWebAuthnRefreshTokenForUser(session.userProfile);
       
       // Set the session in Supabase
       const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
         access_token: accessToken,
-        refresh_token: "", // Supabase requires this but we don't use it for passkeys
+        refresh_token: refreshToken,
       });
       
       if (sessionError) {
         throw new Error(`Failed to refresh session: ${sessionError.message}`);
       }
+      
+      // Get request information from context
+      const req = ctx.req;
+      const userAgent = req?.headers.get("user-agent") || session.userAgent;
+      const ip = req ? getClientIp(req) : session.ip;
+      const countryCode = req ? getClientCountryCode(req) : session.countryCode;
       
       // Update the session in our database
       await ctx.prisma.session.update({
@@ -191,15 +266,15 @@ export const authenticateRouter = {
         },
         data: {
           updatedAt: new Date(),
+          userAgent,
+          ip,
+          countryCode,
         },
       });
       
       return {
         message: "Session refreshed successfully.",
-        session: {
-          expires_at: sessionData.session?.expires_at,
-          expires_in: sessionData.session?.expires_in,
-        },
+        session: sessionData.session,
       };
     }),
 };

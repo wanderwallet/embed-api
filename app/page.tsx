@@ -6,6 +6,8 @@ import { trpc } from "@/client/utils/trpc/trpc-client"
 import { useAuth } from "@/client/hooks/useAuth"
 import { AuthProviderType } from "@prisma/client"
 import { startRegistration, startAuthentication } from "@simplewebauthn/browser";
+import { supabase } from "@/client/utils/supabase/supabase-client-client"
+
 export default function Login() {
   const router = useRouter();
   const { user, isLoading: isAuthLoading } = useAuth();
@@ -14,11 +16,18 @@ export default function Login() {
   const verifyRegistrationMutation = trpc.verifyRegistration.useMutation();
   const startAuthenticationMutation = trpc.startAuthentication.useMutation();
   const verifyAuthenticationMutation = trpc.verifyAuthentication.useMutation();
+  const verifyOtpMutation = trpc.verifyOtp.useMutation();
+  const finalizePasskeyMutation = trpc.finalizePasskey.useMutation();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [errorMessage, setErrorMessage] = useState("");
 
+  useEffect(() => {
+    if (!isAuthLoading && user) {
+      router.push("/dashboard")
+    }
+  }, [isAuthLoading, user, router])
 
   const handleOAuthSignIn = async (provider: Exclude<AuthProviderType, "EMAIL_N_PASSWORD">) => {
     try {
@@ -65,23 +74,38 @@ export default function Login() {
       setIsLoading(true);
       setErrorMessage("");
       
-      // Start registration process
-      const { options, tempUserId } = await startRegistrationMutation.mutateAsync();
+      // First, check if email is provided
+      if (!email) {
+        setErrorMessage("Please enter your email address to link with passkey");
+        setIsLoading(false);
+        return;
+      }
       
-      // Get attestation from browser
-      const attestationResponse = await startRegistration({ optionsJSON: options });
-      
-      // Verify registration with server
-      const verificationResult = await verifyRegistrationMutation.mutateAsync({
-        tempUserId,
-        attestationResponse,
+      // Step 1: Start registration process with email
+      const { options, tempUserId } = await startRegistrationMutation.mutateAsync({
+        email,
       });
       
-      if (verificationResult.verified) {
-        // Registration successful, user should be logged in now
-        router.push("/dashboard");
-      } else {
-        setErrorMessage("Passkey registration failed");
+      console.log("Registration options:", options);
+      
+      try {
+        // Step 2: Create passkey on device
+        const attestationResponse = await startRegistration(options);
+        console.log("Attestation response:", attestationResponse);
+        
+        // Step 3: Verify registration with server and trigger magic link email
+        const { message } = await verifyRegistrationMutation.mutateAsync({
+          tempUserId,
+          attestationResponse,
+        });
+        
+        // Show message about magic link
+        setErrorMessage(message || "Please check your email for a magic link to complete passkey registration.");
+        setIsLoading(false);
+        
+      } catch (webAuthnError) {
+        console.error("WebAuthn API error:", webAuthnError);
+        setErrorMessage(`Passkey API error: ${webAuthnError.message || "Unknown error"}`);
         setIsLoading(false);
       }
     } catch (error) {
@@ -91,44 +115,130 @@ export default function Login() {
     }
   };
 
-  // Handle passkey authentication
+  // Add a function to complete the passkey registration after magic link authentication
+  const handleCompletePasskeyRegistration = async () => {
+    try {
+      setIsLoading(true);
+      setErrorMessage("");
+      
+      const verificationId = localStorage.getItem('passkeyVerificationId');
+      const pendingEmail = localStorage.getItem('pendingPasskeyEmail');
+      
+      if (!verificationId || !pendingEmail) {
+        setErrorMessage("No pending passkey verification found");
+        setIsLoading(false);
+        return;
+      }
+      
+      // Check if user is authenticated via Supabase
+      const { data: { session } } = await supabase.auth.getSession();
+      
+      if (!session) {
+        setErrorMessage("Please click the magic link in your email first, then return to this page to complete registration");
+        setIsLoading(false);
+        return;
+      }
+      
+      // User is authenticated, finalize passkey registration
+      const result = await finalizePasskeyMutation.mutateAsync({
+        verificationId,
+        email: pendingEmail,
+        sessionToken: session.access_token,
+      });
+      
+      if (result.verified) {
+        // Clear stored verification data
+        localStorage.removeItem('passkeyVerificationId');
+        localStorage.removeItem('pendingPasskeyEmail');
+        
+        // Store the device nonce
+        localStorage.setItem('deviceNonce', result.deviceNonce);
+        
+        // Registration successful
+        setErrorMessage("Passkey registered successfully!");
+        
+        // Redirect to dashboard
+        router.push("/dashboard");
+      } else {
+        setErrorMessage("Passkey verification failed. Please try again.");
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.error("Passkey verification completion failed:", error);
+      setErrorMessage(error instanceof Error ? error.message : "Passkey verification failed");
+      setIsLoading(false);
+    }
+  };
+
+  // Add this to your useEffect to check for pending passkey registrations
+  useEffect(() => {
+    const checkPendingPasskeyRegistration = async () => {
+      const pendingEmail = localStorage.getItem('pendingPasskeyEmail');
+      const verificationId = localStorage.getItem('passkeyVerificationId');
+      
+      if (pendingEmail && verificationId && !isAuthLoading && user) {
+        // User has a pending passkey registration and is now logged in
+        // Show a prompt to complete the registration
+        const shouldComplete = confirm(
+          "You have a pending passkey registration. Would you like to complete it now?"
+        );
+        
+        if (shouldComplete) {
+          await handleCompletePasskeyRegistration();
+        } else {
+          // Clear the pending registration
+          localStorage.removeItem('pendingPasskeyEmail');
+          localStorage.removeItem('passkeyVerificationId');
+        }
+      }
+    };
+    
+    checkPendingPasskeyRegistration();
+  }, [isAuthLoading, user]);
+
+  // Handle passkey sign-in
   const handlePasskeySignIn = async () => {
     try {
       setIsLoading(true);
       setErrorMessage("");
       
-      // Start authentication process
-      const { options, tempId } = await startAuthenticationMutation.mutateAsync();
+      // Start authentication
+      const { options } = await startAuthenticationMutation.mutateAsync();
+      
+      console.log("Authentication options:", options);
       
       // Get assertion from browser
-      const authenticationResponse = await startAuthentication({ optionsJSON: options });
+      const assertionResponse = await startAuthentication(options);
+      
+      console.log("Assertion response:", assertionResponse);
       
       // Verify authentication with server
       const verificationResult = await verifyAuthenticationMutation.mutateAsync({
-        tempId,
-        authenticationResponse,
+        credentialId: assertionResponse.id,
+        authenticatorData: assertionResponse.response.authenticatorData,
+        clientDataJSON: assertionResponse.response.clientDataJSON,
+        signature: assertionResponse.response.signature,
+        userHandle: assertionResponse.response.userHandle,
+        challenge: options.challenge,
+        // No need to pass tempId as we've made it optional
       });
       
       if (verificationResult.verified) {
-        // The server has already created the session, no need to set it again
-        // Just redirect to dashboard
+        // Store the device nonce in local storage
+        localStorage.setItem('deviceNonce', verificationResult.deviceNonce);
+        
+        // Authentication successful, redirect to dashboard
         router.push("/dashboard");
       } else {
         setErrorMessage("Passkey authentication failed");
-        setIsLoading(false);
       }
     } catch (error) {
       console.error("Passkey authentication failed:", error);
       setErrorMessage(error instanceof Error ? error.message : "Passkey authentication failed");
+    } finally {
       setIsLoading(false);
     }
   };
-
-  useEffect(() => {
-    if (user) {
-      router.push("/dashboard")
-    }
-  }, [user, router])
 
   useEffect(() => {
     // Add the CSS styles to the document head
@@ -341,102 +451,47 @@ export default function Login() {
 
   return (
     <div className="login-container">
-      <div className="login-form">
-        <div className="login-header">
-          <h1 className="login-title">Wander Embed</h1>
-        </div>
-
-        <div className="form-fields">
-          <div className="form-group">
-            <label htmlFor="email" className="form-label">E-mail</label>
-            <div className="input-container">
+      <div className="login-form-container">
+        <div className="login-form">
+          <h2 className="login-title">Sign in to your account</h2>
+          
+          <form onSubmit={handleEmailPasswordSignIn}>
+            <div className="form-group">
+              <label htmlFor="email">Email</label>
               <input
                 type="email"
                 id="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="example@email.com"
                 required
-                className="form-input"
+                className="form-control"
               />
-              <div className="input-icon">
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="2" y="4" width="20" height="16" rx="2" />
-                  <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7" />
-                </svg>
-              </div>
             </div>
-          </div>
-          
-          <div className="form-group">
-            <label htmlFor="password" className="form-label">Password</label>
-            <div className="input-container">
+            
+            <div className="form-group">
+              <label htmlFor="password">Password</label>
               <input
                 type="password"
                 id="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 required
-                className="form-input"
+                className="form-control"
               />
-              <button 
-                type="button"
-                className="toggle-password"
-                onClick={() => {
-                  const passwordInput = document.getElementById('password') as HTMLInputElement;
-                  if (passwordInput) {
-                    passwordInput.type = passwordInput.type === 'password' ? 'text' : 'password';
-                  }
-                }}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              </button>
             </div>
-          </div>
-          
-          <div style={{ display: 'flex', gap: '10px' }}>
-            <button
-              onClick={(e) => handleEmailPasswordSignIn(e as any)}
-              disabled={loginMutation.isLoading || isLoading}
-              className="submit-button"
-              style={{ flex: '1' }}
-            >
-              Sign In
-            </button>
             
             <button
-              onClick={(e) => {
-                e.preventDefault();
-                handleEmailPasswordSignIn(e as any, true);
-              }}
+              type="submit"
               disabled={loginMutation.isLoading || isLoading}
-              className="submit-button"
-              style={{ flex: '1' }}
+              className="login-button"
             >
-              Sign Up
+              {loginMutation.isLoading || isLoading ? "Signing in..." : "Sign in"}
             </button>
-          </div>
-          
-          <div className="divider">
-            <div className="divider-line"></div>
-            <span className="divider-text">or sign up with</span>
-            <div className="divider-line"></div>
-          </div>
-          
-          <div className="social-buttons">
-            {/* <button
-              onClick={() => handleOAuthSignIn("FACEBOOK")}
-              disabled={loginMutation.isLoading || isLoading}
-              className="social-button"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="#1877F2">
-                <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
-              </svg>
-            </button> */}
-            
+          </form>
+
+          <div className="social-login">
+            <p>Or sign in with:</p>
+
             <button
               onClick={() => handleOAuthSignIn("GOOGLE")}
               disabled={loginMutation.isLoading || isLoading}
@@ -471,25 +526,11 @@ export default function Login() {
               </svg>
               <span style={{ marginLeft: '4px', fontSize: '12px', color: 'white' }}>Sign In with Passkey</span>
             </button>
-            
-            {/* <button
-              onClick={() => handleOAuthSignIn("APPLE")}
-              disabled={loginMutation.isLoading || isLoading}
-              className="social-button"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="black">
-                <path d="M17.05 20.28c-.98.95-2.05.8-3.08.35-1.09-.46-2.09-.48-3.24 0-1.44.62-2.2.44-3.06-.35C2.79 15.25 3.51 7.59 9.05 7.31c1.35.07 2.29.74 3.08.8 1.18-.24 2.31-.93 3.57-.84 1.51.12 2.65.72 3.4 1.8-3.12 1.87-2.38 5.98.48 7.13-.57 1.5-1.31 2.99-2.53 4.08zM12.03 7.25c-.15-2.23 1.66-4.07 3.74-4.25.32 2.12-1.66 4.1-3.74 4.25z"/>
-              </svg>
-            </button> */}
           </div>
         </div>
         
         {errorMessage ? (<p className="error-message">{errorMessage}</p>) : null}
         {loginMutation.error ? (<p className="error-message">{loginMutation.error.message}</p>) : null}
-        
-        <div className="login-footer">
-          {/* Removed "Have an account? Sign in" text */}
-        </div>
       </div>
     </div>
   )
