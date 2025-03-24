@@ -24,6 +24,7 @@ import { rotateAuthShare } from "@/server/routers/work-shares/rotateAuthShare";
 import { registerWalletExport } from "@/server/routers/backup/registerWalletExport";
 import { authenticateRouter } from "@/server/routers/authenticate";
 import { validationRouter } from "./validation";
+import { testRouter } from "@/server/routers/test/test";
 // import { supabase } from '@/utils/supabaseClient';
 
 export const appRouter = router({
@@ -66,6 +67,9 @@ export const appRouter = router({
   fetchRecoverableAccounts,
   generateAccountRecoveryChallenge,
   recoverAccount,
+
+  // Test refresh token
+  test: testRouter,
 });
 
 export type AppRouter = typeof appRouter;

@@ -3,7 +3,6 @@ import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
   generateAuthenticationOptions,
-  verifyAuthenticationResponse,
 } from "@simplewebauthn/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -309,9 +308,9 @@ export const passkeysRoutes = {
         console.log("Verification info:", JSON.stringify({
           verified: verification.verified,
           hasRegistrationInfo: !!verification.registrationInfo,
-          hasCredentialID: !!verification.registrationInfo?.credentialID,
-          hasCredentialPublicKey: !!verification.registrationInfo?.credentialPublicKey,
-          counter: verification.registrationInfo?.counter,
+          hasCredentialID: !!verification.registrationInfo?.credential.id,
+          hasCredentialPublicKey: !!verification.registrationInfo?.credential.publicKey,
+          counter: verification.registrationInfo?.credential.counter,
         }));
         
         // Log the credential ID as it comes from the browser
@@ -338,8 +337,8 @@ export const passkeysRoutes = {
         let publicKey;
         try {
           // Try to get the public key from the verification result
-          if (verification.registrationInfo?.credentialPublicKey) {
-            publicKey = Buffer.from(verification.registrationInfo.credentialPublicKey).toString('base64');
+          if (verification.registrationInfo?.credential?.publicKey) {
+            publicKey = Buffer.from(verification.registrationInfo.credential.publicKey).toString('base64');
           } else if (attestationResponse.response?.publicKey) {
             // Try to get it from the attestation response
             publicKey = Buffer.from(attestationResponse.response.publicKey).toString('base64');
@@ -365,7 +364,7 @@ export const passkeysRoutes = {
             userId: userProfile.supId,
             credentialId: credentialId,
             publicKey: publicKey,
-            signCount: verification.registrationInfo?.counter || 0,
+            signCount: verification.registrationInfo?.credential?.counter || 0,
             createdAt: new Date(),
             lastUsedAt: new Date(),
             label: defaultLabel,
@@ -454,7 +453,7 @@ export const passkeysRoutes = {
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { credentialId, authenticatorData, clientDataJSON, signature, userHandle, challenge } = input;
+      const { credentialId, userHandle, challenge } = input;
       const supabase = await createServerClient();
       
       try {
@@ -542,9 +541,6 @@ export const passkeysRoutes = {
           // Get request information from context
           const req = ctx.req;
           const deviceNonce = req?.headers.get("x-device-nonce") || crypto.randomUUID();
-          const userAgent = req?.headers.get("user-agent") || "";
-          const ip = req ? getClientIp(req) : "127.0.0.1";
-          const countryCode = req ? getClientCountryCode(req) : "";
           
           // Set the session in Supabase
           // This will create a record in auth.sessions, which will trigger the database function
@@ -638,11 +634,7 @@ export const passkeysRoutes = {
         
         // Use the browser's credential ID
         const browserCredentialId = credentialData.browserCredentialId;
-        
-        // Convert base64 strings back to Uint8Arrays
-        const credentialID = Buffer.from(credentialData.credentialID, 'base64');
-        const credentialPublicKey = Buffer.from(credentialData.credentialPublicKey, 'base64');
-        
+
         // Get the user profile
         const userProfile = await ctx.prisma.userProfile.findFirst({
           where: { supEmail: email },
