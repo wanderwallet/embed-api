@@ -4,7 +4,6 @@ import { createServerClient } from "@/server/utils/supabase/supabase-server-clie
 import { jwtDecode } from "jwt-decode";
 import { prisma } from "./utils/prisma/prisma-client";
 import {
-  getClientCountryCode,
   getClientIp,
   getIpInfo,
 } from "./utils/ip/ip.utils";
@@ -44,12 +43,11 @@ export async function createContext({ req }: { req: Request }) {
 
   const user = data.user;
   let ip = getClientIp(req);
-  let countryCode = getClientCountryCode(req);
 
   if (process.env.NODE_ENV === "development") {
     const ipInfo = await getIpInfo();
     if (ipInfo) {
-      ({ ip, countryCode } = ipInfo);
+      ({ ip } = ipInfo);
     }
   }
 
@@ -61,7 +59,6 @@ export async function createContext({ req }: { req: Request }) {
       userAgent,
       deviceNonce,
       ip,
-      countryCode
     });
 
     // TODO: Get `data.user.user_metadata.ipFilterSetting` and `data.user.user_metadata.countryFilterSetting` and
@@ -80,7 +77,7 @@ export async function createContext({ req }: { req: Request }) {
 
 async function getAndUpdateSession(
   token: string,
-  updates: Pick<Session, "userAgent" | "deviceNonce" | "ip" | "countryCode">
+  updates: Pick<Session, "userAgent" | "deviceNonce" | "ip">
 ): Promise<Session> {
   const { sub: userId, session_id: sessionId, sessionData } = decodeJwt(token);
 
@@ -140,7 +137,6 @@ function createSessionObject(
   //
   // - session.id,
   // - session.ip,
-  // - session.countryCode,
   // - session.deviceNonce,
   // - session.userAgent,
 
@@ -150,10 +146,10 @@ function createSessionObject(
     updatedAt: sessionData?.updatedAt || new Date(),
     deviceNonce: sessionData?.deviceNonce || "",
     ip: sessionData?.ip || "",
-    countryCode: sessionData?.countryCode || "",
     userAgent: sessionData?.userAgent || "",
     userId: sessionData?.userId || "",
     applicationId: applicationId || "",
+    countryCode: sessionData?.countryCode || "",
   };
 }
 

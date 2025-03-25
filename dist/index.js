@@ -176,11 +176,7 @@ var CHALLENGES_WITHOUT_SHARE_HASH = [
 function isAnonChallenge(challenge) {
   return !!challenge.chain && !!challenge.address;
 }
-function getChallengeRawData({
-  challenge,
-  session,
-  shareHash
-}) {
+function getChallengeRawData({ challenge, session, shareHash }) {
   const commonChallengeData = [
     challenge.id,
     challenge.createdAt,
@@ -188,7 +184,6 @@ function getChallengeRawData({
     challenge.version,
     session.id,
     session.ip,
-    session.countryCode,
     session.deviceNonce,
     session.userAgent
   ].join("|");
@@ -221,7 +216,11 @@ async function solveChallenge({
   shareHash,
   jwk
 }) {
-  const challengeRawData = getChallengeRawData({ challenge, session, shareHash });
+  const challengeRawData = getChallengeRawData({
+    challenge,
+    session,
+    shareHash
+  });
   const challengeRawDataBuffer = Buffer.from(challengeRawData);
   let signatureOrHashBuffer;
   if (isAnonChallenge(challenge) || challenge.type === import_client2.ChallengeType.SIGNATURE) {
@@ -241,9 +240,14 @@ async function solveChallenge({
       challengeRawDataBuffer
     );
   } else {
-    signatureOrHashBuffer = await crypto.subtle.digest("SHA-256", challengeRawDataBuffer);
+    signatureOrHashBuffer = await crypto.subtle.digest(
+      "SHA-256",
+      challengeRawDataBuffer
+    );
   }
-  const signatureOrHashString = Buffer.from(signatureOrHashBuffer).toString("base64");
+  const signatureOrHashString = Buffer.from(signatureOrHashBuffer).toString(
+    "base64"
+  );
   return `${CHALLENGE_CLIENT_VERSION}.${signatureOrHashString}`;
 }
 var ChallengeClientV1 = {

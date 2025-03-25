@@ -46,7 +46,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
             userId: string;
             deviceNonce: string;
             ip: string;
-            countryCode: string;
             userAgent: string;
         } & {
             applicationId: string;
@@ -61,7 +60,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
             userId: string;
             deviceNonce: string;
             ip: string;
-            countryCode: string;
             userAgent: string;
         } & {
             applicationId: string;
@@ -83,7 +81,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -98,7 +95,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -117,7 +113,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -132,7 +127,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -147,7 +141,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -162,7 +155,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -189,7 +181,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -204,7 +195,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -223,7 +213,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -238,7 +227,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -253,7 +241,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -268,7 +255,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -299,7 +285,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -314,7 +299,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -333,7 +317,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -348,7 +331,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -363,7 +345,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -378,7 +359,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -439,7 +419,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -454,7 +433,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -473,7 +451,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -488,7 +465,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -503,7 +479,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -518,7 +493,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -575,7 +549,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -590,7 +563,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -609,7 +581,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -624,7 +595,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -639,7 +609,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -654,7 +623,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -697,7 +665,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -712,7 +679,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -731,7 +697,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -746,7 +711,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -761,7 +725,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -776,7 +739,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -809,7 +771,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -824,7 +785,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -843,7 +803,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -858,7 +817,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -873,7 +831,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -888,7 +845,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -927,7 +883,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -942,7 +897,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -961,7 +915,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -976,7 +929,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -991,7 +943,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1006,7 +957,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1045,7 +995,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -1060,7 +1009,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -1079,7 +1027,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1094,7 +1041,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1109,7 +1055,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1124,7 +1069,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1157,7 +1101,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -1172,7 +1115,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -1191,7 +1133,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1206,7 +1147,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1221,7 +1161,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1236,7 +1175,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1269,7 +1207,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -1284,7 +1221,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -1303,7 +1239,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1318,7 +1253,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1333,7 +1267,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1348,7 +1281,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1377,7 +1309,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -1392,7 +1323,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -1411,7 +1341,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1426,7 +1355,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1441,7 +1369,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1456,7 +1383,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1496,7 +1422,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -1511,7 +1436,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -1530,7 +1454,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1545,7 +1468,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1560,7 +1482,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1575,7 +1496,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1619,7 +1539,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -1634,7 +1553,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -1653,7 +1571,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1668,7 +1585,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1683,7 +1599,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1698,7 +1613,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1737,7 +1651,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -1752,7 +1665,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -1771,7 +1683,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1786,7 +1697,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1801,7 +1711,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1816,7 +1725,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1854,7 +1762,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -1869,7 +1776,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -1888,7 +1794,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1903,7 +1808,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1918,7 +1822,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1933,7 +1836,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -1966,7 +1868,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -1981,7 +1882,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2000,7 +1900,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2015,7 +1914,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2030,7 +1928,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2045,7 +1942,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2085,7 +1981,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2100,7 +1995,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2119,7 +2013,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2134,7 +2027,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2149,7 +2041,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2164,7 +2055,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2218,7 +2108,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2233,7 +2122,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2252,7 +2140,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2267,7 +2154,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2282,7 +2168,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2297,7 +2182,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2337,7 +2221,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2352,7 +2235,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2373,7 +2255,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2388,7 +2269,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2426,7 +2306,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2441,7 +2320,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2462,7 +2340,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2477,7 +2354,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2508,7 +2384,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2523,7 +2398,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2544,7 +2418,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2559,7 +2432,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2601,7 +2473,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2616,7 +2487,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2637,7 +2507,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2652,7 +2521,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2708,7 +2576,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2723,7 +2590,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2744,7 +2610,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2759,7 +2624,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2790,7 +2654,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2805,7 +2668,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2824,7 +2686,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2839,7 +2700,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2854,7 +2714,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2869,7 +2728,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2890,7 +2748,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
             userId: string;
             deviceNonce: string;
             ip: string;
-            countryCode: string;
             userAgent: string;
         } & {
             applicationId: string;
@@ -2908,7 +2765,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2923,7 +2779,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -2944,7 +2799,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -2959,7 +2813,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -3002,7 +2855,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -3017,7 +2869,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -3036,7 +2887,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -3051,7 +2901,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -3066,7 +2915,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -3081,7 +2929,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -3108,7 +2955,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -3123,7 +2969,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -3142,7 +2987,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -3157,7 +3001,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -3172,7 +3015,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -3187,7 +3029,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -3215,7 +3056,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -3230,7 +3070,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -3249,7 +3088,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -3264,7 +3102,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -3279,7 +3116,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -3294,7 +3130,6 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
                 userId: string;
                 deviceNonce: string;
                 ip: string;
-                countryCode: string;
                 userAgent: string;
             } & {
                 applicationId: string;
@@ -3341,7 +3176,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -3356,7 +3190,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -3375,7 +3208,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3390,7 +3222,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3405,7 +3236,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3420,7 +3250,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3449,7 +3278,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -3464,7 +3292,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -3483,7 +3310,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3498,7 +3324,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3513,7 +3338,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3528,7 +3352,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3561,7 +3384,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -3576,7 +3398,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -3595,7 +3416,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3610,7 +3430,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3625,7 +3444,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3640,7 +3458,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3703,7 +3520,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -3718,7 +3534,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -3737,7 +3552,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3752,7 +3566,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3767,7 +3580,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3782,7 +3594,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3841,7 +3652,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -3856,7 +3666,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -3875,7 +3684,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3890,7 +3698,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3905,7 +3712,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3920,7 +3726,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -3965,7 +3770,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -3980,7 +3784,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -3999,7 +3802,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4014,7 +3816,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4029,7 +3830,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4044,7 +3844,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4079,7 +3878,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -4094,7 +3892,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -4113,7 +3910,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4128,7 +3924,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4143,7 +3938,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4158,7 +3952,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4199,7 +3992,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -4214,7 +4006,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -4233,7 +4024,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4248,7 +4038,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4263,7 +4052,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4278,7 +4066,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4319,7 +4106,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -4334,7 +4120,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -4353,7 +4138,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4368,7 +4152,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4383,7 +4166,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4398,7 +4180,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4433,7 +4214,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -4448,7 +4228,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -4467,7 +4246,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4482,7 +4260,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4497,7 +4274,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4512,7 +4288,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4547,7 +4322,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -4562,7 +4336,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -4581,7 +4354,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4596,7 +4368,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4611,7 +4382,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4626,7 +4396,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4657,7 +4426,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -4672,7 +4440,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -4691,7 +4458,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4706,7 +4472,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4721,7 +4486,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4736,7 +4500,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4778,7 +4541,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -4793,7 +4555,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -4812,7 +4573,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4827,7 +4587,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4842,7 +4601,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4857,7 +4615,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4903,7 +4660,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -4918,7 +4674,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -4937,7 +4692,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4952,7 +4706,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4967,7 +4720,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -4982,7 +4734,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5023,7 +4774,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -5038,7 +4788,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -5057,7 +4806,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5072,7 +4820,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5087,7 +4834,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5102,7 +4848,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5142,7 +4887,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -5157,7 +4901,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -5176,7 +4919,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5191,7 +4933,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5206,7 +4947,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5221,7 +4961,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5256,7 +4995,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -5271,7 +5009,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -5290,7 +5027,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5305,7 +5041,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5320,7 +5055,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5335,7 +5069,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5377,7 +5110,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -5392,7 +5124,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -5411,7 +5142,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5426,7 +5156,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5441,7 +5170,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5456,7 +5184,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5512,7 +5239,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -5527,7 +5253,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -5546,7 +5271,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5561,7 +5285,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5576,7 +5299,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5591,7 +5313,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5633,7 +5354,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -5648,7 +5368,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -5669,7 +5388,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5684,7 +5402,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5724,7 +5441,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -5739,7 +5455,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -5760,7 +5475,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5775,7 +5489,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5808,7 +5521,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -5823,7 +5535,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -5844,7 +5555,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5859,7 +5569,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5903,7 +5612,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -5918,7 +5626,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -5939,7 +5646,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -5954,7 +5660,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6012,7 +5717,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -6027,7 +5731,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -6048,7 +5751,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6063,7 +5765,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6096,7 +5797,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -6111,7 +5811,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -6130,7 +5829,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6145,7 +5843,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6160,7 +5857,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6175,7 +5871,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6196,7 +5891,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     userId: string;
                     deviceNonce: string;
                     ip: string;
-                    countryCode: string;
                     userAgent: string;
                 } & {
                     applicationId: string;
@@ -6216,7 +5910,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -6231,7 +5924,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -6252,7 +5944,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6267,7 +5958,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6312,7 +6002,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -6327,7 +6016,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -6346,7 +6034,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6361,7 +6048,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6376,7 +6062,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6391,7 +6076,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6420,7 +6104,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -6435,7 +6118,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -6454,7 +6136,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6469,7 +6150,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6484,7 +6164,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6499,7 +6178,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6529,7 +6207,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -6544,7 +6221,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                             userId: string;
                             deviceNonce: string;
                             ip: string;
-                            countryCode: string;
                             userAgent: string;
                         } & {
                             applicationId: string;
@@ -6563,7 +6239,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6578,7 +6253,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6593,7 +6267,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
@@ -6608,7 +6281,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         userId: string;
                         deviceNonce: string;
                         ip: string;
-                        countryCode: string;
                         userAgent: string;
                     } & {
                         applicationId: string;
