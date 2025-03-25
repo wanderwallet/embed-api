@@ -149,7 +149,6 @@ function createSessionObject(
     userAgent: sessionData?.userAgent || "",
     userId: sessionData?.userId || "",
     applicationId: applicationId || "",
-    countryCode: sessionData?.countryCode || "",
   };
 }
 
