@@ -56,11 +56,11 @@ export const authenticateRouter = {
 
       if (input.authProviderType === AuthProviderType.EMAIL_N_PASSWORD) {
         // Check if the user exists using prisma
-        const userExists = await ctx.prisma.userProfile.findMany({
+        const userExists = await ctx.prisma.userProfile.findFirst({
           where: { supEmail: input.email },
         });
 
-        if (userExists.length) {
+        if (userExists) {
           // User exists, proceed with sign-in
           const { error, data } = await supabase.auth.signInWithPassword({
             email: input.email,
@@ -183,20 +183,13 @@ export const authenticateRouter = {
   }),
 
   refreshPasskeySession: publicProcedure
-    .input(
-      z.object({
-        refreshToken: z.string().optional(),
-        userId: z.string().optional(),
-        deviceNonce: z.string().optional(),
-      })
-    )
-    .mutation(async ({ input, ctx }) => {
-      const { userId } = input;
-      const refreshTokenFromInput = input.refreshToken;
+    .mutation(async ({ ctx }) => {
+      const refreshTokenFromInput = ctx.req?.headers.get("x-refresh-token");
+      const userId = ctx.user?.id;
+      let deviceNonce = ctx.req?.headers.get("x-device-nonce");
+    
       const supabase = await createServerClient();
       
-      // Get device nonce from input or request headers
-      let deviceNonce = input.deviceNonce;
       if (!deviceNonce && ctx.req) {
         deviceNonce = ctx.req.headers.get("x-device-nonce") || undefined;
       }
@@ -208,7 +201,10 @@ export const authenticateRouter = {
         });
         
         if (error) {
-          throw new Error(`Failed to refresh session: ${error.message}`);
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Failed to refresh session: ${error.message}`,
+          });
         }
         
         return {
@@ -219,7 +215,10 @@ export const authenticateRouter = {
       
       // Otherwise, use userId and deviceNonce
       if (!userId || !deviceNonce) {
-        throw new Error("Either refreshToken or both userId and deviceNonce must be provided");
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Either refreshToken or both userId and deviceNonce must be provided",
+        });
       }
       
       // Verify the session exists in our database
@@ -236,7 +235,10 @@ export const authenticateRouter = {
       });
       
       if (!session) {
-        throw new Error("Session not found");
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Session not found.",
+        });
       }
       
       // Create new tokens
@@ -250,7 +252,10 @@ export const authenticateRouter = {
       });
       
       if (sessionError) {
-        throw new Error(`Failed to refresh session: ${sessionError.message}`);
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Failed to refresh session: ${sessionError.message}`,
+        });
       }
       
       // Get request information from context

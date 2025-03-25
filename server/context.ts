@@ -57,11 +57,11 @@ export async function createContext({ req }: { req: Request }) {
     // Get the session data from the token
     // This is used for validation purposes, but we don't need to manually create/update the session
     // as the database triggers will handle that automatically
-    const sessionData = getSessionDataFromToken(token, {
+    const sessionData = await getAndUpdateSession(token, {
       userAgent,
       deviceNonce,
       ip,
-      countryCode,
+      countryCode
     });
 
     // TODO: Get `data.user.user_metadata.ipFilterSetting` and `data.user.user_metadata.countryFilterSetting` and
@@ -78,20 +78,40 @@ export async function createContext({ req }: { req: Request }) {
   }
 }
 
-function getSessionDataFromToken(
+async function getAndUpdateSession(
   token: string,
   updates: Pick<Session, "userAgent" | "deviceNonce" | "ip" | "countryCode">
-): Session {
+): Promise<Session> {
   const { sub: userId, session_id: sessionId, sessionData } = decodeJwt(token);
 
-  // We don't need to update the session in the database
-  // The database triggers will handle that automatically when Supabase updates the session
+  const sessionUpdates: Partial<typeof updates> = {};
+  for (const [key, value] of Object.entries(updates) as [
+    keyof typeof updates,
+    string
+  ][]) {
+    if (value && sessionData?.[key] !== value) {
+      sessionUpdates[key] = value;
+    }
+  }
+
+  if (Object.keys(sessionUpdates).length > 0) {
+    console.log("Updating session:", sessionUpdates);
+
+    prisma.session
+      .update({
+        where: { id: sessionId },
+        data: sessionUpdates,
+      })
+      .catch((error) => {
+        console.error("Error updating session:", error);
+      });
+  }
 
   return {
     userId,
     id: sessionId,
     ...sessionData,
-    ...updates,
+    ...sessionUpdates,
   } satisfies Session;
 }
 
