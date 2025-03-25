@@ -33,7 +33,6 @@ BEGIN
       '{sessionData}',
       jsonb_build_object(
         'ip', host(session_data.ip),
-        'countryCode', COALESCE(session_data."countryCode", ''),
         'userAgent', COALESCE(session_data."userAgent", ''),
         'deviceNonce', COALESCE(session_data."deviceNonce", ''),
         'createdAt', session_data."createdAt"::timestamptz::text,
@@ -54,7 +53,6 @@ BEGIN
         jsonb_build_object(
           'ip', host(auth_session_data.ip),
           'userAgent', COALESCE(auth_session_data.user_agent, ''),
-          'countryCode', '',
           'deviceNonce', '',
           'createdAt', auth_session_data.created_at::timestamptz::text,
           'updatedAt', auth_session_data.updated_at::timestamptz::text
@@ -68,7 +66,6 @@ BEGIN
         jsonb_build_object(
           'ip', '',
           'userAgent', '',
-          'countryCode', '',
           'deviceNonce', '',
           'createdAt', '',
           'updatedAt', ''

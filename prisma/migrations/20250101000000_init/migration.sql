@@ -241,7 +241,6 @@ CREATE TABLE "DevicesAndLocations" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "deviceNonce" VARCHAR(255) NOT NULL,
     "ip" INET NOT NULL,
-    "countryCode" VARCHAR(2) NOT NULL,
     "userAgent" TEXT NOT NULL,
     "userId" UUID,
     "applicationId" UUID,
@@ -256,7 +255,6 @@ CREATE TABLE "Sessions" (
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deviceNonce" VARCHAR(255) NOT NULL DEFAULT '',
     "ip" INET NOT NULL,
-    "countryCode" VARCHAR(2) NOT NULL DEFAULT '',
     "userAgent" VARCHAR(500) NOT NULL,
     "userId" UUID NOT NULL,
 
