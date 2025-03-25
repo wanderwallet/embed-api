@@ -1,11 +1,15 @@
-import { protectedProcedure } from "@/server/trpc"
-import { z } from "zod"
-import { ChallengePurpose, WalletUsageStatus } from '@prisma/client';
+import { protectedProcedure } from "@/server/trpc";
+import { z } from "zod";
+import { ChallengePurpose, WalletUsageStatus } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
-import { getShareHashValidator, getSharePublicKeyValidator, getShareValidator } from "@/server/utils/share/share.validators";
+import {
+  getShareHashValidator,
+  getSharePublicKeyValidator,
+  getShareValidator,
+} from "@/server/utils/share/share.validators";
 import { DbWallet } from "@/prisma/types/types";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 
@@ -78,11 +82,11 @@ export const registerAuthShare = protectedProcedure
     }
 
     const dateNow = new Date();
-    const nextRotationAt = new Date(dateNow.getTime() + Config.SHARE_ACTIVE_TTL_MS);
+    const nextRotationAt = new Date(
+      dateNow.getTime() + Config.SHARE_ACTIVE_TTL_MS
+    );
 
-    const [
-      wallet
-    ] = await ctx.prisma.$transaction(async (tx) => {
+    const [wallet] = await ctx.prisma.$transaction(async (tx) => {
       const deviceAndLocationId = await deviceAndLocationIdPromise;
 
       const updateWalletStatsPromise = tx.wallet.update({
@@ -98,41 +102,45 @@ export const registerAuthShare = protectedProcedure
       // When users go through recoverWallet, it means either they've lost the work share or WE lost it. If we lost it,
       // then there's no work share to update here, so we need to do an upsert:
 
-      const rotateOrCreateWorkKeyShareAndRegisterWalletActivationPromise = tx.workKeyShare.upsert({
-        where: {
-          userSessionWorkShare: {
-            userId: ctx.user.id,
-            sessionId: ctx.session.id,
-            walletId: input.walletId,
-          },
-        },
-        create: {
-          authShare: input.authShare,
-          deviceShareHash: input.deviceShareHash,
-          deviceSharePublicKey: input.deviceSharePublicKey,
-          userId: ctx.user.id,
-          sessionId: ctx.session.id,
-          walletId: input.walletId,
-        },
-        update: {
-          authShare: input.authShare,
-          deviceShareHash: input.deviceShareHash,
-          deviceSharePublicKey: input.deviceSharePublicKey,
-          sharesRotatedAt: dateNow,
-          rotationWarnings: 0,
-        },
-      }).then((workKeyShare) => {
-        // TODO: How to limit the # of activations per user?
-        return tx.walletActivation.create({
-          data: {
-            status: WalletUsageStatus.SUCCESSFUL,
-            userId: ctx.user.id,
-            walletId: input.walletId,
-            workKeyShareId: workKeyShare.id,
-            deviceAndLocationId,
-          },
-        });
-      });
+      const rotateOrCreateWorkKeyShareAndRegisterWalletActivationPromise =
+        tx.workKeyShare
+          .upsert({
+            where: {
+              userDeviceWorkShare: {
+                userId: ctx.user.id,
+                walletId: input.walletId,
+                deviceNonce: ctx.session.deviceNonce,
+              },
+            },
+            create: {
+              authShare: input.authShare,
+              deviceShareHash: input.deviceShareHash,
+              deviceSharePublicKey: input.deviceSharePublicKey,
+              userId: ctx.user.id,
+              sessionId: ctx.session.id,
+              walletId: input.walletId,
+              deviceNonce: ctx.session.deviceNonce,
+            },
+            update: {
+              authShare: input.authShare,
+              deviceShareHash: input.deviceShareHash,
+              deviceSharePublicKey: input.deviceSharePublicKey,
+              sharesRotatedAt: dateNow,
+              rotationWarnings: 0,
+            },
+          })
+          .then((workKeyShare) => {
+            // TODO: How to limit the # of activations per user?
+            return tx.walletActivation.create({
+              data: {
+                status: WalletUsageStatus.SUCCESSFUL,
+                userId: ctx.user.id,
+                walletId: input.walletId,
+                workKeyShareId: workKeyShare.id,
+                deviceAndLocationId,
+              },
+            });
+          });
 
       const deleteChallengePromise = tx.challenge.delete({
         where: { id: challenge.id },
