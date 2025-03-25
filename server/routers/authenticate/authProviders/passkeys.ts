@@ -206,11 +206,9 @@ export const passkeysRoutes = {
         }
         
         // Get request information from context
-        const req = ctx.req;
-        const deviceNonce = req.headers.get("x-device-nonce") || crypto.randomUUID();
-        const userAgent = req.headers.get("user-agent") || "";
-        const ip = getClientIp(req);
-        const countryCode = getClientCountryCode(req);
+        const deviceNonce = ctx?.session?.deviceNonce || crypto.randomUUID();
+        const userAgent = ctx?.session?.userAgent || "";
+        const ip = ctx?.session?.ip;
         
         // Create a session in our database
         await ctx.prisma.session.create({
@@ -218,7 +216,6 @@ export const passkeysRoutes = {
             userId: userProfile.supId,
             deviceNonce,
             ip,
-            countryCode,
             userAgent,
           },
         });
@@ -540,8 +537,7 @@ export const passkeysRoutes = {
           const refreshToken = createWebAuthnRefreshTokenForUser(userProfile);
           
           // Get request information from context
-          const req = ctx.req;
-          const deviceNonce = req?.headers.get("x-device-nonce") || crypto.randomUUID();
+          const deviceNonce = ctx?.session?.deviceNonce || crypto.randomUUID();
           
           // Set the session in Supabase
           // This will create a record in auth.sessions, which will trigger the database function
@@ -657,6 +653,7 @@ export const passkeysRoutes = {
             credentialId: browserCredentialId,
             publicKey: credentialData.credentialPublicKey,
             signCount: credentialData.counter,
+            label: "1",
             createdAt: new Date(),
             lastUsedAt: new Date(),
           },
@@ -680,11 +677,9 @@ export const passkeysRoutes = {
         }
         
         // Get request information from context
-        const req = ctx.req;
-        const deviceNonce = req.headers.get("x-device-nonce") || crypto.randomUUID();
-        const userAgent = req.headers.get("user-agent") || "";
-        const ip = getClientIp(req);
-        const countryCode = getClientCountryCode(req);
+        const deviceNonce = ctx?.session?.deviceNonce || crypto.randomUUID();
+        const userAgent = ctx?.session?.userAgent  || "";
+        const ip = ctx?.session?.ip ;
         
         // Create a session in our database
         await ctx.prisma.session.create({
@@ -692,7 +687,6 @@ export const passkeysRoutes = {
             userId: userProfile.supId,
             deviceNonce,
             ip,
-            countryCode,
             userAgent,
           },
         });

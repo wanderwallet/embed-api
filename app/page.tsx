@@ -224,7 +224,7 @@ export default function Login() {
       
       if (verificationResult.verified) {
         // Store the device nonce in local storage
-        localStorage.setItem('deviceNonce', verificationResult.deviceNonce);
+        localStorage.setItem('deviceNonce', verificationResult.deviceNonce || "");
         
         // Authentication successful, redirect to dashboard
         router.push("/dashboard");
