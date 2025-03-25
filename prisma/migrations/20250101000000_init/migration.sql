@@ -1,7 +1,4 @@
 -- CreateExtension
-CREATE EXTENSION IF NOT EXISTS "pg_net";
-
--- CreateExtension
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";
 
 -- CreateEnum
