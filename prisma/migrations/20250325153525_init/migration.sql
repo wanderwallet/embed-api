@@ -285,6 +285,31 @@ CREATE TABLE "LoginAttempts" (
 );
 
 -- CreateTable
+CREATE TABLE "Passkeys" (
+    "id" TEXT NOT NULL,
+    "credentialId" VARCHAR(255) NOT NULL,
+    "publicKey" VARCHAR(1024) NOT NULL,
+    "signCount" INTEGER NOT NULL DEFAULT 0,
+    "label" VARCHAR(255) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "lastUsedAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "userId" UUID NOT NULL,
+
+    CONSTRAINT "Passkeys_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
+CREATE TABLE "PasskeyChallenges" (
+    "id" TEXT NOT NULL,
+    "userId" VARCHAR(255) NOT NULL,
+    "value" VARCHAR(255) NOT NULL,
+    "version" VARCHAR(255) NOT NULL,
+    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "PasskeyChallenges_pkey" PRIMARY KEY ("id")
+);
+
+-- CreateTable
 CREATE TABLE "Organizations" (
     "id" UUID NOT NULL DEFAULT gen_random_uuid(),
     "name" VARCHAR(100) NOT NULL,
@@ -392,6 +417,12 @@ CREATE INDEX "LoginAttempts_userId_idx" ON "LoginAttempts"("userId");
 CREATE INDEX "LoginAttempts_createdAt_idx" ON "LoginAttempts"("createdAt");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Passkeys_userId_credentialId_key" ON "Passkeys"("userId", "credentialId");
+
+-- CreateIndex
+CREATE INDEX "PasskeyChallenges_userId_createdAt_idx" ON "PasskeyChallenges"("userId", "createdAt");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Organizations_slug_key" ON "Organizations"("slug");
 
 -- CreateIndex
@@ -492,6 +523,9 @@ ALTER TABLE "LoginAttempts" ADD CONSTRAINT "LoginAttempts_userId_fkey" FOREIGN K
 
 -- AddForeignKey
 ALTER TABLE "LoginAttempts" ADD CONSTRAINT "LoginAttempts_deviceAndLocationId_fkey" FOREIGN KEY ("deviceAndLocationId") REFERENCES "DevicesAndLocations"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "Passkeys" ADD CONSTRAINT "Passkeys_userId_fkey" FOREIGN KEY ("userId") REFERENCES "UserProfiles"("supId") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Teams" ADD CONSTRAINT "Teams_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "Organizations"("id") ON DELETE CASCADE ON UPDATE CASCADE;

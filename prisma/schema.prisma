@@ -113,7 +113,6 @@ enum ChallengePurpose {
   SHARE_RECOVERY
   SHARE_ROTATION
   ACCOUNT_RECOVERY
-  AUTHENTICATION
 }
 
 enum Role {
