@@ -512,8 +512,6 @@ model DeviceAndLocation {
   deviceNonce String   @db.VarChar(255)
   /// IPv6 or IPv4-mapped address
   ip          String   @db.Inet
-  /// ISO 3166-1 alpha-2 code
-  countryCode String   @db.VarChar(2)
   userAgent   String
 
   wallets                Wallet[]
@@ -544,8 +542,6 @@ model Session {
   deviceNonce String   @default("") @db.VarChar(255)
   // IPv6 or IPv4-mapped address
   ip          String   @db.Inet
-  /// ISO 3166-1 alpha-2 code
-  countryCode String   @default("") @db.VarChar(2)
   userAgent   String   @db.VarChar(500)
 
   workKeyShares WorkKeyShare[]
@@ -655,15 +651,4 @@ model Membership {
   @@id([organizationId, teamId, userId])
   @@index([userId])
   @@map("Memberships")
-}
-
-// IP Geolocation Cache model for looking up country codes from IPs
-model IpGeolocation {
-  // IPv6 or IPv4-mapped address
-  ip          String @id @db.Inet
-  // ISO 3166-1 alpha-2 code
-  countryCode String @db.VarChar(2)
-
-  @@index([ip])
-  @@map("IpGeolocation")
 }

@@ -10,7 +10,7 @@ export function getDeviceAndLocationId(
     throw new Error("Missing `ctx.user`");
   }
 
-  // TODO: Get ip, countryCode, userAgent, applicationId...
+  // TODO: Get ip, userAgent, applicationId...
 
   return prismaClient.deviceAndLocation
     .upsert({
@@ -28,7 +28,6 @@ export function getDeviceAndLocationId(
       create: {
         deviceNonce: ctx.session.deviceNonce,
         ip: ctx.session.ip,
-        countryCode: "",
         userAgent: ctx.session.userAgent,
         userId: ctx.user.id,
         applicationId: null,
@@ -38,14 +37,12 @@ export function getDeviceAndLocationId(
     .then((result) => result.id);
 }
 
-export function getDeviceAndLocationConnectOrCreate(
-  ctx: Context,
-) {
+export function getDeviceAndLocationConnectOrCreate(ctx: Context) {
   if (!ctx.user) {
     throw new Error("Missing `ctx.user`");
   }
 
-  // TODO: Get ip, countryCode, userAgent, applicationId...
+  // TODO: Get ip, userAgent, applicationId...
 
   return {
     connectOrCreate: {
@@ -60,7 +57,6 @@ export function getDeviceAndLocationConnectOrCreate(
       create: {
         deviceNonce: ctx.session.deviceNonce,
         ip: ctx.session.ip,
-        countryCode: "",
         userAgent: ctx.session.userAgent,
         userId: ctx.user.id,
         applicationId: null,

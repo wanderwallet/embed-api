@@ -7,7 +7,6 @@ AS $$
 DECLARE
   claims jsonb;
   session_id uuid;
-  country_code VARCHAR(2) := '';
   session_data public."Sessions"%ROWTYPE;
   auth_session_data record;
   application_ids uuid[];
@@ -29,16 +28,11 @@ BEGIN
   WHERE s.id = session_id;
 
   IF FOUND THEN
-    IF session_data."countryCode" IS NULL THEN
-      SELECT "countryCode" INTO country_code from public."IpGeolocation" where ip = session_data.ip;
-    END IF;
-
     claims := jsonb_set(
       claims,
       '{sessionData}',
       jsonb_build_object(
         'ip', host(session_data.ip),
-        'countryCode', COALESCE(session_data."countryCode", COALESCE(country_code, '')),
         'userAgent', COALESCE(session_data."userAgent", ''),
         'deviceNonce', COALESCE(session_data."deviceNonce", ''),
         'createdAt', session_data."createdAt"::timestamptz::text,
@@ -52,9 +46,6 @@ BEGIN
     FROM auth.sessions a
     WHERE a.id = session_id;
 
-    
-    SELECT "countryCode" INTO country_code from public."IpGeolocation" where ip = auth_session_data.ip;
-
     IF FOUND THEN
       claims := jsonb_set(
         claims,
@@ -62,7 +53,6 @@ BEGIN
         jsonb_build_object(
           'ip', host(auth_session_data.ip),
           'userAgent', COALESCE(auth_session_data.user_agent, ''),
-          'countryCode', COALESCE(country_code, ''),
           'deviceNonce', '',
           'createdAt', auth_session_data.created_at::timestamptz::text,
           'updatedAt', auth_session_data.updated_at::timestamptz::text
@@ -76,7 +66,6 @@ BEGIN
         jsonb_build_object(
           'ip', '',
           'userAgent', '',
-          'countryCode', '',
           'deviceNonce', '',
           'createdAt', '',
           'updatedAt', ''
@@ -117,7 +106,6 @@ REVOKE EXECUTE ON FUNCTION public.custom_access_token_hook FROM authenticated, a
 GRANT ALL ON TABLE public."Sessions" TO supabase_auth_admin;
 GRANT ALL ON TABLE public."Applications" TO supabase_auth_admin;
 GRANT ALL ON TABLE public."ApplicationSessions" TO supabase_auth_admin;
-GRANT ALL ON TABLE public."IpGeolocation" TO supabase_auth_admin;
 
 -- Grant permissions on the auth schema and sessions table if they exist
 DO $$
