@@ -405,8 +405,8 @@ model WalletExport {
 }
 
 /// WorkKeyShares are used to regularly reconstruct users' private keys on a specific device by combining them with their deviceShare, and are rotated
-/// regularly. This means a WorkKeyShare is linked to a specific deviceNonce, userId and walletId, and optionally to a Session (optionally because the session
-/// might be closed, but the deviceNonce and deviceShare stay on the device).
+/// regularly. This means a WorkKeyShare is linked to a specific userId, walletId and deviceNonce (or deviceAndLocationId), and optionally to a Session
+/// (optionally because the session might be closed, but the deviceNonce and deviceShare stay on the device).
 model WorkKeyShare {
   id               String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
   createdAt        DateTime @default(now())
@@ -420,6 +420,8 @@ model WorkKeyShare {
   /// RSA-PSS with a 4096 modulusLength => 550 bytes public key as SPKI => 736 characters in base64. 1024 just to be safe.
   deviceSharePublicKey String @db.VarChar(1024)
 
+  deviceNonce String @db.VarChar(255)
+
   walletActivations WalletActivation[]
 
   userProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
@@ -428,13 +430,13 @@ model WorkKeyShare {
   wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
   walletId String @db.Uuid
 
-  session   Session @relation(fields: [sessionId], references: [id], onDelete: Cascade)
-  sessionId String  @db.Uuid
+  session   Session? @relation(fields: [sessionId], references: [id], onDelete: SetNull)
+  sessionId String?  @db.Uuid
 
   /// This unique constraint means that if the users loses the deviceShare but, for whatever reason, not the
   /// device nonce, after requesting the recoveryAuthShare and sending the new authShare and deviceShareHash, this will
   /// replace the previous one (as deviceNonce is the same):
-  @@unique([userId, sessionId, walletId], name: "userSessionWorkShare")
+  @@unique([userId, walletId, deviceNonce], name: "userDeviceWorkShare")
   @@map("WorkKeyShares")
 }
 
