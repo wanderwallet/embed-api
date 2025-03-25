@@ -2,7 +2,7 @@
 
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
+import { supabase } from "@/client/utils/supabase/supabase-client-client"
 
 export default function AppleAuthCallback() {
   const router = useRouter();
@@ -10,7 +10,6 @@ export default function AppleAuthCallback() {
   useEffect(() => {
     const handleAuthCallback = async () => {
       try {
-        const supabase = await createServerClient();
         // Get the auth code from the URL
         const { error } = await supabase.auth.exchangeCodeForSession(
           window.location.href

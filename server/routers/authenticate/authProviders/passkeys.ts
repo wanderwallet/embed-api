@@ -182,6 +182,7 @@ export const passkeysRoutes = {
             credentialId: uint8ArrayToString(credentialData.credentialID),
             publicKey: uint8ArrayToString(credentialData.credentialPublicKey),
             signCount: credentialData.counter,
+            label: "1",
             createdAt: new Date(),
             lastUsedAt: new Date(),
           },

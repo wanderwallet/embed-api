@@ -16,7 +16,6 @@ export default function Login() {
   const verifyRegistrationMutation = trpc.verifyRegistration.useMutation();
   const startAuthenticationMutation = trpc.startAuthentication.useMutation();
   const verifyAuthenticationMutation = trpc.verifyAuthentication.useMutation();
-  const verifyOtpMutation = trpc.verifyOtp.useMutation();
   const finalizePasskeyMutation = trpc.finalizePasskey.useMutation();
   const [isLoading, setIsLoading] = useState(false);
   const [email, setEmail] = useState("");
@@ -90,7 +89,7 @@ export default function Login() {
       
       try {
         // Step 2: Create passkey on device
-        const attestationResponse = await startRegistration(options);
+        const attestationResponse = await startRegistration({ optionsJSON: options });
         console.log("Attestation response:", attestationResponse);
         
         // Step 3: Verify registration with server and trigger magic link email
@@ -105,7 +104,7 @@ export default function Login() {
         
       } catch (webAuthnError) {
         console.error("WebAuthn API error:", webAuthnError);
-        setErrorMessage(`Passkey API error: ${webAuthnError.message || "Unknown error"}`);
+        setErrorMessage(`Passkey API error: ${(webAuthnError as Error).message || "Unknown error"}`);
         setIsLoading(false);
       }
     } catch (error) {
@@ -208,7 +207,7 @@ export default function Login() {
       console.log("Authentication options:", options);
       
       // Get assertion from browser
-      const assertionResponse = await startAuthentication(options);
+      const assertionResponse = await startAuthentication({ optionsJSON: options });
       
       console.log("Assertion response:", assertionResponse);
       

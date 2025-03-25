@@ -1,6 +1,5 @@
 import { publicProcedure, protectedProcedure } from "../trpc";
 import {
-  logoutUser,
   refreshSession,
   getUser,
 } from "../services/auth";
@@ -9,8 +8,6 @@ import { createServerClient } from "@/server/utils/supabase/supabase-server-clie
 import { Provider } from "@supabase/supabase-js";
 import { AuthProviderType } from "@prisma/client";
 import { passkeysRoutes } from "./authenticate/authProviders/passkeys";
-import { createWebAuthnAccessTokenForUser, createWebAuthnRefreshTokenForUser } from "@/server/utils/passkey/session";
-import { getClientIp, getClientCountryCode } from "@/server/utils/ip/ip.utils";
 import { TRPCError } from "@trpc/server";
 
 const SUPABASE_PROVIDER_BY_AUTH_PROVIDER_TYPE: Record<AuthProviderType, Provider | null> = {
@@ -181,105 +178,4 @@ export const authenticateRouter = {
       },
     };
   }),
-
-  refreshPasskeySession: publicProcedure
-    .mutation(async ({ ctx }) => {
-      const refreshTokenFromInput = ctx.req?.headers.get("x-refresh-token");
-      const userId = ctx.user?.id;
-      let deviceNonce = ctx.req?.headers.get("x-device-nonce");
-    
-      const supabase = await createServerClient();
-      
-      if (!deviceNonce && ctx.req) {
-        deviceNonce = ctx.req.headers.get("x-device-nonce") || undefined;
-      }
-      
-      // If refresh token is provided, use it
-      if (refreshTokenFromInput) {
-        const { data, error } = await supabase.auth.refreshSession({
-          refresh_token: refreshTokenFromInput,
-        });
-        
-        if (error) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: `Failed to refresh session: ${error.message}`,
-          });
-        }
-        
-        return {
-          message: "Session refreshed successfully.",
-          session: data.session,
-        };
-      }
-      
-      // Otherwise, use userId and deviceNonce
-      if (!userId || !deviceNonce) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Either refreshToken or both userId and deviceNonce must be provided",
-        });
-      }
-      
-      // Verify the session exists in our database
-      const session = await ctx.prisma.session.findUnique({
-        where: {
-          userSession: {
-            userId,
-            deviceNonce,
-          },
-        },
-        include: {
-          userProfile: true,
-        },
-      });
-      
-      if (!session) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Session not found.",
-        });
-      }
-      
-      // Create new tokens
-      const accessToken = createWebAuthnAccessTokenForUser(session.userProfile);
-      const refreshToken = createWebAuthnRefreshTokenForUser(session.userProfile);
-      
-      // Set the session in Supabase
-      const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-        access_token: accessToken,
-        refresh_token: refreshToken,
-      });
-      
-      if (sessionError) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: `Failed to refresh session: ${sessionError.message}`,
-        });
-      }
-      
-      // Get request information from context
-      const req = ctx.req;
-      const userAgent = req?.headers.get("user-agent") || session.userAgent;
-      const ip = req ? getClientIp(req) : session.ip;
-      const countryCode = req ? getClientCountryCode(req) : session.countryCode;
-      
-      // Update the session in our database
-      await ctx.prisma.session.update({
-        where: {
-          id: session.id,
-        },
-        data: {
-          updatedAt: new Date(),
-          userAgent,
-          ip,
-          countryCode,
-        },
-      });
-      
-      return {
-        message: "Session refreshed successfully.",
-        session: sessionData.session,
-      };
-    }),
 };
