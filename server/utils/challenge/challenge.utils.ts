@@ -34,7 +34,7 @@ const CHALLENGE_CLIENTS = {
 export interface VerifyChallengeParams extends ChallengeData {
   now: number;
   solution: string; // B64
-  publicKey: null | string; // B64
+  publicKey: null | string; // JWK.n
 }
 
 export async function verifyChallenge({
@@ -74,32 +74,20 @@ export async function verifyChallenge({
         throw new Error("Missing `publicKey`");
       }
 
-      let publicKey: CryptoKey;
+      const publicJWK: JsonWebKey = {
+        e: "AQAB",
+        ext: true,
+        kty: "RSA",
+        n: publicKeyParam,
+      };
 
-      if (publicKeyParam.length >= 720) {
-        publicKey = await crypto.subtle.importKey(
-          "spki",
-          Buffer.from(publicKeyParam, "base64"),
-          challengeClient.importKeyAlgorithm,
-          true,
-          ["verify"]
-        );
-      } else {
-        const publicJWK: JsonWebKey = {
-          e: "AQAB",
-          ext: true,
-          kty: "RSA",
-          n: publicKeyParam,
-        };
-
-        publicKey = await crypto.subtle.importKey(
-          "jwk",
-          publicJWK,
-          challengeClient.importKeyAlgorithm,
-          true,
-          ["verify"]
-        );
-      }
+      const publicKey = await crypto.subtle.importKey(
+        "jwk",
+        publicJWK,
+        challengeClient.importKeyAlgorithm,
+        true,
+        ["verify"]
+      );
 
       const challengeRawData = await challengeClient.getChallengeRawData({
         challenge,
