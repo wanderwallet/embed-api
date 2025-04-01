@@ -1,16 +1,30 @@
-import { ChallengeClient, ChallengeClientVersion, ChallengeData } from "@/server/utils/challenge/challenge.types";
+import {
+  ChallengeClient,
+  ChallengeClientVersion,
+  ChallengeData,
+} from "@/server/utils/challenge/challenge.types";
 import { ChallengeClientV1 } from "@/server/utils/challenge/clients/challenge-client-v1";
 import { Config } from "@/server/utils/config/config.constants";
-import { AnonChallenge, Challenge, ChallengePurpose, ChallengeType } from "@prisma/client";
+import {
+  AnonChallenge,
+  Challenge,
+  ChallengePurpose,
+  ChallengeType,
+} from "@prisma/client";
 
-export function isAnonChallenge(challenge: Challenge | AnonChallenge): challenge is AnonChallenge {
-  return !!(challenge as AnonChallenge).chain && !!(challenge as AnonChallenge).address;
+export function isAnonChallenge(
+  challenge: Challenge | AnonChallenge
+): challenge is AnonChallenge {
+  return (
+    !!(challenge as AnonChallenge).chain &&
+    !!(challenge as AnonChallenge).address
+  );
 }
 
 export function generateChangeValue() {
-  return Buffer.from(crypto.getRandomValues(new Uint8Array(Config.CHALLENGE_BUFFER_SIZE))).toString(
-    "base64"
-  );
+  return Buffer.from(
+    crypto.getRandomValues(new Uint8Array(Config.CHALLENGE_BUFFER_SIZE))
+  ).toString("base64");
 }
 
 const CHALLENGE_CLIENTS = {
@@ -20,7 +34,7 @@ const CHALLENGE_CLIENTS = {
 export interface VerifyChallengeParams extends ChallengeData {
   now: number;
   solution: string; // B64
-  publicKey: null | string; // B64
+  publicKey: null | string; // JWK.n
 }
 
 export async function verifyChallenge({
@@ -35,47 +49,67 @@ export async function verifyChallenge({
   publicKey: publicKeyParam,
 }: VerifyChallengeParams) {
   try {
-    const solutionVersion = solution.split(".")[0];
+    const [solutionVersion, solutionValue] = solution.split(".");
     const challengeClient = CHALLENGE_CLIENTS[solutionVersion];
 
     if (!challengeClient) {
       throw new Error(`Invalid challenge version`);
     }
 
-    const challengeTTL = isAnonChallenge(challenge) || challenge.purpose === ChallengePurpose.SHARE_ROTATION
-      ? Config.CHALLENGE_ROTATION_TTL_MS
-      : Config.CHALLENGE_TTL_MS;
+    const challengeTTL =
+      isAnonChallenge(challenge) ||
+      challenge.purpose === ChallengePurpose.SHARE_ROTATION
+        ? Config.CHALLENGE_ROTATION_TTL_MS
+        : Config.CHALLENGE_TTL_MS;
 
     if (now - challenge.createdAt.getTime() >= challengeTTL) {
       return false;
     }
 
-    if (isAnonChallenge(challenge) || challenge.type === ChallengeType.SIGNATURE) {
+    if (
+      isAnonChallenge(challenge) ||
+      challenge.type === ChallengeType.SIGNATURE
+    ) {
       if (!publicKeyParam) {
-        throw new Error("Missing `publicKey` (base64 public key)");
+        throw new Error("Missing `publicKey`");
       }
 
+      const publicJWK: JsonWebKey = {
+        e: "AQAB",
+        ext: true,
+        kty: "RSA",
+        n: publicKeyParam,
+      };
+
       const publicKey = await crypto.subtle.importKey(
-        "spki",
-        Buffer.from(publicKeyParam, "base64"),
+        "jwk",
+        publicJWK,
         challengeClient.importKeyAlgorithm,
         true,
-        ["sign"],
+        ["verify"]
       );
 
-      const challengeRawData = await challengeClient.getChallengeRawData({ challenge, session, shareHash });
+      const challengeRawData = await challengeClient.getChallengeRawData({
+        challenge,
+        session,
+        shareHash,
+      });
 
       const challengeRawDataBuffer = Buffer.from(challengeRawData);
 
       return crypto.subtle.verify(
         challengeClient.signAlgorithm,
         publicKey,
-        Buffer.from(solution, "base64"),
-        challengeRawDataBuffer,
+        Buffer.from(solutionValue, "base64"),
+        challengeRawDataBuffer
       );
     }
 
-    const expectedSolution = await challengeClient.solveChallenge({ challenge, session, shareHash });
+    const expectedSolution = await challengeClient.solveChallenge({
+      challenge,
+      session,
+      shareHash,
+    });
 
     // The length of the solution, excluding the version prefix, should be:
     //
@@ -97,4 +131,4 @@ export async function verifyChallenge({
 export const ChallengeUtils = {
   generateChangeValue,
   verifyChallenge,
-}
+};
