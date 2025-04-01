@@ -19,20 +19,19 @@ export function getShareHashValidator() {
 }
 
 /**
- * We generate RSA-PSS key pair with a 4096 modulusLength, which gives as a 540-550 bytes public key if the format is
- * PKCS#1. PKCS#8 adds some extra metadata and bumps the size to 560, so 540-560 * 4/3 characters/byte = 720-747
- * characters in base64.
+ * We generate RSA-PSS key pair with a 4096 modulusLength, which gives as a 512 bytes public key if the format is
+ * JWK. So, 512 * 4/3 characters/byte = 683 characters in base64.
  */
 export function getSharePublicKeyValidator() {
-  // TODO: Can we expect this to always be exactly 736? (550 as base64)?
-  return z.string().min(720).max(747);
+  return z.string().min(683).max(685);
 }
 
 export const SHARE_REX_EXPS: Record<Chain, RegExp> = {
   // See https://stackoverflow.com/questions/7860392/determine-if-string-is-in-base64-using-javascript
-  [Chain.ARWEAVE]: /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/i,
+  [Chain.ARWEAVE]:
+    /^([0-9a-zA-Z+/]{4})*(([0-9a-zA-Z+/]{2}==)|([0-9a-zA-Z+/]{3}=))?$/i,
   [Chain.ETHEREUM]: /^[A-F0-9]+$/i,
-}
+};
 
 export const SHARE_LENGTHS: Record<Chain, number | number[]> = {
   // Small difference in size due to padding in base64. Length is usually 3168 but sometimes it's 3172.
@@ -40,30 +39,31 @@ export const SHARE_LENGTHS: Record<Chain, number | number[]> = {
   // This could also be addressed with zero-padding.
   [Chain.ARWEAVE]: [3168, 3172],
   [Chain.ETHEREUM]: 44,
-}
+};
 
 export function getChainShareValidator(chain: Chain) {
   let chainLengths = SHARE_LENGTHS[chain];
 
-  if (typeof chainLengths !== "number" && chainLengths.length < 2) chainLengths = chainLengths[0] || 0;
+  if (typeof chainLengths !== "number" && chainLengths.length < 2)
+    chainLengths = chainLengths[0] || 0;
 
   return (
     typeof chainLengths === "number"
       ? z.string().length(chainLengths)
       : z.union([
-        z.string().length(chainLengths[0]),
-        z.string().length(chainLengths[1]),
-        ...chainLengths.slice(2).map(l => z.string().length(l)),
-      ])
-).refine((val) => {
+          z.string().length(chainLengths[0]),
+          z.string().length(chainLengths[1]),
+          ...chainLengths.slice(2).map((l) => z.string().length(l)),
+        ])
+  ).refine((val) => {
     return SHARE_REX_EXPS[chain].test(val);
-  }, `Invalid ${ chain } share`)
+  }, `Invalid ${chain} share`);
 }
 
 export function validateShare(
   chain: Chain,
   share: string,
-  sharePath: (string | number)[],
+  sharePath: (string | number)[]
 ): ZodCustomIssue[] {
   const issues: ZodCustomIssue[] = [];
 
