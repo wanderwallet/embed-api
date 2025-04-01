@@ -106,7 +106,7 @@ export function createTRPCClient({
     applicationId = nextApplicationId;
   }
 
-  const url = trpcURL || (baseURL ? `${baseURL}/api/trpc` : "");
+  const url = trpcURL || (baseURL ? `${baseURL.replace(/\/$/, "")}/api/trpc` : "");
 
   if (!url) throw new Error("No `baseURL` or `trpcURL` provided.");
 
