@@ -15,7 +15,7 @@ import {
 import { stringToUint8Array, uint8ArrayToString } from "@/server/services/auth";
 import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import { createWebAuthnAccessTokenForUser, createWebAuthnRefreshTokenForUser } from "@/server/utils/passkey/session";
-import { getClientIp, getClientCountryCode } from "@/server/utils/ip/ip.utils";
+import { PasskeyChallengePurpose } from "@prisma/client";
 
 export const passkeysRoutes = {
   // Start registration requiring a pre-existing user
@@ -50,7 +50,7 @@ export const passkeysRoutes = {
           data: {
             userId: tempUserId,
             value: email,
-            version: "email-verification",
+            version: PasskeyChallengePurpose.EMAIL_VERIFICATION,
             createdAt: new Date(),
           },
         });

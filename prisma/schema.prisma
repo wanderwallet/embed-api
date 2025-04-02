@@ -126,6 +126,12 @@ enum Plan {
   PRO
 }
 
+enum PasskeyChallengePurpose {
+  REGISTRATION
+  AUTHENTICATION
+  EMAIL_VERIFICATION
+}
+
 // TODO: Document index usages.
 
 /**
@@ -600,29 +606,30 @@ model AuthenticationAttempt {
 }
 
 model Passkey {
-  id            String   @id @default(uuid())
-  credentialId  String   @db.VarChar(255)
-  publicKey     String   @db.VarChar(1024)
-  signCount     Int      @default(0)
-  label         String   @db.VarChar(255)
-  createdAt     DateTime @default(now())
-  lastUsedAt    DateTime @default(now())
+  id           String   @id @default(uuid())
+  credentialId String   @db.VarChar(255)
+  publicKey    String   @db.VarChar(1024)
+  signCount    Int      @default(0)
+  label        String   @db.VarChar(255)
+  createdAt    DateTime @default(now())
+  lastUsedAt   DateTime @default(now())
 
-  UserProfile   UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
-  userId        String      @db.Uuid
+  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userId      String      @db.Uuid
 
   @@unique([userId, credentialId], name: "userPasskey")
   @@map("Passkeys")
 }
 
 model PasskeyChallenge {
-  id        String   @id @default(uuid())
-  userId    String   @db.VarChar(255)
-  value     String   @db.VarChar(255)
-  version   String   @db.VarChar(255)
-  createdAt DateTime @default(now())
+  id        String                  @id @default(uuid())
+  userId    String                  @db.Uuid
+  value     String                  @db.VarChar(255)
+  purpose   PasskeyChallengePurpose
+  version   String                  @db.VarChar(255)
+  createdAt DateTime                @default(now())
 
-  @@index([userId, createdAt])
+  @@index([userId, purpose])
   @@map("PasskeyChallenges")
 }
 

@@ -27,9 +27,6 @@ export default function DashboardPage() {
       await logoutMutation.mutateAsync();
       await supabase.auth.signOut();
       
-      // Clear any stored device nonce
-      localStorage.removeItem('deviceNonce');
-      
       router.push("/");
     } catch (error) {
       setIsLoading(false);
