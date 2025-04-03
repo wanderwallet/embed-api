@@ -32,7 +32,7 @@ function isAnonChallenge(
 function getChallengeRawData({ challenge, session, shareHash }: ChallengeData) {
   const commonChallengeData = [
     challenge.id,
-    challenge.createdAt,
+    challenge.createdAt.toISOString(),
     challenge.value,
     challenge.version,
     session.id,
