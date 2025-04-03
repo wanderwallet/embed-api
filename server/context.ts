@@ -48,7 +48,7 @@ export async function createContext({ req }: { req: Request }) {
   
   // Create an authenticated Prisma client with the user's JWT token
   // Pass 'authenticated' role to activate RLS policies
-  prisma = createAuthenticatedPrismaClient(user.id, 'authenticated');
+  prisma = createAuthenticatedPrismaClient(user.id, 'authenticated') as typeof basePrisma;
   
   let ip = getClientIp(req);
 

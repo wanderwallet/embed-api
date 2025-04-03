@@ -7,9 +7,10 @@ export const basePrisma = globalForPrisma.prisma || new PrismaClient();
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = basePrisma;
 
 // Function to create an authenticated Prisma client instance
-export function createAuthenticatedPrismaClient(jwtToken?: string, role?: string) {
-  // If no token, return the base client
-  if (!jwtToken && !role) {
+export function createAuthenticatedPrismaClient(userId?: string, role?: string) {
+  // User ID is required for authenticated client
+  // It should be extracted from the JWT token
+  if (!userId && !role) {
     return basePrisma;
   }
 
@@ -30,8 +31,8 @@ export function createAuthenticatedPrismaClient(jwtToken?: string, role?: string
           await prisma.$executeRawUnsafe(`SET ROLE ${role}`);
         }
         
-        if (jwtToken) {
-          const claimsJson = JSON.stringify({ sub: jwtToken, role });
+        if (userId) {
+          const claimsJson = JSON.stringify({ sub: userId, role });
           await prisma.$executeRawUnsafe(`SET LOCAL "request.jwt.claims" = '${claimsJson}'`);
         }
       }
