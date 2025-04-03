@@ -1,4 +1,4 @@
-import { prisma } from "../prisma/prisma-client";
+import { createAuthenticatedPrismaClient } from "../prisma/prisma-client";
 import { TRPCError } from "@trpc/server";
 
 function extractDomain(origin: string | null): string | null {
@@ -30,9 +30,12 @@ function isDomainAllowed(
 export async function validateApplication(
   clientId: string,
   origin: string,
-  sessionId?: string
+  sessionId?: string,
+  userId?: string
 ): Promise<string> {
   try {
+    const prisma = createAuthenticatedPrismaClient(userId, 'authenticated');
+
     const application = await prisma.application
       .findUnique({
         where: { clientId },

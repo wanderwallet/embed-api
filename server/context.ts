@@ -2,7 +2,7 @@ import { inferAsyncReturnType } from "@trpc/server";
 import { Session } from "@prisma/client";
 import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import { jwtDecode } from "jwt-decode";
-import { prisma } from "./utils/prisma/prisma-client";
+import { basePrisma, createAuthenticatedPrismaClient } from "./utils/prisma/prisma-client";
 import {
   getClientCountryCode,
   getClientIp,
@@ -14,6 +14,9 @@ export async function createContext({ req }: { req: Request }) {
   const clientId = req.headers.get("x-client-id");
   const applicationId = req.headers.get("x-application-id") || "";
 
+  // Default to using unauthenticated prisma client
+  let prisma = basePrisma;
+  
   if (!authHeader || !clientId) {
     return createEmptyContext();
   }
@@ -42,6 +45,11 @@ export async function createContext({ req }: { req: Request }) {
   }
 
   const user = data.user;
+  
+  // Create an authenticated Prisma client with the user's JWT token
+  // Pass 'authenticated' role to activate RLS policies
+  prisma = createAuthenticatedPrismaClient(user.id, 'authenticated');
+  
   let ip = getClientIp(req);
 
   if (process.env.NODE_ENV === "development") {
@@ -91,7 +99,10 @@ async function getAndUpdateSession(
   if (Object.keys(sessionUpdates).length > 0) {
     console.log("Updating session:", sessionUpdates);
 
-    prisma.session
+    // Use authenticated prisma client for the current user
+    const authPrisma = createAuthenticatedPrismaClient(userId, 'authenticated');
+    
+    authPrisma.session
       .update({
         where: { id: sessionId },
         data: sessionUpdates,
@@ -119,7 +130,7 @@ function decodeJwt(token: string) {
 
 function createEmptyContext() {
   return {
-    prisma,
+    prisma: basePrisma, // Use base prisma client for unauthenticated requests
     user: null,
     session: createSessionObject(null),
   };
