@@ -94,8 +94,6 @@ export const activateWallet = protectedProcedure
       publicKey: workKeyShare.deviceSharePublicKey,
     });
 
-    console.log({ isChallengeValid });
-
     if (!isChallengeValid) {
       // TODO: Add a wallet activation attempt limit?
       // TODO: How to limit the # of activations per user?
