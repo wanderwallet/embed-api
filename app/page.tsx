@@ -81,7 +81,7 @@ export default function Login() {
       }
       
       // Step 1: Start registration process with email
-      const { options, tempUserId } = await startRegistrationMutation.mutateAsync({
+      const { options, userId } = await startRegistrationMutation.mutateAsync({
         email,
       });
       
@@ -94,7 +94,7 @@ export default function Login() {
         
         // Step 3: Verify registration with server and trigger magic link email
         const { message } = await verifyRegistrationMutation.mutateAsync({
-          tempUserId,
+          userId,
           attestationResponse,
         });
         

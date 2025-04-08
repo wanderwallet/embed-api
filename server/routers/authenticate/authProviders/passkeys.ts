@@ -22,76 +22,30 @@ export const passkeysRoutes = {
   startRegistration: publicProcedure
     .input(
       z.object({
-        email: z.string().email().optional(),
+        email: z.string().email(),
       })
     )
     .mutation(async ({ input, ctx }) => {
       const { email } = input;
       
-      // Generate a temporary user ID
-      const tempUserId = crypto.randomUUID();
+      // Check if user exists
+      const userProfile = await ctx.prisma.userProfile.findFirst({
+        where: { supEmail: email },
+      });
       
-      // If email is provided, check if user exists
-      if (email) {
-        // Check if user exists
-        const userProfile = await ctx.prisma.userProfile.findFirst({
-          where: { supEmail: email },
+      if (!userProfile) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not registered. Please register with another authentication method first.",
         });
-        
-        if (!userProfile) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "User not registered. Please register with another authentication method first.",
-          });
-        }
-        
-        // Store the email temporarily
-        await ctx.prisma.passkeyChallenge.create({
-          data: {
-            userId: tempUserId,
-            value: email,
-            version: PasskeyChallengePurpose.EMAIL_VERIFICATION,
-            createdAt: new Date(),
-          },
-        });
-        
-        // Generate registration options
-        const options = await generateRegistrationOptions({
-          rpName: relyingPartyName,
-          rpID: relyingPartyID,
-          userID: stringToUint8Array(tempUserId),
-          userName: email,
-          attestationType: "direct",
-          authenticatorSelection: {
-            residentKey: "preferred",
-            userVerification: "preferred",
-            authenticatorAttachment: "platform",
-          },
-        });
-        
-        // Store the challenge
-        const challenge = options.challenge;
-        await ctx.prisma.passkeyChallenge.create({
-          data: {
-            userId: tempUserId,
-            value: challenge,
-            version: "1",
-            createdAt: new Date(),
-          },
-        });
-        
-        return {
-          options,
-          tempUserId,
-        };
       }
       
       // Generate registration options
       const options = await generateRegistrationOptions({
         rpName: relyingPartyName,
         rpID: relyingPartyID,
-        userID: stringToUint8Array(tempUserId),
-        userName: tempUserId, // Will be updated later by the user
+        userID: stringToUint8Array(userProfile.supId),
+        userName: email,
         attestationType: "direct",
         authenticatorSelection: {
           residentKey: "preferred",
@@ -99,23 +53,32 @@ export const passkeysRoutes = {
           authenticatorAttachment: "platform",
         },
       });
-
-      // Store the challenge in the database
+      
       const challenge = options.challenge;
-      await ctx.prisma.passkeyChallenge.create({
-        data: {
-          userId: tempUserId,
+      await ctx.prisma.passkeyChallenge.upsert({
+        where: {
+          userId_purpose: {
+            userId: userProfile.supId,
+            purpose: PasskeyChallengePurpose.REGISTRATION
+          }
+        },
+        update: {
           value: challenge,
           version: "1",
           createdAt: new Date(),
         },
+        create: {
+          userId: userProfile.supId,
+          value: challenge,
+          purpose: PasskeyChallengePurpose.REGISTRATION,
+          version: "1",
+          createdAt: new Date(),
+        },
       });
-
-      // Return both the options and the temporary user ID
+      
       return {
         options,
-        tempUserId,
-        requiresOtp: false,
+        userId: userProfile.supId,
       };
     }),
 
@@ -136,7 +99,7 @@ export const passkeysRoutes = {
         const credentialRecord = await ctx.prisma.passkeyChallenge.findFirst({
           where: {
             userId: verificationId,
-            version: "credential-verification",
+            purpose: PasskeyChallengePurpose.REGISTRATION,
           },
         });
         
@@ -243,20 +206,20 @@ export const passkeysRoutes = {
   verifyRegistration: publicProcedure
     .input(
       z.object({
-        tempUserId: z.string(),
+        userId: z.string(),
         attestationResponse: z.any(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { tempUserId, attestationResponse } = input;
+      const { userId, attestationResponse } = input;
       const supabase = await createServerClient();
       
       try {
         // Get the challenge
         const challengeRecord = await ctx.prisma.passkeyChallenge.findFirst({
           where: {
-            userId: tempUserId,
-            version: { not: "email-verification" },
+            userId: userId,
+            purpose: PasskeyChallengePurpose.REGISTRATION,
           },
           orderBy: {
             createdAt: "desc",
@@ -270,20 +233,22 @@ export const passkeysRoutes = {
           });
         }
         
-        // Get the email
-        const emailRecord = await ctx.prisma.passkeyChallenge.findFirst({
-          where: {
-            userId: tempUserId,
-            version: "email-verification",
-          },
+        // Get the user profile
+        const userProfile = await ctx.prisma.userProfile.findUnique({
+          where: { supId: userId },
         });
         
-        const email = emailRecord?.value;
+        if (!userProfile) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "User profile not found",
+          });
+        }
         
-        if (!email) {
+        if (!userProfile.supEmail) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Email not found",
+            message: "User has no email address",
           });
         }
         
@@ -302,7 +267,7 @@ export const passkeysRoutes = {
           });
         }
         
-        // Log the verification info to debug
+        // Log the verification info for debugging
         console.log("Verification info:", JSON.stringify({
           verified: verification.verified,
           hasRegistrationInfo: !!verification.registrationInfo,
@@ -311,20 +276,8 @@ export const passkeysRoutes = {
           counter: verification.registrationInfo?.credential.counter,
         }));
         
-        // Log the credential ID as it comes from the browser
+        // Log the credential ID from the browser
         console.log("Original credential ID from browser:", attestationResponse.id);
-        
-        // Get the user profile
-        const userProfile = await ctx.prisma.userProfile.findFirst({
-          where: { supEmail: email },
-        });
-        
-        if (!userProfile) {
-          throw new TRPCError({
-            code: "NOT_FOUND",
-            message: "User profile not found",
-          });
-        }
         
         // Store the credential ID exactly as it comes from the browser
         const credentialId = attestationResponse.id;
@@ -346,15 +299,17 @@ export const passkeysRoutes = {
           } else {
             // Use a placeholder if we can't find it
             console.warn("Could not find public key in attestation response");
+            // TODO: Can be used for cleanup cronjob
             publicKey = "placeholder-public-key";
           }
         } catch (error) {
           console.error("Error extracting public key:", error);
+          // TODO: Can be used for cleanup cronjob
           publicKey = "error-extracting-public-key";
         }
         
-        // Create a default label without relying on ctx.req
-        const defaultLabel = `Passkey for ${email}`;
+        // Create a default label using the verified email
+        const defaultLabel = `Passkey for ${userProfile.supEmail}`;
         
         // Create the passkey directly with the label field
         const passkey = await ctx.prisma.passkey.create({
@@ -373,7 +328,7 @@ export const passkeysRoutes = {
         
         // Send magic link to the user's email for verification
         const { error } = await supabase.auth.signInWithOtp({
-          email,
+          email: userProfile.supEmail,
         });
         
         if (error) {
@@ -386,7 +341,8 @@ export const passkeysRoutes = {
         // Clean up challenges
         await ctx.prisma.passkeyChallenge.deleteMany({
           where: {
-            userId: tempUserId,
+            userId: userId,
+            purpose: PasskeyChallengePurpose.REGISTRATION,
           },
         });
         
@@ -416,12 +372,26 @@ export const passkeysRoutes = {
         })),
       });
       
-      // Store the challenge
+      // Generate a random ID for the authentication challenge
+      const randomUserId = crypto.randomUUID();
+      
       const challenge = options.challenge;
-      await ctx.prisma.passkeyChallenge.create({
-        data: {
-          userId: crypto.randomUUID(), // Use a random ID for the challenge
+      await ctx.prisma.passkeyChallenge.upsert({
+        where: {
+          userId_purpose: {
+            userId: randomUserId,
+            purpose: PasskeyChallengePurpose.AUTHENTICATION
+          }
+        },
+        update: {
           value: challenge,
+          version: "1",
+          createdAt: new Date(),
+        },
+        create: {
+          userId: randomUserId,
+          value: challenge,
+          purpose: PasskeyChallengePurpose.AUTHENTICATION,
           version: "1",
           createdAt: new Date(),
         },
@@ -612,25 +582,44 @@ export const passkeysRoutes = {
           });
         }
         
-        // Get the credential data
+        // Get the credential data - look for the registration challenge
         const credentialRecord = await ctx.prisma.passkeyChallenge.findFirst({
           where: {
             userId: verificationId,
-            version: "credential-verification",
+            purpose: PasskeyChallengePurpose.REGISTRATION,
           },
         });
         
         if (!credentialRecord) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Credential record not found",
+            message: "Challenge record not found",
           });
         }
         
-        const credentialData = JSON.parse(credentialRecord.value);
+        // Parse the JSON value (contains the credential data from the verification step)
+        let credentialData;
+        try {
+          credentialData = JSON.parse(credentialRecord.value);
+        } catch (parseError) {
+          console.error("Error parsing credential data:", parseError);
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Invalid credential data format",
+          });
+        }
         
         // Use the browser's credential ID
-        const browserCredentialId = credentialData.browserCredentialId;
+        const browserCredentialId = credentialData.credentialId || credentialData.id;
+        if (!browserCredentialId) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Missing credential ID in stored data",
+          });
+        }
+        
+        // Get the public key
+        const publicKey = credentialData.publicKey || credentialData.publicKeyBytes || "placeholder-public-key";
 
         // Get the user profile
         const userProfile = await ctx.prisma.userProfile.findFirst({
@@ -651,9 +640,9 @@ export const passkeysRoutes = {
           data: {
             userId: userProfile.supId,
             credentialId: browserCredentialId,
-            publicKey: credentialData.credentialPublicKey,
-            signCount: credentialData.counter,
-            label: "1",
+            publicKey: publicKey,
+            signCount: credentialData.counter || 0,
+            label: `Passkey for ${email}`,
             createdAt: new Date(),
             lastUsedAt: new Date(),
           },
@@ -678,8 +667,8 @@ export const passkeysRoutes = {
         
         // Get request information from context
         const deviceNonce = ctx?.session?.deviceNonce || crypto.randomUUID();
-        const userAgent = ctx?.session?.userAgent  || "";
-        const ip = ctx?.session?.ip ;
+        const userAgent = ctx?.session?.userAgent || "";
+        const ip = ctx?.session?.ip;
         
         // Create a session in our database
         await ctx.prisma.session.create({
@@ -691,12 +680,10 @@ export const passkeysRoutes = {
           },
         });
         
-        // Clean up temporary records
-        await ctx.prisma.passkeyChallenge.deleteMany({
+        // Clean up challenge
+        await ctx.prisma.passkeyChallenge.delete({
           where: {
-            userId: {
-              in: [verificationId, credentialData.tempUserId],
-            },
+            id: credentialRecord.id,
           },
         });
         

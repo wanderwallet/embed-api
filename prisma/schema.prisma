@@ -626,9 +626,10 @@ model PasskeyChallenge {
   userId    String                  @db.Uuid
   value     String                  @db.VarChar(255)
   purpose   PasskeyChallengePurpose
-  version   String                  @db.VarChar(255)
+  version   String                  @db.VarChar(50)
   createdAt DateTime                @default(now())
 
+  @@unique([userId, purpose])
   @@index([userId, purpose])
   @@map("PasskeyChallenges")
 }
