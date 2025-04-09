@@ -122,6 +122,7 @@ export default function Login() {
       
       const verificationId = localStorage.getItem('passkeyVerificationId');
       const pendingEmail = localStorage.getItem('pendingPasskeyEmail');
+      const storedDeviceNonce = localStorage.getItem('deviceNonce');
       
       if (!verificationId || !pendingEmail) {
         setErrorMessage("No pending passkey verification found");
@@ -143,6 +144,7 @@ export default function Login() {
         verificationId,
         email: pendingEmail,
         sessionToken: session.access_token,
+        deviceNonce: storedDeviceNonce || undefined, // Pass stored device nonce if available
       });
       
       if (result.verified) {
@@ -201,6 +203,9 @@ export default function Login() {
       setIsLoading(true);
       setErrorMessage("");
       
+      // Get the existing device nonce if one exists
+      const storedDeviceNonce = localStorage.getItem('deviceNonce');
+      
       // Start authentication - optionally provide email if available
       const { options } = await startAuthenticationMutation.mutateAsync({
         email: email || undefined
@@ -221,6 +226,7 @@ export default function Login() {
         signature: assertionResponse.response.signature,
         userHandle: assertionResponse.response.userHandle,
         challenge: options.challenge,
+        deviceNonce: storedDeviceNonce || undefined, // Pass the stored device nonce if available
       });
       
       if (verificationResult.verified) {
