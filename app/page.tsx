@@ -201,8 +201,10 @@ export default function Login() {
       setIsLoading(true);
       setErrorMessage("");
       
-      // Start authentication
-      const { options } = await startAuthenticationMutation.mutateAsync();
+      // Start authentication - optionally provide email if available
+      const { options } = await startAuthenticationMutation.mutateAsync({
+        email: email || undefined
+      });
       
       console.log("Authentication options:", options);
       
@@ -219,7 +221,6 @@ export default function Login() {
         signature: assertionResponse.response.signature,
         userHandle: assertionResponse.response.userHandle,
         challenge: options.challenge,
-        // No need to pass tempId as we've made it optional
       });
       
       if (verificationResult.verified) {

@@ -3,6 +3,7 @@ import {
   generateRegistrationOptions,
   verifyRegistrationResponse,
   generateAuthenticationOptions,
+  verifyAuthenticationResponse,
 } from "@simplewebauthn/server";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
@@ -16,6 +17,16 @@ import { stringToUint8Array, uint8ArrayToString } from "@/server/services/auth";
 import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import { createWebAuthnAccessTokenForUser, createWebAuthnRefreshTokenForUser } from "@/server/utils/passkey/session";
 import { PasskeyChallengePurpose } from "@prisma/client";
+
+// Helper function to convert base64 to Uint8Array
+function base64ToArrayBuffer(base64: string): ArrayBuffer {
+  const binaryString = atob(base64.replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, ''));
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
+  return bytes.buffer;
+}
 
 export const passkeysRoutes = {
   // Start registration requiring a pre-existing user
@@ -187,7 +198,7 @@ export const passkeysRoutes = {
         await ctx.prisma.passkeyChallenge.deleteMany({
           where: {
             userId: {
-              in: [verificationId, credentialData.tempUserId],
+              in: [verificationId, credentialData.userId],
             },
           },
         });
@@ -356,58 +367,76 @@ export const passkeysRoutes = {
     }),
 
   // Add authentication endpoints
-  startAuthentication: publicProcedure.mutation(async ({ ctx }) => {
-    try {
-      // Check if there are any passkeys in the database
-      const allPasskeys = await ctx.prisma.passkey.findMany();
-      console.log("All passkeys at start of authentication:", allPasskeys);
-      
-      // Generate authentication options
-      const options = await generateAuthenticationOptions({
-        rpID: relyingPartyID,
-        userVerification: "preferred",
-        allowCredentials: allPasskeys.map(pk => ({
-          id: pk.credentialId,
-          type: 'public-key',
-        })),
-      });
-      
-      // Generate a random ID for the authentication challenge
-      const randomUserId = crypto.randomUUID();
-      
-      const challenge = options.challenge;
-      await ctx.prisma.passkeyChallenge.upsert({
-        where: {
-          userId_purpose: {
-            userId: randomUserId,
-            purpose: PasskeyChallengePurpose.AUTHENTICATION
+  startAuthentication: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email().optional(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      try {
+        let userPasskeys: { id: string; credentialId: string; publicKey: string; signCount: number }[] = [];
+        
+        if (input.email) {
+          // If email is provided, find the user's passkeys
+          const userProfile = await ctx.prisma.userProfile.findFirst({
+            where: { supEmail: input.email },
+          });
+          
+          if (userProfile) {
+            userPasskeys = await ctx.prisma.passkey.findMany({
+              where: { userId: userProfile.supId },
+            });
           }
-        },
-        update: {
-          value: challenge,
-          version: "1",
-          createdAt: new Date(),
-        },
-        create: {
-          userId: randomUserId,
-          value: challenge,
-          purpose: PasskeyChallengePurpose.AUTHENTICATION,
-          version: "1",
-          createdAt: new Date(),
-        },
-      });
-      
-      return {
-        options,
-      };
-    } catch (error) {
-      console.error("Start authentication error:", error);
-      throw new TRPCError({
-        code: "INTERNAL_SERVER_ERROR",
-        message: `Failed to start authentication: ${error instanceof Error ? error.message : "Unknown error"}`,
-      });
-    }
-  }),
+        }
+        
+        // Generate authentication options
+        // If email was not provided, pass an empty array for allowCredentials
+        const options = await generateAuthenticationOptions({
+          rpID: relyingPartyID,
+          userVerification: "preferred",
+          allowCredentials: userPasskeys.map(pk => ({
+            id: pk.credentialId,
+            type: 'public-key',
+          })),
+        });
+        
+        // Generate a random ID for the authentication challenge
+        const randomUserId = `anon-${ crypto.randomUUID() }`;
+        
+        const challenge = options.challenge;
+        await ctx.prisma.passkeyChallenge.upsert({
+          where: {
+            userId_purpose: {
+              userId: randomUserId,
+              purpose: PasskeyChallengePurpose.AUTHENTICATION
+            }
+          },
+          update: {
+            value: challenge,
+            version: "1",
+            createdAt: new Date(),
+          },
+          create: {
+            userId: randomUserId,
+            value: challenge,
+            purpose: PasskeyChallengePurpose.AUTHENTICATION,
+            version: "1",
+            createdAt: new Date(),
+          },
+        });
+        
+        return {
+          options,
+        };
+      } catch (error) {
+        console.error("Start authentication error:", error);
+        throw new TRPCError({
+          code: "INTERNAL_SERVER_ERROR",
+          message: `Failed to start authentication: ${error instanceof Error ? error.message : "Unknown error"}`,
+        });
+      }
+    }),
 
   verifyAuthentication: publicProcedure
     .input(
@@ -425,17 +454,18 @@ export const passkeysRoutes = {
       const supabase = await createServerClient();
       
       try {
-        // Find the challenge
+        // Find the challenge - make sure it's an AUTHENTICATION challenge
         const challengeRecord = await ctx.prisma.passkeyChallenge.findFirst({
           where: {
             value: challenge,
+            purpose: PasskeyChallengePurpose.AUTHENTICATION,
           },
         });
         
         if (!challengeRecord) {
           throw new TRPCError({
             code: "BAD_REQUEST",
-            message: "Challenge not found",
+            message: "Authentication challenge not found",
           });
         }
         
@@ -481,37 +511,76 @@ export const passkeysRoutes = {
           });
         }
         
-        // For now, skip the verification and assume it's valid
-        // In a production environment, you would want to properly verify the authentication
-        const verification = {
-          verified: true,
-          authenticationInfo: {
-            newCounter: passkey.signCount + 1,
-          },
-        };
-        
-        // Update the passkey counter
-        await ctx.prisma.passkey.update({
-          where: {
-            id: passkey.id,
-          },
-          data: {
-            signCount: verification.authenticationInfo.newCounter,
-            lastUsedAt: new Date(),
-          },
-        });
-        
+        if (!credentialId) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Credential ID is required",
+          });
+        }
+
         try {
-          // Create tokens for the user
+          const publicKeyBuffer = base64ToArrayBuffer(passkey.publicKey);
+          
+          // Create the WebAuthn credential with the correct types
+          // Verify algorithm ES256
+          const credential = {
+            id: credentialId,
+            publicKey: new Uint8Array(publicKeyBuffer),
+            algorithm: -7, // ES256 algorithm
+            counter: passkey.signCount,
+          };
+
+          // Set up the full verification
+          const verification = await verifyAuthenticationResponse({
+            response: {
+              id: credentialId,
+              rawId: credentialId,
+              response: {
+                authenticatorData: input.authenticatorData,
+                clientDataJSON: input.clientDataJSON,
+                signature: input.signature,
+                userHandle: userHandle,
+              },
+              clientExtensionResults: {},
+              type: 'public-key',
+            },
+            expectedChallenge: challengeRecord.value,
+            expectedOrigin: relyingPartyOrigin,
+            expectedRPID: relyingPartyID,
+            credential,
+          });
+
+          // Update counter only if verification succeeded
+          if (verification.verified) {
+            await ctx.prisma.passkey.update({
+              where: {
+                id: passkey.id,
+              },
+              data: {
+                signCount: verification.authenticationInfo.newCounter,
+                lastUsedAt: new Date(),
+              },
+            });
+          } else {
+            throw new TRPCError({
+              code: "UNAUTHORIZED",
+              message: "Authentication verification failed",
+            });
+          }
+        } catch (verificationError) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: `Authentication verification failed: ${verificationError}`,
+          });
+        }
+        
+        // Token creation and session management
+        try {
           const accessToken = createWebAuthnAccessTokenForUser(userProfile);
           const refreshToken = createWebAuthnRefreshTokenForUser(userProfile);
           
-          // Get request information from context
           const deviceNonce = ctx?.session?.deviceNonce || crypto.randomUUID();
           
-          // Set the session in Supabase
-          // This will create a record in auth.sessions, which will trigger the database function
-          // to create a corresponding record in your Sessions table
           const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
             access_token: accessToken,
             refresh_token: refreshToken,
@@ -524,8 +593,12 @@ export const passkeysRoutes = {
             });
           }
           
-          // No need to manually create a session in the database
-          // The trigger will handle that automatically
+          // Clean up the used challenge
+          await ctx.prisma.passkeyChallenge.delete({
+            where: {
+              id: challengeRecord.id,
+            },
+          });
           
           return {
             verified: true,
@@ -537,7 +610,6 @@ export const passkeysRoutes = {
         } catch (tokenError) {
           console.error("Token creation error:", tokenError);
           
-          // Return a simplified response without the session
           return {
             verified: true,
             userId: passkey.userId,
