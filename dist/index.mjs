@@ -139,7 +139,8 @@ import {
 } from "@prisma/client";
 var CHALLENGES_WITHOUT_SHARE_HASH = [
   ChallengePurpose.SHARE_ROTATION,
-  ChallengePurpose.ACCOUNT_RECOVERY
+  ChallengePurpose.ACCOUNT_RECOVERY,
+  ChallengePurpose.SHARE_RECOVERY
 ];
 function isAnonChallenge(challenge) {
   return !!challenge.chain && !!challenge.address;

@@ -15,6 +15,7 @@ import {
 const CHALLENGES_WITHOUT_SHARE_HASH: ChallengePurpose[] = [
   ChallengePurpose.SHARE_ROTATION,
   ChallengePurpose.ACCOUNT_RECOVERY,
+  ChallengePurpose.SHARE_RECOVERY,
 ];
 
 // We duplicate this function instead of importing it to as `challenge.utils.ts` imports `Config`, which throws an error
