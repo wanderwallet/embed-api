@@ -102,14 +102,23 @@ async function getAndUpdateSession(
     // Use authenticated prisma client for the current user
     const authPrisma = createAuthenticatedPrismaClient(userId, 'authenticated');
     
-    authPrisma.session
-      .update({
+    try {
+      // Try to upsert the session instead of updating it
+      await authPrisma.session.upsert({
         where: { id: sessionId },
-        data: sessionUpdates,
-      })
-      .catch((error) => {
-        console.error("Error updating session:", error);
+        update: sessionUpdates,
+        create: {
+          id: sessionId,
+          userId,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          ...updates, // Use all updates for creation
+        },
       });
+    } catch (error) {
+      console.error("Error updating session:", error);
+      // Continue without failing - we'll still return a valid session object
+    }
   }
 
   return {

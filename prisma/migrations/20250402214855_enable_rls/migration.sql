@@ -278,4 +278,4 @@ BEGIN
       );
     $auth_policies$;
   END IF;
-END $$;
+END $$; 

@@ -18,9 +18,52 @@ SET search_path = public
 AS $$
 DECLARE
     country_code VARCHAR(2);
+    user_exists BOOLEAN;
 BEGIN
-    INSERT INTO "Sessions" (id, "createdAt", "updatedAt", ip, "userAgent", "userId", "deviceNonce")
-    SELECT NEW.id, NEW.created_at, NEW.updated_at, NEW.ip, NEW.user_agent, NEW.user_id, gen_random_uuid();
+    -- Check if the user exists in UserProfiles
+    SELECT EXISTS (
+        SELECT 1 FROM "UserProfiles" WHERE "supId" = NEW.user_id
+    ) INTO user_exists;
+    
+    -- If user doesn't exist in UserProfiles, try to create it from auth.users
+    IF NOT user_exists THEN
+        BEGIN
+            INSERT INTO "UserProfiles" ("supId", "supEmail", "name", "email", "updatedAt")
+            SELECT 
+                u.id, 
+                u.email, 
+                COALESCE(u.raw_user_meta_data->>'full_name', u.raw_user_meta_data->>'name'), 
+                u.email, 
+                NOW()
+            FROM auth.users u
+            WHERE u.id = NEW.user_id
+            ON CONFLICT ("supId") DO NOTHING;
+        EXCEPTION
+            WHEN OTHERS THEN
+                RAISE NOTICE 'Failed to create user profile: %', SQLERRM;
+                -- Continue anyway, as the user might be created in another concurrent transaction
+        END;
+    END IF;
+    
+    -- Double-check that user exists before creating session
+    SELECT EXISTS (
+        SELECT 1 FROM "UserProfiles" WHERE "supId" = NEW.user_id
+    ) INTO user_exists;
+    
+    IF user_exists THEN
+        -- Now create the session (should work since user exists)
+        BEGIN
+            INSERT INTO "Sessions" (id, "createdAt", "updatedAt", ip, "userAgent", "userId", "deviceNonce")
+            SELECT NEW.id, NEW.created_at, NEW.updated_at, NEW.ip, NEW.user_agent, NEW.user_id, gen_random_uuid();
+        EXCEPTION
+            WHEN OTHERS THEN
+                RAISE NOTICE 'Failed to create session: %', SQLERRM;
+                -- Log error but don't fail the transaction
+        END;
+    ELSE
+        RAISE NOTICE 'Cannot create session: User % does not exist in UserProfiles', NEW.user_id;
+    END IF;
+    
     RETURN NULL;
 END;
 $$;
