@@ -1,9 +1,17 @@
-import { protectedProcedure } from "@/server/trpc"
-import { z } from "zod"
-import { Challenge, ChallengePurpose, WalletStatus, WalletUsageStatus } from '@prisma/client';
+import { protectedProcedure } from "@/server/trpc";
+import { z } from "zod";
+import {
+  Challenge,
+  ChallengePurpose,
+  WalletStatus,
+  WalletUsageStatus,
+} from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
-import { ChallengeUtils, generateChangeValue } from "@/server/utils/challenge/challenge.utils";
+import {
+  ChallengeUtils,
+  generateChangeValue,
+} from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 import { DbWallet } from "@/prisma/types/types";
@@ -33,7 +41,7 @@ export const activateWallet = protectedProcedure
     const workKeySharePromise = ctx.prisma.workKeyShare.findFirst({
       where: {
         userId: ctx.user.id,
-        sessionId: ctx.session.id,
+        deviceNonce: ctx.session.deviceNonce,
         walletId: input.walletId,
         wallet: {
           status: WalletStatus.ENABLED,
@@ -41,10 +49,7 @@ export const activateWallet = protectedProcedure
       },
     });
 
-    const [
-      challenge,
-      workKeyShare,
-    ] = await Promise.all([
+    const [challenge, workKeyShare] = await Promise.all([
       challengePromise,
       workKeySharePromise,
     ]);
@@ -59,9 +64,10 @@ export const activateWallet = protectedProcedure
     }
 
     if (
-      !workKeyShare
-        || workKeyShare.rotationWarnings >= Config.SHARE_MAX_ROTATION_IGNORES
-        || now - workKeyShare.sharesRotatedAt.getTime() >= Config.SHARE_INACTIVE_TTL_MS
+      !workKeyShare ||
+      workKeyShare.rotationWarnings >= Config.SHARE_MAX_ROTATION_IGNORES ||
+      now - workKeyShare.sharesRotatedAt.getTime() >=
+        Config.SHARE_INACTIVE_TTL_MS
     ) {
       if (workKeyShare) {
         // If `rotationWarnings` too high, or it's been too long since the share was last rotated, delete it:
@@ -100,15 +106,16 @@ export const activateWallet = protectedProcedure
         });
 
         // Log failed activation attempt:
-        const registerWalletActivationAttemptPromise = tx.walletActivation.create({
-          data: {
-            status: WalletUsageStatus.FAILED,
-            userId: ctx.user.id,
-            walletId: workKeyShare.walletId,
-            workKeyShareId: workKeyShare.id,
-            deviceAndLocationId,
-          },
-        });
+        const registerWalletActivationAttemptPromise =
+          tx.walletActivation.create({
+            data: {
+              status: WalletUsageStatus.FAILED,
+              userId: ctx.user.id,
+              walletId: workKeyShare.walletId,
+              workKeyShareId: workKeyShare.id,
+              deviceAndLocationId,
+            },
+          });
 
         return Promise.all([
           deleteChallengePromise,
@@ -122,79 +129,84 @@ export const activateWallet = protectedProcedure
       });
     }
 
-    const shouldRotate = now - workKeyShare.sharesRotatedAt.getTime() >= Config.SHARE_ACTIVE_TTL_MS;
+    const shouldRotate =
+      now - workKeyShare.sharesRotatedAt.getTime() >=
+      Config.SHARE_ACTIVE_TTL_MS;
 
-    const [
-      rotationChallenge,
-      wallet,
-    ] = await ctx.prisma.$transaction(async (tx) => {
-      const deviceAndLocationId = await deviceAndLocationIdPromise;
-      const dateNow = new Date();
-      const challengeValue = generateChangeValue();
-      const challengeUpsertData = {
-        type: Config.CHALLENGE_TYPE,
-        purpose: ChallengePurpose.SHARE_ROTATION,
-        value: challengeValue,
-        version: Config.CHALLENGE_VERSION,
+    const [rotationChallenge, wallet] = await ctx.prisma.$transaction(
+      async (tx) => {
+        const deviceAndLocationId = await deviceAndLocationIdPromise;
+        const dateNow = new Date();
+        const challengeValue = generateChangeValue();
+        const challengeUpsertData = {
+          type: Config.CHALLENGE_TYPE,
+          purpose: ChallengePurpose.SHARE_ROTATION,
+          value: challengeValue,
+          version: Config.CHALLENGE_VERSION,
 
-        // Relations:
-        userId: ctx.user.id,
-        walletId: input.walletId,
-      } as const satisfies Partial<Challenge>;
-
-      const rotationChallengePromise = shouldRotate ? tx.challenge.upsert({
-        where: {
-          userChallenges: {
-            userId: ctx.user.id,
-            purpose: ChallengePurpose.SHARE_ROTATION,
-          },
-        },
-        create: challengeUpsertData,
-        update: challengeUpsertData,
-      }) : null;
-
-      const updateWalletStatsPromise = tx.wallet.update({
-        where: {
-          id: workKeyShare.walletId,
-        },
-        data: {
-          lastActivatedAt: dateNow,
-          totalActivations: { increment: 1 },
-        },
-      });
-
-      const updateRotationWarningPromise = shouldRotate ? tx.workKeyShare.update({
-        where: {
-          id: workKeyShare.id,
-        },
-        data: {
-          rotationWarnings: { increment: 1 },
-        }
-      }) : null;
-
-      // TODO: How to limit the # of activations per user?
-      const registerWalletActivationPromise = tx.walletActivation.create({
-        data: {
-          status: WalletUsageStatus.SUCCESSFUL,
+          // Relations:
           userId: ctx.user.id,
-          walletId: workKeyShare.walletId,
-          workKeyShareId: workKeyShare.id,
-          deviceAndLocationId,
-        },
-      });
+          walletId: input.walletId,
+        } as const satisfies Partial<Challenge>;
 
-      const deleteChallengePromise = tx.challenge.delete({
-        where: { id: challenge.id },
-      });
+        const rotationChallengePromise = shouldRotate
+          ? tx.challenge.upsert({
+              where: {
+                userChallenges: {
+                  userId: ctx.user.id,
+                  purpose: ChallengePurpose.SHARE_ROTATION,
+                },
+              },
+              create: challengeUpsertData,
+              update: challengeUpsertData,
+            })
+          : null;
 
-      return Promise.all([
-        rotationChallengePromise,
-        updateWalletStatsPromise,
-        updateRotationWarningPromise,
-        registerWalletActivationPromise,
-        deleteChallengePromise,
-      ]);
-    });
+        const updateWalletStatsPromise = tx.wallet.update({
+          where: {
+            id: workKeyShare.walletId,
+          },
+          data: {
+            lastActivatedAt: dateNow,
+            totalActivations: { increment: 1 },
+          },
+        });
+
+        const updateRotationWarningPromise = shouldRotate
+          ? tx.workKeyShare.update({
+              where: {
+                id: workKeyShare.id,
+              },
+              data: {
+                rotationWarnings: { increment: 1 },
+              },
+            })
+          : null;
+
+        // TODO: How to limit the # of activations per user?
+        const registerWalletActivationPromise = tx.walletActivation.create({
+          data: {
+            status: WalletUsageStatus.SUCCESSFUL,
+            userId: ctx.user.id,
+            walletId: workKeyShare.walletId,
+            workKeyShareId: workKeyShare.id,
+            deviceAndLocationId,
+          },
+        });
+
+        const deleteChallengePromise = tx.challenge.delete({
+          where: { id: challenge.id },
+        });
+
+        return Promise.all([
+          rotationChallengePromise,
+          updateWalletStatsPromise,
+          updateRotationWarningPromise,
+          registerWalletActivationPromise,
+          deleteChallengePromise,
+        ]);
+      }
+    );
 
     return {
       wallet: wallet as DbWallet,
