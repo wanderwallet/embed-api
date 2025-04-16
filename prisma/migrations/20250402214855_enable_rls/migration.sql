@@ -38,6 +38,45 @@ ALTER TABLE "Organizations" FORCE ROW LEVEL SECURITY;
 ALTER TABLE "Teams" FORCE ROW LEVEL SECURITY;
 ALTER TABLE "Memberships" FORCE ROW LEVEL SECURITY;
 
+-- Make sure DB user exists and has proper schema permissions
+DO $$
+DECLARE
+  db_user TEXT;
+  db_password TEXT;
+BEGIN
+  -- Get the DB user from environment variables or use 'prisma' as default
+  SELECT current_setting('app.settings.postgres_user', true) INTO db_user;
+  SELECT current_setting('app.settings.postgres_password', true) INTO db_password;
+  
+  -- Default values if not set
+  db_user := COALESCE(db_user, 'prisma');
+  db_password := COALESCE(db_password, 'password');
+  
+  -- Create the user if it doesn't exist
+  IF NOT EXISTS (
+    SELECT FROM pg_catalog.pg_roles WHERE rolname = db_user
+  ) THEN
+    EXECUTE format('CREATE USER %I WITH PASSWORD %L CREATEDB', db_user, db_password);
+  END IF;
+  
+  -- Grant privileges to the database user
+  EXECUTE format('GRANT USAGE ON SCHEMA public TO %I', db_user);
+  EXECUTE format('GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA public TO %I', db_user);
+  EXECUTE format('GRANT ALL PRIVILEGES ON ALL SEQUENCES IN SCHEMA public TO %I', db_user);
+  EXECUTE format('GRANT ALL PRIVILEGES ON ALL FUNCTIONS IN SCHEMA public TO %I', db_user);
+  EXECUTE format('GRANT CREATE ON SCHEMA public TO %I', db_user);
+  EXECUTE format('GRANT %I TO postgres', db_user);
+  
+  -- Set schema ownership
+  ALTER SCHEMA public OWNER TO postgres;
+  
+  -- Default privileges
+  EXECUTE format('ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON TABLES TO %I', db_user);
+  EXECUTE format('ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON SEQUENCES TO %I', db_user);
+  EXECUTE format('ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT ALL ON FUNCTIONS TO %I', db_user);
+END
+$$;
+
 -- Policy for service roles to access all tables
 -- This creates a policy that allows users with the 'service_role' claim to access all data
 CREATE POLICY "Service role access all UserProfiles" ON "UserProfiles" 
@@ -153,6 +192,8 @@ BEGIN
       FOR UPDATE USING (auth.uid() = "userId");
     CREATE POLICY "Users can delete their own sessions" ON "Sessions"
       FOR DELETE USING (auth.uid() = "userId");
+    CREATE POLICY "Users can insert their own sessions" ON "Sessions"
+      FOR INSERT WITH CHECK (auth.uid() = "userId");
 
     -- Membership-related policies
     -- Organizations
@@ -279,3 +320,50 @@ BEGIN
     $auth_policies$;
   END IF;
 END $$; 
+
+-- Create a secure function to manage sessions with SECURITY DEFINER
+-- This allows the function to bypass RLS for this specific operation
+DROP FUNCTION IF EXISTS public.upsert_session;
+CREATE OR REPLACE FUNCTION public.upsert_session(
+  session_id UUID,
+  user_id UUID,
+  device_nonce TEXT,
+  ip_address TEXT,
+  user_agent TEXT
+) RETURNS VOID AS $$
+BEGIN
+  INSERT INTO "Sessions" ("id", "userId", "createdAt", "updatedAt", "deviceNonce", "ip", "userAgent")
+  VALUES (
+    session_id, 
+    user_id, 
+    NOW(), 
+    NOW(), 
+    device_nonce, 
+    ip_address::inet, -- Cast to inet type
+    user_agent
+  )
+  ON CONFLICT ("id") 
+  DO UPDATE SET
+    "updatedAt" = NOW(),
+    "deviceNonce" = device_nonce,
+    "ip" = ip_address::inet, -- Cast to inet type
+    "userAgent" = user_agent;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Grant execute permission to the DB user and authenticated users
+DO $$
+DECLARE
+  db_user TEXT;
+BEGIN
+  -- Get credentials from the app settings
+  SELECT current_setting('app.settings.postgres_user', true) INTO db_user;
+  
+  -- Default value if environment variable is not set
+  db_user := COALESCE(db_user, 'prisma');
+  
+  -- Grant execute to dynamic user
+  EXECUTE format('GRANT EXECUTE ON FUNCTION public.upsert_session TO %I', db_user);
+  EXECUTE 'GRANT EXECUTE ON FUNCTION public.upsert_session TO authenticated';
+END
+$$; 

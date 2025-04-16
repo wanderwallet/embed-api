@@ -4,10 +4,10 @@ import { createServerClient } from "@/server/utils/supabase/supabase-server-clie
 import { jwtDecode } from "jwt-decode";
 import { basePrisma, createAuthenticatedPrismaClient } from "./utils/prisma/prisma-client";
 import {
-  getClientCountryCode,
   getClientIp,
   getIpInfo,
 } from "./utils/ip/ip.utils";
+import { PrismaClient } from "@prisma/client";
 
 export async function createContext({ req }: { req: Request }) {
   const authHeader = req.headers.get("authorization");
@@ -48,6 +48,7 @@ export async function createContext({ req }: { req: Request }) {
   
   // Create an authenticated Prisma client with the user's JWT token
   // Pass 'authenticated' role to activate RLS policies
+  // This will pass the user.id as the sub claim which is what RLS policies check
   prisma = createAuthenticatedPrismaClient(user.id, 'authenticated') as typeof basePrisma;
   
   let ip = getClientIp(req);
@@ -99,22 +100,30 @@ async function getAndUpdateSession(
   if (Object.keys(sessionUpdates).length > 0) {
     console.log("Updating session:", sessionUpdates);
 
-    // Use authenticated prisma client for the current user
-    const authPrisma = createAuthenticatedPrismaClient(userId, 'authenticated');
-    
+    // Use the secure database function with SECURITY DEFINER
     try {
-      // Try to upsert the session instead of updating it
-      await authPrisma.session.upsert({
-        where: { id: sessionId },
-        update: sessionUpdates,
-        create: {
-          id: sessionId,
-          userId,
-          createdAt: new Date(),
-          updatedAt: new Date(),
-          ...updates, // Use all updates for creation
+      // PgBouncer in transaction mode requires special handling
+      const authPrisma = new PrismaClient({
+        datasources: {
+          db: {
+            url: process.env.POSTGRES_PRISMA_URL,
+          },
         },
       });
+      
+      // Call the upsert_session function using a simpler query format
+      // This works better with PgBouncer
+      await authPrisma.$executeRawUnsafe(`
+        SELECT public.upsert_session(
+          '${sessionId}'::uuid, 
+          '${userId}'::uuid, 
+          '${updates.deviceNonce || ''}', 
+          '${updates.ip || ''}', 
+          '${updates.userAgent || ''}'
+        )
+      `);
+      
+      await authPrisma.$disconnect();
     } catch (error) {
       console.error("Error updating session:", error);
       // Continue without failing - we'll still return a valid session object
