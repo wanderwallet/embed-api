@@ -8,68 +8,133 @@
 -- These triggers automatically create and update a Session when a new session is created via Supabase Auth.
 -- See https://supabase.com/docs/guides/auth/managing-user-data#using-triggers for more details.
 
--- inserts a row into public.Sessions
+-- Utility function to ensure a user profile exists
+DROP FUNCTION IF EXISTS public.ensure_user_profile;
+CREATE OR REPLACE FUNCTION public.ensure_user_profile(user_id UUID) 
+RETURNS BOOLEAN AS $$
+DECLARE
+  user_exists BOOLEAN;
+BEGIN
+  -- Check if user already exists
+  SELECT EXISTS (
+    SELECT 1 FROM "UserProfiles" WHERE "supId" = user_id
+  ) INTO user_exists;
+  
+  -- If not, try to create it
+  IF NOT user_exists THEN
+    BEGIN
+      -- Try to create from auth.users first
+      INSERT INTO "UserProfiles" ("supId", "supEmail", "name", "email", "updatedAt")
+      SELECT 
+        u.id, 
+        u.email, 
+        COALESCE(u.raw_user_meta_data->>'full_name', u.raw_user_meta_data->>'name'), 
+        u.email, 
+        NOW()
+      FROM auth.users u
+      WHERE u.id = user_id
+      ON CONFLICT ("supId") DO NOTHING;
+      
+      -- If that fails, create a minimal profile
+      SELECT EXISTS (
+        SELECT 1 FROM "UserProfiles" WHERE "supId" = user_id
+      ) INTO user_exists;
+      
+      IF NOT user_exists THEN
+        INSERT INTO "UserProfiles" ("supId", "updatedAt")
+        VALUES (user_id, NOW())
+        ON CONFLICT ("supId") DO NOTHING;
+      END IF;
+    EXCEPTION
+      WHEN OTHERS THEN
+        -- Last attempt with minimal data
+        BEGIN
+          INSERT INTO "UserProfiles" ("supId", "updatedAt")
+          VALUES (user_id, NOW())
+          ON CONFLICT ("supId") DO NOTHING;
+        EXCEPTION
+          WHEN OTHERS THEN
+            RETURN FALSE;
+        END;
+    END;
+  END IF;
+  
+  RETURN TRUE;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
+-- Improved session creation function with better error handling
+DROP FUNCTION IF EXISTS public.upsert_session;
+CREATE OR REPLACE FUNCTION public.upsert_session(
+  session_id UUID,
+  user_id UUID,
+  device_nonce TEXT,
+  ip_address TEXT,
+  user_agent TEXT
+) RETURNS BOOLEAN AS $$
+BEGIN
+  -- First ensure the user exists
+  IF NOT public.ensure_user_profile(user_id) THEN
+    RAISE NOTICE 'Failed to ensure user profile exists for %', user_id;
+    RETURN FALSE;
+  END IF;
+  
+  -- Now create/update the session
+  BEGIN
+    INSERT INTO "Sessions" ("id", "userId", "createdAt", "updatedAt", "deviceNonce", "ip", "userAgent")
+    VALUES (
+      session_id, 
+      user_id, 
+      NOW(), 
+      NOW(), 
+      device_nonce, 
+      ip_address::inet,
+      user_agent
+    )
+    ON CONFLICT ("id") 
+    DO UPDATE SET
+      "updatedAt" = NOW(),
+      "deviceNonce" = device_nonce,
+      "ip" = ip_address::inet,
+      "userAgent" = user_agent;
+    
+    RETURN TRUE;
+  EXCEPTION
+    WHEN OTHERS THEN
+      RAISE NOTICE 'Error upserting session: %', SQLERRM;
+      RETURN FALSE;
+  END;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
+
+-- Improved trigger for session creation
+DROP FUNCTION IF EXISTS public.handle_new_session;
 CREATE OR REPLACE FUNCTION public.handle_new_session()
 RETURNS TRIGGER
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
-DECLARE
-    country_code VARCHAR(2);
-    user_exists BOOLEAN;
 BEGIN
-    -- Check if the user exists in UserProfiles
-    SELECT EXISTS (
-        SELECT 1 FROM "UserProfiles" WHERE "supId" = NEW.user_id
-    ) INTO user_exists;
-    
-    -- If user doesn't exist in UserProfiles, try to create it from auth.users
-    IF NOT user_exists THEN
-        BEGIN
-            INSERT INTO "UserProfiles" ("supId", "supEmail", "name", "email", "updatedAt")
-            SELECT 
-                u.id, 
-                u.email, 
-                COALESCE(u.raw_user_meta_data->>'full_name', u.raw_user_meta_data->>'name'), 
-                u.email, 
-                NOW()
-            FROM auth.users u
-            WHERE u.id = NEW.user_id
-            ON CONFLICT ("supId") DO NOTHING;
-        EXCEPTION
-            WHEN OTHERS THEN
-                RAISE NOTICE 'Failed to create user profile: %', SQLERRM;
-                -- Continue anyway, as the user might be created in another concurrent transaction
-        END;
-    END IF;
-    
-    -- Double-check that user exists before creating session
-    SELECT EXISTS (
-        SELECT 1 FROM "UserProfiles" WHERE "supId" = NEW.user_id
-    ) INTO user_exists;
-    
-    IF user_exists THEN
-        -- Now create the session (should work since user exists)
-        BEGIN
-            INSERT INTO "Sessions" (id, "createdAt", "updatedAt", ip, "userAgent", "userId", "deviceNonce")
-            SELECT NEW.id, NEW.created_at, NEW.updated_at, NEW.ip, NEW.user_agent, NEW.user_id, gen_random_uuid();
-        EXCEPTION
-            WHEN OTHERS THEN
-                RAISE NOTICE 'Failed to create session: %', SQLERRM;
-                -- Log error but don't fail the transaction
-        END;
-    ELSE
-        RAISE NOTICE 'Cannot create session: User % does not exist in UserProfiles', NEW.user_id;
-    END IF;
-    
-    RETURN NULL;
+  -- Directly try to ensure user profile exists first, which is the most critical step
+  PERFORM public.ensure_user_profile(NEW.user_id);
+  
+  -- Then use the upsert_session function for the session
+  PERFORM public.upsert_session(
+    NEW.id,
+    NEW.user_id,
+    gen_random_uuid()::text,
+    NEW.ip::text,
+    NEW.user_agent
+  );
+  
+  -- Always return NULL to prevent transaction failures
+  RETURN NULL;
 END;
 $$;
 
 -- updates a public.Sessions' ip, userAgent, and updatedAt
-
+DROP FUNCTION IF EXISTS public.handle_update_session;
 CREATE OR REPLACE FUNCTION public.handle_update_session()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -87,7 +152,7 @@ END;
 $$;
 
 -- Create function to delete from public.Sessions when auth.sessions row is deleted
-
+DROP FUNCTION IF EXISTS public.handle_delete_session;
 CREATE OR REPLACE FUNCTION public.handle_delete_session()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -101,6 +166,7 @@ END;
 $$;
 
 -- Single procedure for trigger management
+DROP PROCEDURE IF EXISTS public.manage_auth_triggers;
 CREATE OR REPLACE PROCEDURE public.manage_auth_triggers()
 LANGUAGE plpgsql
 AS $$
@@ -125,6 +191,23 @@ BEGIN
                     AFTER DELETE ON auth.sessions
                     FOR EACH ROW
                     EXECUTE FUNCTION public.handle_delete_session();';
+                    
+        -- Grant execute permission to authenticated users and service roles
+        BEGIN
+            EXECUTE 'GRANT EXECUTE ON FUNCTION public.upsert_session TO authenticated';
+            EXECUTE 'GRANT EXECUTE ON FUNCTION public.upsert_session TO service_role';
+            EXECUTE 'GRANT EXECUTE ON FUNCTION public.ensure_user_profile TO authenticated';
+            EXECUTE 'GRANT EXECUTE ON FUNCTION public.ensure_user_profile TO service_role';
+            EXECUTE 'GRANT EXECUTE ON FUNCTION public.handle_new_session TO authenticated';
+            EXECUTE 'GRANT EXECUTE ON FUNCTION public.handle_new_session TO service_role';
+            EXECUTE 'GRANT EXECUTE ON FUNCTION public.handle_update_session TO authenticated';
+            EXECUTE 'GRANT EXECUTE ON FUNCTION public.handle_update_session TO service_role';
+            EXECUTE 'GRANT EXECUTE ON FUNCTION public.handle_delete_session TO authenticated';
+            EXECUTE 'GRANT EXECUTE ON FUNCTION public.handle_delete_session TO service_role';
+        EXCEPTION
+            WHEN insufficient_privilege THEN
+                RAISE NOTICE 'Could not grant EXECUTE permission to roles. This is expected in the shadow database.';
+        END;
     END IF;
 END;
 $$;

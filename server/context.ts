@@ -111,21 +111,41 @@ async function getAndUpdateSession(
         },
       });
       
-      // Call the upsert_session function using a simpler query format
-      // This works better with PgBouncer
-      await authPrisma.$executeRawUnsafe(`
-        SELECT public.upsert_session(
-          '${sessionId}'::uuid, 
-          '${userId}'::uuid, 
-          '${updates.deviceNonce || ''}', 
-          '${updates.ip || ''}', 
-          '${updates.userAgent || ''}'
-        )
-      `);
+      // Maximum retry attempts
+      const maxRetries = 3;
+      let attempts = 0;
+      let success = false;
+      
+      while (attempts < maxRetries && !success) {
+        try {
+          // Call the upsert_session function using a simpler query format
+          // This works better with PgBouncer
+          await authPrisma.$executeRawUnsafe(`
+            SELECT public.upsert_session(
+              '${sessionId}'::uuid, 
+              '${userId}'::uuid, 
+              '${updates.deviceNonce || ''}', 
+              '${updates.ip || ''}', 
+              '${updates.userAgent || ''}'
+            )
+          `);
+          
+          success = true;
+        } catch (retryError) {
+          attempts++;
+          console.error(`Error updating session (attempt ${attempts}/${maxRetries}):`, retryError);
+          
+          // Only retry if we haven't exceeded max attempts
+          if (attempts < maxRetries) {
+            // Exponential backoff: wait longer between each retry
+            await new Promise(resolve => setTimeout(resolve, 100 * Math.pow(2, attempts)));
+          }
+        }
+      }
       
       await authPrisma.$disconnect();
     } catch (error) {
-      console.error("Error updating session:", error);
+      console.error("Error setting up session client:", error);
       // Continue without failing - we'll still return a valid session object
     }
   }
