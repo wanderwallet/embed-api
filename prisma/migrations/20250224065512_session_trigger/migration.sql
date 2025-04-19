@@ -24,7 +24,7 @@ BEGIN
   IF NOT user_exists THEN
     BEGIN
       -- Try to create from auth.users first
-      INSERT INTO "UserProfiles" ("supId", "supEmail", "name", "email", "updatedAt")
+      INSERT INTO "UserProfiles" ("supId", "supEmail", "supPhone", "name", "email", "phone", "picture", "updatedAt") 
       SELECT 
         u.id, 
         u.email, 
