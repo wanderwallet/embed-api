@@ -106,7 +106,8 @@ export const authenticateRouter = {
         options: {
           redirectTo: typeof window !== "undefined" 
             ? `${window.location.origin}/auth/callback/${provider}` 
-            : undefined,
+            : `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:5173'}/auth/callback/${provider}`,
+          scopes: provider === 'google' ? 'email profile' : undefined,
         }
       });
 

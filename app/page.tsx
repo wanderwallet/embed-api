@@ -24,7 +24,8 @@ export default function Login() {
 
   useEffect(() => {
     if (!isAuthLoading && user) {
-      router.push("/dashboard")
+      const baseUrl = window.location.origin;
+      window.location.replace(`${baseUrl}/#/auth/restore-shares`);
     }
   }, [isAuthLoading, user, router])
 
@@ -35,14 +36,16 @@ export default function Login() {
       const { data } = await loginMutation.mutateAsync({ authProviderType: provider });
 
       if (data) {
-        // Redirect to OAuth page
-        window.location.href = data
+        // For OAuth auth, we need to use the exact URL returned from the backend
+        // Don't modify this - it needs to be a standard URL, not a hash-based route
+        console.log("Redirecting to OAuth provider URL:", data);
+        window.location.href = data;
       } else {
-        console.error(`No URL returned from ${provider} authenticate`)
+        console.error(`No URL returned from ${provider} authenticate`);
         setIsLoading(false);
       }
     } catch (error) {
-      console.error(`${provider} sign-in failed:`, error)
+      console.error(`${provider} sign-in failed:`, error);
       setIsLoading(false);
     }
   }
@@ -58,7 +61,8 @@ export default function Login() {
         password,
       });
 
-      router.push("/dashboard")
+      const baseUrl = window.location.origin;
+      window.location.replace(`${baseUrl}/#/auth/restore-shares`);
 
       // If successful, the useEffect will handle redirection
     } catch (error) {
@@ -158,8 +162,15 @@ export default function Login() {
         // Registration successful
         setErrorMessage("Passkey registered successfully!");
         
-        // Redirect to dashboard
-        router.push("/dashboard");
+        // Properly format the redirect URL to avoid path duplication
+        // Use replace instead of href to avoid redirect chains
+        const baseUrl = window.location.origin;
+        console.log("Current path before redirect:", window.location.pathname);
+
+        // Replace the current URL completely with the hash-based URL to prevent redirect chains
+        window.location.replace(`${baseUrl}/#/auth/restore-shares`);
+
+        console.log("Redirecting to:", `${baseUrl}/#/auth/restore-shares`);
       } else {
         setErrorMessage("Passkey verification failed. Please try again.");
         setIsLoading(false);
@@ -230,11 +241,40 @@ export default function Login() {
       });
       
       if (verificationResult.verified) {
-        // Store the device nonce in local storage
-        localStorage.setItem('deviceNonce', verificationResult.deviceNonce || "");
+        console.log("Passkey verification successful", verificationResult);
         
-        // Authentication successful, redirect to dashboard
-        router.push("/dashboard");
+        // Store the necessary session information
+        localStorage.setItem('deviceNonce', verificationResult.deviceNonce || "");
+        localStorage.setItem('sessionId', verificationResult.sessionId);
+        localStorage.setItem('userId', verificationResult.userId);
+        
+        // Flag for wallet activation in the embedded context
+        localStorage.setItem('needsWalletActivation', 'true');
+        
+        // Flag this as a custom auth token
+        localStorage.setItem('isCustomAuth', 'true');
+        
+        // Generate a temporary auth token for API requests
+        const temporaryAuthToken = btoa(JSON.stringify({
+          user_id: verificationResult.userId,
+          session_id: verificationResult.sessionId,
+          device_nonce: verificationResult.deviceNonce,
+          exp: Math.floor(Date.now() / 1000) + (60 * 60), // 1 hour expiry
+          iat: Math.floor(Date.now() / 1000)
+        }));
+        
+        // Store the auth token for the API client
+        localStorage.setItem('authToken', temporaryAuthToken);
+        
+        // Properly format the redirect URL to avoid path duplication
+        // Use replace instead of href to avoid redirect chains
+        const baseUrl = window.location.origin;
+        console.log("Current path before redirect:", window.location.pathname);
+
+        // Replace the current URL completely with the hash-based URL to prevent redirect chains
+        window.location.replace(`${baseUrl}/#/auth/restore-shares`);
+
+        console.log("Redirecting to:", `${baseUrl}/#/auth/restore-shares`);
       } else {
         setErrorMessage("Passkey authentication failed");
       }
@@ -502,6 +542,7 @@ export default function Login() {
               onClick={() => handleOAuthSignIn("GOOGLE")}
               disabled={loginMutation.isLoading || isLoading}
               className="social-button"
+              title="Sign in with Google"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24">
                 <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -515,6 +556,7 @@ export default function Login() {
               onClick={handlePasskeySignUp}
               disabled={loginMutation.isLoading || isLoading}
               className="social-button"
+              title="Register with Passkey"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>
@@ -526,6 +568,7 @@ export default function Login() {
               onClick={handlePasskeySignIn}
               disabled={loginMutation.isLoading || isLoading}
               className="social-button"
+              title="Sign in with Passkey"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/>

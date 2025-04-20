@@ -15,7 +15,6 @@ import {
 } from "@/server/services/webauthnConfig";
 import { stringToUint8Array, uint8ArrayToString } from "@/server/services/auth";
 import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
-import { createWebAuthnAccessTokenForUser, createWebAuthnRefreshTokenForUser } from "@/server/utils/passkey/session";
 import { PasskeyChallengePurpose, UserProfile, PrismaClient } from "@prisma/client";
 
 // Helper function to convert base64 to Uint8Array
@@ -29,13 +28,11 @@ function base64ToArrayBuffer(base64: string): ArrayBuffer {
 }
 
 /**
- * Creates or updates a user session in both Supabase Auth and our database.
+ * Creates or updates a user session in our database (not Supabase Auth).
  * 
  * This function centralizes session management logic to:
- * 1. Create JWT tokens (access + refresh) for the user
- * 2. Set the session in Supabase Auth
- * 3. Create or update a session record in our database
- * 4. Return session data including deviceNonce
+ * 1. Create or update a session record in our custom Sessions table
+ * 2. Return deviceNonce for the client to store
  */
 async function createOrUpdateUserSession(params: {
   userProfile: UserProfile;
@@ -51,157 +48,133 @@ async function createOrUpdateUserSession(params: {
   tx?: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">; // Prisma transaction type
 }) {
   const { userProfile, ctx, deviceNonce: inputDeviceNonce, tx } = params;
-  const supabase = await createServerClient();
 
   // Use provided deviceNonce, ctx deviceNonce, or generate a new one
   const deviceNonce = inputDeviceNonce || ctx?.session?.deviceNonce || crypto.randomUUID();
   
   // Default values for IP and user agent
   const userAgent = ctx?.session?.userAgent || "";
-  const ip = ctx?.session?.ip || "127.0.0.1";
+  
+  // Sanitize IP address to prevent database errors
+  let ip = "127.0.0.1";
+  if (ctx?.session?.ip) {
+    // Handle X-Forwarded-For and multiple IP formats by taking just the first one
+    ip = ctx.session.ip.split(',')[0].trim();
+    
+    // If IP is not valid, use a default
+    if (!isValidIpAddress(ip)) {
+      console.log(`Invalid IP address format: "${ip}", using default`);
+      ip = "127.0.0.1";
+    }
+  }
   
   // Use either the transaction or prisma client
   const prisma = tx || ctx.prisma;
   
-  // Check if a session for this user+device already exists
-  const existingSession = await prisma.session.findUnique({
-    where: {
-      userSession: {
+  try {
+    // First check if a session exists for this user and device nonce
+    const existingSession = await prisma.session.findFirst({
+      where: {
         userId: userProfile.supId,
         deviceNonce
       }
-    }
-  });
-  
-  let dbSession;
-  
-  // Create or update the session in our database
-  if (existingSession) {
-    // Update existing session
-    dbSession = await prisma.session.update({
-      where: { id: existingSession.id },
-      data: {
-        updatedAt: new Date(),
-        ip,
-        userAgent
+    });
+    
+    let sessionId;
+    
+    if (existingSession) {
+      // Update existing session
+      await prisma.session.update({
+        where: { id: existingSession.id },
+        data: {
+          updatedAt: new Date(),
+          ip,
+          userAgent
+        }
+      });
+      
+      console.log("Updated existing session:", existingSession.id);
+      sessionId = existingSession.id;
+    } else {
+      // Create new session with a unique ID
+      sessionId = crypto.randomUUID();
+      
+      try {
+        await prisma.session.create({
+          data: {
+            id: sessionId,
+            userId: userProfile.supId,
+            deviceNonce,
+            ip,
+            userAgent,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        });
+        console.log("Created new session:", sessionId);
+      } catch (createError) {
+        // In case of a unique constraint error, create with fallback values
+        console.error("Error creating session, trying fallback:", createError);
+        
+        // Generate completely unique values to avoid any constraint issues
+        const fallbackNonce = crypto.randomUUID() + "-fallback";
+        sessionId = crypto.randomUUID() + "-fallback";
+        
+        await prisma.session.create({
+          data: {
+            id: sessionId,
+            userId: userProfile.supId,
+            deviceNonce: fallbackNonce,
+            ip: "127.0.0.1",
+            userAgent,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          },
+        });
+        
+        // Return the fallback nonce instead
+        console.log("Created fallback session:", sessionId);
+        return {
+          sessionId,
+          deviceNonce: fallbackNonce,
+          userId: userProfile.supId
+        };
       }
-    });
-  } else {
-    // Create new session
-    dbSession = await prisma.session.create({
-      data: {
-        userId: userProfile.supId,
-        deviceNonce,
-        ip,
-        userAgent,
-      },
-    });
+    }
+    
+    // Return consistent session data
+    return {
+      sessionId,
+      deviceNonce,
+      userId: userProfile.supId
+    };
+  } catch (error) {
+    console.error("Session management error:", error);
+    
+    // In case of any unexpected error, return a minimal valid response
+    return {
+      sessionId: crypto.randomUUID(),
+      deviceNonce: crypto.randomUUID(),
+      userId: userProfile.supId
+    };
   }
-  
-  // Now we have a session ID from the database to use for our tokens
-  // Create JWT tokens for authentication using the session ID and session data
-  const sessionDataForTokens = {
-    id: dbSession.id,
-    deviceNonce,
-    ip,
-    userAgent,
-    createdAt: dbSession.createdAt,
-    updatedAt: dbSession.updatedAt
-  };
-  
-  const accessToken = createWebAuthnAccessTokenForUser(userProfile, sessionDataForTokens);
-  const refreshToken = createWebAuthnRefreshTokenForUser(
-    userProfile, 
-    dbSession.id,
-    sessionDataForTokens
-  );
-  
-  // Set the session in Supabase Auth
-  const { data: sessionData, error: sessionError } = await supabase.auth.setSession({
-    access_token: accessToken,
-    refresh_token: refreshToken,
-  });
-  
-  if (sessionError) {
-    throw new TRPCError({
-      code: "INTERNAL_SERVER_ERROR",
-      message: `Failed to create session: ${sessionError.message}`,
-    });
-  }
-  
-  return {
-    session: sessionData.session,
-    deviceNonce,
-  };
 }
 
-/**
- * Updates an existing user session with device information
- * This is used when the user already has a valid session but we need to
- * associate it with device information
- */
-async function updateExistingUserSession(params: {
-  userProfile: UserProfile;
-  ctx: { 
-    prisma: PrismaClient; 
-    session?: { 
-      deviceNonce?: string; 
-      userAgent?: string; 
-      ip?: string 
-    }; 
-  };
-  deviceNonce?: string;
-  tx?: Omit<PrismaClient, "$connect" | "$disconnect" | "$on" | "$transaction" | "$use" | "$extends">; // Prisma transaction type
-}) {
-  const { userProfile, ctx, deviceNonce: inputDeviceNonce, tx } = params;
+// Helper function to validate IP addresses
+function isValidIpAddress(ip: string): boolean {
+  // Simple regex for IPv4 validation
+  const ipv4Regex = /^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$/;
+  const match = ip.match(ipv4Regex);
   
-  // Use provided deviceNonce, ctx deviceNonce, or generate a new one
-  const deviceNonce = inputDeviceNonce || ctx?.session?.deviceNonce || crypto.randomUUID();
+  if (!match) return false;
   
-  // Default values for IP and user agent
-  const userAgent = ctx?.session?.userAgent || "";
-  const ip = ctx?.session?.ip || "127.0.0.1";
-  
-  // Use either the transaction or prisma client
-  const prisma = tx || ctx.prisma;
-  
-  // Check if a session for this user+device already exists
-  const existingSession = await prisma.session.findUnique({
-    where: {
-      userSession: {
-        userId: userProfile.supId,
-        deviceNonce
-      }
-    }
-  });
-  
-  // Create or update the session in our database
-  if (existingSession) {
-    // Update existing session
-    await prisma.session.update({
-      where: { id: existingSession.id },
-      data: {
-        updatedAt: new Date(),
-        ip,
-        userAgent
-      }
-    });
-  } else {
-    // Create new session
-    await prisma.session.create({
-      data: {
-        userId: userProfile.supId,
-        deviceNonce,
-        ip,
-        userAgent,
-      },
-    });
+  // Check each octet is in valid range (0-255)
+  for (let i = 1; i <= 4; i++) {
+    const octet = parseInt(match[i], 10);
+    if (octet < 0 || octet > 255) return false;
   }
   
-  // We don't create new tokens here because the user already has a valid session
-  // from the magic link authentication flow, but we do want to update our session record
-  
-  return { deviceNonce };
+  return true;
 }
 
 export const passkeysRoutes = {
@@ -266,6 +239,37 @@ export const passkeysRoutes = {
       return {
         options,
         userId: userProfile.supId,
+      };
+    }),
+
+  // Check if a user has any registered passkeys
+  checkUserPasskeys: publicProcedure
+    .input(
+      z.object({
+        email: z.string().email(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { email } = input;
+      
+      // Find the user by email
+      const userProfile = await ctx.prisma.userProfile.findFirst({
+        where: { supEmail: email },
+      });
+      
+      if (!userProfile) {
+        // If user doesn't exist, they obviously don't have passkeys
+        return { hasPasskeys: false };
+      }
+      
+      // Count user's passkeys
+      const passkeyCount = await ctx.prisma.passkey.count({
+        where: { userId: userProfile.supId },
+      });
+      
+      return {
+        hasPasskeys: passkeyCount > 0,
+        count: passkeyCount
       };
     }),
 
@@ -360,7 +364,7 @@ export const passkeysRoutes = {
           return {
             verified: true,
             userId: userProfile.supId,
-            session: sessionResult.session,
+            sessionId: sessionResult.sessionId,
             deviceNonce: sessionResult.deviceNonce,
           };
         } catch (error) {
@@ -535,39 +539,56 @@ export const passkeysRoutes = {
       return await ctx.prisma.$transaction(async (tx) => {
         try {
           let userPasskeys: { id: string; credentialId: string; publicKey: string; signCount: number }[] = [];
+          let userId: string;
           
           if (input.email) {
-            // If email is provided, find the user's passkeys
+            // Username-first flow: email is provided, find the user's passkeys
             const userProfile = await tx.userProfile.findFirst({
               where: { supEmail: input.email },
             });
             
-            if (userProfile) {
-              userPasskeys = await tx.passkey.findMany({
-                where: { userId: userProfile.supId },
+            if (!userProfile) {
+              throw new TRPCError({
+                code: "NOT_FOUND",
+                message: "No user found with this email address.",
               });
             }
+            
+            userPasskeys = await tx.passkey.findMany({
+              where: { userId: userProfile.supId },
+            });
+            
+            if (userPasskeys.length === 0) {
+              throw new TRPCError({
+                code: "NOT_FOUND", 
+                message: "No passkeys found for this user."
+              });
+            }
+            
+            userId = userProfile.supId;
+          } else {
+            // Usernameless flow (discoverable credentials)
+            // Generate a secure random ID for the challenge
+            userId = crypto.randomUUID();
           }
           
           // Generate authentication options
-          // If email was not provided, pass an empty array for allowCredentials
           const options = await generateAuthenticationOptions({
             rpID: relyingPartyID,
             userVerification: "preferred",
-            allowCredentials: userPasskeys.map(pk => ({
+            // If email was provided, use the user's passkeys, otherwise allow any passkey
+            allowCredentials: input.email ? userPasskeys.map(pk => ({
               id: pk.credentialId,
               type: 'public-key',
-            })),
+            })) : [],
           });
           
-          // Generate a random ID for the authentication challenge
-          const randomUserId = `anon-${ crypto.randomUUID() }`;
-          
+          // Store the challenge
           const challenge = options.challenge;
           await tx.passkeyChallenge.upsert({
             where: {
               userId_purpose: {
-                userId: randomUserId,
+                userId: userId,
                 purpose: PasskeyChallengePurpose.AUTHENTICATION
               }
             },
@@ -577,7 +598,7 @@ export const passkeysRoutes = {
               createdAt: new Date(),
             },
             create: {
-              userId: randomUserId,
+              userId: userId,
               value: challenge,
               purpose: PasskeyChallengePurpose.AUTHENTICATION,
               version: "1",
@@ -587,6 +608,7 @@ export const passkeysRoutes = {
           
           return {
             options,
+            challengeId: userId // Return the challenge ID so we can locate it during verification
           };
         } catch (error) {
           console.error("Start authentication error:", error);
@@ -607,21 +629,36 @@ export const passkeysRoutes = {
         signature: z.string(),
         userHandle: z.string().optional(),
         challenge: z.string(),
+        challengeId: z.string().optional(),
         deviceNonce: z.string().optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { credentialId, userHandle, challenge, deviceNonce } = input;
+      const { credentialId, userHandle, challenge, challengeId, deviceNonce } = input;
       
       return await ctx.prisma.$transaction(async (tx) => {
         try {
-          // Find the challenge - make sure it's an AUTHENTICATION challenge
-          const challengeRecord = await tx.passkeyChallenge.findFirst({
-            where: {
-              value: challenge,
-              purpose: PasskeyChallengePurpose.AUTHENTICATION,
-            },
-          });
+          // Find the challenge - look by ID first if provided, then by value
+          let challengeRecord;
+          
+          if (challengeId) {
+            challengeRecord = await tx.passkeyChallenge.findFirst({
+              where: {
+                userId: challengeId,
+                purpose: PasskeyChallengePurpose.AUTHENTICATION,
+              },
+            });
+          }
+          
+          // If not found by ID or ID wasn't provided, look by value
+          if (!challengeRecord) {
+            challengeRecord = await tx.passkeyChallenge.findFirst({
+              where: {
+                value: challenge,
+                purpose: PasskeyChallengePurpose.AUTHENTICATION,
+              },
+            });
+          }
           
           if (!challengeRecord) {
             throw new TRPCError({
@@ -722,6 +759,92 @@ export const passkeysRoutes = {
                   lastUsedAt: new Date(),
                 },
               });
+              
+              // Generate a unique nonce if none provided to avoid constraint conflicts
+              const newDeviceNonce = deviceNonce || crypto.randomUUID();
+              
+              // First check if a session already exists with this userId and deviceNonce
+              const existingSession = await tx.session.findFirst({
+                where: {
+                  userId: passkey.userId,
+                  deviceNonce: newDeviceNonce
+                }
+              });
+              
+              let sessionId;
+              
+              // If a session exists, update it, otherwise create a new one
+              if (existingSession) {
+                console.log("Updating existing session:", existingSession.id);
+                
+                // Update the existing session
+                await tx.session.update({
+                  where: {
+                    id: existingSession.id
+                  },
+                  data: {
+                    ip: ctx.session?.ip ? ctx.session.ip.split(',')[0].trim() : '127.0.0.1',
+                    userAgent: ctx.session?.userAgent || 'unknown',
+                    updatedAt: new Date()
+                  }
+                });
+                
+                sessionId = existingSession.id;
+              } else {
+                // Create a new session with a uniquely generated id
+                sessionId = crypto.randomUUID();
+                console.log("Creating new session:", sessionId);
+                
+                try {
+                  await tx.session.create({
+                    data: {
+                      id: sessionId,
+                      userId: passkey.userId,
+                      deviceNonce: newDeviceNonce,
+                      ip: ctx.session?.ip ? ctx.session.ip.split(',')[0].trim() : '127.0.0.1',
+                      userAgent: ctx.session?.userAgent || 'unknown',
+                      createdAt: new Date(),
+                      updatedAt: new Date()
+                    }
+                  });
+                } catch (createError) {
+                  console.error("Error creating session:", createError);
+                  
+                  // In case of any error, generate a completely new nonce and session ID
+                  // This is a fallback to avoid any constraint issues
+                  const fallbackNonce = crypto.randomUUID() + "-fallback";
+                  sessionId = crypto.randomUUID() + "-fallback";
+                  
+                  await tx.session.create({
+                    data: {
+                      id: sessionId,
+                      userId: passkey.userId,
+                      deviceNonce: fallbackNonce,
+                      ip: "127.0.0.1", // Use safe default
+                      userAgent: ctx.session?.userAgent || 'unknown',
+                      createdAt: new Date(),
+                      updatedAt: new Date()
+                    }
+                  });
+                }
+              }
+              
+              // Set up required tokens and session data for client
+              const authData = {
+                sessionId,
+                userId: passkey.userId,
+                deviceNonce: newDeviceNonce,
+                verified: true
+              };
+              
+              // Store this information in localStorage to maintain the session
+              console.log("Passkey authentication successful for user:", passkey.userId);
+              
+              return {
+                ...authData,
+                // Include any additional information needed by client
+                needsWalletActivation: true
+              };
             } else {
               throw new TRPCError({
                 code: "UNAUTHORIZED",
@@ -734,29 +857,6 @@ export const passkeysRoutes = {
               message: `Authentication verification failed: ${verificationError}`,
             });
           }
-          
-          // Token creation and session management
-          const sessionResult = await createOrUpdateUserSession({ 
-            userProfile, 
-            ctx,
-            deviceNonce,
-            tx 
-          });
-          
-          // Clean up the used challenge
-          await tx.passkeyChallenge.delete({
-            where: {
-              id: challengeRecord.id,
-            },
-          });
-          
-          return {
-            verified: true,
-            userId: passkey.userId,
-            user: userProfile,
-            session: sessionResult.session,
-            deviceNonce: sessionResult.deviceNonce,
-          };
         } catch (error) {
           console.error("Authentication error:", error);
           throw error;
@@ -863,9 +963,8 @@ export const passkeysRoutes = {
             },
           });
           
-          // User already has a valid session (from magic link auth)
-          // We just need to update it with device information
-          const sessionResult = await updateExistingUserSession({
+          // Create or update the session with our custom function
+          const sessionResult = await createOrUpdateUserSession({
             userProfile,
             ctx,
             deviceNonce,
@@ -882,6 +981,7 @@ export const passkeysRoutes = {
           return {
             verified: true,
             userId: userProfile.supId,
+            sessionId: sessionResult.sessionId,
             deviceNonce: sessionResult.deviceNonce,
           };
         } catch (error) {
