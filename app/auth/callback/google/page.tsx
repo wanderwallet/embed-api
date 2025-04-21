@@ -28,6 +28,7 @@ export default function AuthCallbackPage() {
       try {
         console.log("Processing Google OAuth callback");
         console.log("Current URL:", window.location.href);
+        console.log("Origin:", window.location.origin);
         
         // Add protection for double processing
         const urlParams = new URLSearchParams(window.location.search);
@@ -42,6 +43,7 @@ export default function AuthCallbackPage() {
         
         // Try the code exchange
         try {
+          console.log("Attempting to exchange code for session...");
           const { data, error } = await supabase.auth.exchangeCodeForSession(window.location.href);
           
           if (error) {
@@ -76,6 +78,9 @@ export default function AuthCallbackPage() {
               localStorage.setItem('refreshToken', data.session.refresh_token);
             }
             
+            // Additional information for debugging
+            localStorage.setItem('userId', data.session.user?.id || '');
+            
             // For debugging, also log any other session properties
             console.log("Session expires at:", data.session.expires_at ? 
               new Date(data.session.expires_at * 1000).toLocaleString() : 
@@ -85,8 +90,23 @@ export default function AuthCallbackPage() {
             // Force a delay before redirecting to ensure localStorage is updated
             await new Promise(resolve => setTimeout(resolve, 500));
             
+            // Detect if we're in the extension context (port 5173)
+            const isExtension = window.location.origin.includes('localhost:5173') || 
+                               window.location.origin.includes('chrome-extension://');
+            
+            console.log("Is extension context:", isExtension);
+            
             // Successfully authenticated, redirect to auth/restore-shares using hash-based format
-            redirectToHash('/auth/restore-shares');
+            // Make sure we're using the right format for the extension
+            if (isExtension) {
+              // For extension, use a simpler redirect format
+              console.log("Using extension redirect format");
+              window.location.replace(`${window.location.origin}/#/auth/restore-shares`);
+            } else {
+              // For web app, use the standard format
+              console.log("Using web app redirect format");
+              redirectToHash('/auth/restore-shares');
+            }
           } else {
             console.error("No access token in session data");
             redirectToHash('/login', { error: "No access token received" });

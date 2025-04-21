@@ -72,27 +72,100 @@ export interface VerifyRecoveryFileSignature extends RecoveryFileData {
   recoveryFileServerSignature: string;
 }
 
-async function verifyRecoveryFileSignature({
-  recoveryFileServerSignature,
-  ...recoveryFileData
-}: VerifyRecoveryFileSignature) {
+export async function verifyRecoveryFileSignature({
+  walletId,
+  recoveryBackupShareHash,
+  recoveryFileServerSignature
+}: {
+  walletId: string;
+  recoveryBackupShareHash: string;
+  recoveryFileServerSignature: string;
+}): Promise<boolean> {
+  try {
+    console.log("Verifying recovery file signature for wallet:", walletId);
+    
+    // Handle both formats of recoveryFileServerSignature
+    const signature = recoveryFileServerSignature.startsWith('v1.') 
+      ? recoveryFileServerSignature.substring(3) 
+      : recoveryFileServerSignature;
+    
+    // Create a signature object
+    const signatureBuffer = Buffer.from(signature, 'base64');
+    
+    // Create the verification data using the same function used when generating the signature
+    const verificationData = getRecoveryFileSignatureRawData({
+      walletId,
+      recoveryBackupShareHash
+    });
+    
+    try {
+      // Try RSA-PSS first (newer format)
+      const isValidPSS = await crypto.subtle.verify(
+        {
+          name: 'RSA-PSS',
+          saltLength: 32,
+        },
+        await importRSAPublicKey(Config.BACKUP_FILE_PUBLIC_KEY, 'RSA-PSS'),
+        signatureBuffer,
+        Buffer.from(verificationData)
+      );
+      
+      if (isValidPSS) {
+        console.log("Recovery file signature verified successfully using RSA-PSS");
+        return true;
+      }
+    } catch (pssError) {
+      console.log("RSA-PSS verification failed, trying RSASSA-PKCS1-v1_5:", pssError);
+    }
+    
+    try {
+      // Fall back to RSASSA-PKCS1-v1_5 (older format)
+      const isValidPKCS = await crypto.subtle.verify(
+        {
+          name: 'RSASSA-PKCS1-v1_5',
+        },
+        await importRSAPublicKey(Config.BACKUP_FILE_PUBLIC_KEY, 'RSASSA-PKCS1-v1_5'),
+        signatureBuffer,
+        Buffer.from(verificationData)
+      );
+      
+      if (isValidPKCS) {
+        console.log("Recovery file signature verified successfully using RSASSA-PKCS1-v1_5");
+        return true;
+      }
+    } catch (pkcsError) {
+      console.log("RSASSA-PKCS1-v1_5 verification failed:", pkcsError);
+    }
+    
+    console.log("All signature verification methods failed");
+    return false;
+  } catch (error) {
+    console.error("Error verifying recovery file signature:", error);
+    return false;
+  }
+}
 
-  const publicKey = await crypto.subtle.importKey(
-    "spki",
-    Buffer.from(Config.BACKUP_FILE_PUBLIC_KEY, "base64"),
-    IMPORT_KEY_ALGORITHM,
+// Helper function to import an RSA public key with different algorithms
+async function importRSAPublicKey(publicKeyPEM: string, algorithm: 'RSA-PSS' | 'RSASSA-PKCS1-v1_5') {
+  // Remove PEM headers and newlines
+  const pemContents = publicKeyPEM
+    .replace('-----BEGIN PUBLIC KEY-----', '')
+    .replace('-----END PUBLIC KEY-----', '')
+    .replace(/\n/g, '');
+  
+  // Convert base64 to buffer
+  const binaryDer = Buffer.from(pemContents, 'base64');
+  
+  // Import the key
+  return crypto.subtle.importKey(
+    'spki',
+    binaryDer,
+    {
+      name: algorithm,
+      hash: 'SHA-256',
+    },
     true,
-    ["sign"],
-  );
-
-  const recoveryFileRawData = getRecoveryFileSignatureRawData(recoveryFileData);
-  const recoveryFileRawDataBuffer = Buffer.from(recoveryFileRawData);
-
-  return crypto.subtle.verify(
-    SIGN_ALGORITHM,
-    publicKey,
-    Buffer.from(recoveryFileServerSignature, "base64"),
-    recoveryFileRawDataBuffer,
+    ['verify']
   );
 }
 

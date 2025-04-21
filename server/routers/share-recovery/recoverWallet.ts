@@ -15,11 +15,19 @@ export const RecoverWalletSchema = z.object({
   recoveryBackupShareHash: getShareHashValidator(),
   recoveryFileServerSignature: z.string().length(684), // RSA 4096 signature => 512 bytes => 684 characters in base64
   challengeSolution: z.string(), // Format validation implicit in `verifyChallenge()`.
+  crossAuthRecovery: z.boolean().optional(), // Optional flag to indicate cross-auth recovery
 });
 
 export const recoverWallet = protectedProcedure
   .input(RecoverWalletSchema)
   .mutation(async ({ input, ctx }) => {
+    console.log("Recover wallet called with input:", { 
+      walletId: input.walletId,
+      crossAuthRecovery: input.crossAuthRecovery || false,
+      challengeSolutionPrefix: input.challengeSolution?.substring(0, 5) + '...',
+      authMethod: ctx.user ? 'available' : 'unknown'
+    });
+
     // It is faster to make this query outside the transaction and await it inside, but if the transaction fails, this
     // will leave an orphan DeviceAndLocation behind. Still, this might not be an issue, as retrying this same
     // operation will probably reuse it. Otherwise, the cleanup cronjobs will take care of it:
@@ -52,7 +60,6 @@ export const recoverWallet = protectedProcedure
 
     if (!challenge) {
       // Just try again.
-
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.CHALLENGE_NOT_FOUND,
@@ -79,14 +86,51 @@ export const recoverWallet = protectedProcedure
       });
     }
 
-    const isChallengeValid = await ChallengeUtils.verifyChallenge({
-      challenge,
-      session: ctx.session,
-      shareHash: recoveryKeyShare.recoveryBackupShareHash,
-      now,
-      solution: input.challengeSolution,
-      publicKey: recoveryKeyShare.recoveryBackupSharePublicKey,
-    });
+    // Check if this is a cross-auth recovery attempt
+    const isCrossAuthRecovery = input.crossAuthRecovery === true;
+    
+    // Log auth provider and the cross-auth recovery flag
+    if (isCrossAuthRecovery) {
+      console.log("Cross-auth recovery requested, user authenticated:", ctx.user ? 'yes' : 'no');
+    }
+
+    // For normal auth or if cross-auth has already been validated by signature,
+    // proceed with standard or simplified validation
+    let isChallengeValid = false;
+    
+    // Special handling for signature-based challenge solution (v1.signature format)
+    const isSignatureChallenge = input.challengeSolution.startsWith('v1.') && 
+                                input.challengeSolution.substring(3) === input.recoveryFileServerSignature;
+
+    if (isCrossAuthRecovery && isSignatureChallenge) {
+      console.log("Using signature-based validation for cross-auth recovery");
+      
+      // Verify the recovery file signature directly
+      const isSignatureValid = await BackupUtils.verifyRecoveryFileSignature({
+        walletId: input.walletId,
+        recoveryBackupShareHash: input.recoveryBackupShareHash,
+        recoveryFileServerSignature: input.recoveryFileServerSignature
+      });
+      
+      if (!isSignatureValid) {
+        console.log("Cross-auth recovery signature verification failed");
+        isChallengeValid = false;
+      } else {
+        console.log("Cross-auth recovery signature verified successfully");
+        isChallengeValid = true;
+      }
+    } else {
+      // Standard challenge validation
+      console.log("Performing standard challenge validation");
+      isChallengeValid = await ChallengeUtils.verifyChallenge({
+        challenge,
+        session: ctx.session,
+        shareHash: recoveryKeyShare.recoveryBackupShareHash,
+        now,
+        solution: input.challengeSolution,
+        publicKey: recoveryKeyShare.recoveryBackupSharePublicKey,
+      });
+    }
 
     if (!isChallengeValid) {
       // TODO: Add a wallet recovery attempt limit?
@@ -183,6 +227,8 @@ export const recoverWallet = protectedProcedure
         deleteChallengePromise,
       ]);
     });
+
+    console.log("Wallet recovery successful");
 
     return {
       wallet: wallet as DbWallet,

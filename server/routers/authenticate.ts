@@ -101,12 +101,24 @@ export const authenticateRouter = {
 
       if (!provider) throw new Error("Unsupported auth provider type");
 
+      // Determine correct callback URL based on the origin
+      let redirectTo = "";
+      if (typeof window !== "undefined") {
+        // Browser context - get from window
+        redirectTo = `${window.location.origin}/auth/callback/${provider}`;
+        console.log("Using client-side redirect URL:", redirectTo);
+      } else {
+        // Server context - get from env or use localhost
+        // For extension, this should be 5173, for web app, should be 3000
+        const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:5173';
+        redirectTo = `${baseUrl}/auth/callback/${provider}`;
+        console.log("Using server-side redirect URL:", redirectTo);
+      }
+
       const { error, data } = await supabase.auth.signInWithOAuth({
         provider,
         options: {
-          redirectTo: typeof window !== "undefined" 
-            ? `${window.location.origin}/auth/callback/${provider}` 
-            : `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:5173'}/auth/callback/${provider}`,
+          redirectTo,
           scopes: provider === 'google' ? 'email profile' : undefined,
         }
       });

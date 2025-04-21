@@ -52,6 +52,9 @@ CREATE TYPE "Role" AS ENUM ('OWNER', 'ADMIN', 'MEMBER');
 -- CreateEnum
 CREATE TYPE "Plan" AS ENUM ('FREE', 'PRO');
 
+-- CreateEnum
+CREATE TYPE "PasskeyChallengePurpose" AS ENUM ('REGISTRATION', 'AUTHENTICATION', 'EMAIL_VERIFICATION');
+
 -- CreateTable
 CREATE TABLE "UserProfiles" (
     "supId" UUID NOT NULL DEFAULT gen_random_uuid(),
@@ -299,9 +302,10 @@ CREATE TABLE "Passkeys" (
 -- CreateTable
 CREATE TABLE "PasskeyChallenges" (
     "id" TEXT NOT NULL,
-    "userId" VARCHAR(255) NOT NULL,
+    "userId" UUID NOT NULL,
     "value" VARCHAR(255) NOT NULL,
-    "version" VARCHAR(255) NOT NULL,
+    "version" VARCHAR(50) NOT NULL,
+    "purpose" "PasskeyChallengePurpose" NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "PasskeyChallenges_pkey" PRIMARY KEY ("id")
@@ -418,7 +422,10 @@ CREATE INDEX "LoginAttempts_createdAt_idx" ON "LoginAttempts"("createdAt");
 CREATE UNIQUE INDEX "Passkeys_userId_credentialId_key" ON "Passkeys"("userId", "credentialId");
 
 -- CreateIndex
-CREATE INDEX "PasskeyChallenges_userId_createdAt_idx" ON "PasskeyChallenges"("userId", "createdAt");
+CREATE INDEX "PasskeyChallenges_userId_purpose_idx" ON "PasskeyChallenges"("userId", "purpose");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "PasskeyChallenges_userId_purpose_key" ON "PasskeyChallenges"("userId", "purpose");
 
 -- CreateIndex
 CREATE UNIQUE INDEX "Organizations_slug_key" ON "Organizations"("slug");
