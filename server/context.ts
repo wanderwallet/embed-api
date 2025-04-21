@@ -176,16 +176,17 @@ export async function createContext({ req }: { req: Request }) {
       
       // Try to parse it as JSON
       const decodedToken = JSON.parse(decodedTokenString);
-      
+      console.log("Decoded token:", decodedToken);
       // Check if it has the expected properties of our custom token
       if (decodedToken.user_id && decodedToken.session_id) {
         console.log("Successfully identified as custom token in Authorization header");
         
         // Create a modified request with the token in the correct header
+        // Don't include the body as it may have been consumed already
         const modifiedRequest = new Request(req.url, {
           method: req.method,
           headers: new Headers(req.headers),
-          body: req.body,
+          // Remove the body to avoid "body disturbed" errors
         });
         
         // Remove from Authorization
