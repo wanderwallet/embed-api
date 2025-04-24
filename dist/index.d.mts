@@ -2064,15 +2064,15 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
         };
         _input_in: {
             walletId: string;
-            recoveryBackupShareHash: string;
             challengeSolution: string;
-            recoveryFileServerSignature: string;
+            recoveryBackupShareHash?: string | undefined;
+            recoveryFileServerSignature?: string | undefined;
         };
         _input_out: {
             walletId: string;
-            recoveryBackupShareHash: string;
             challengeSolution: string;
-            recoveryFileServerSignature: string;
+            recoveryBackupShareHash?: string | undefined;
+            recoveryFileServerSignature?: string | undefined;
         };
         _output_in: typeof _trpc_server.unsetMarker;
         _output_out: typeof _trpc_server.unsetMarker;
@@ -2083,7 +2083,7 @@ declare const appRouter: _trpc_server.CreateRouterInner<_trpc_server.RootConfig<
         rotationChallenge?: undefined;
     } | {
         wallet: DbWallet;
-        recoveryAuthShare: string;
+        recoveryAuthShare: string | undefined;
         rotationChallenge: {
             id: string;
             createdAt: Date;
@@ -5193,15 +5193,15 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                 };
                 _input_in: {
                     walletId: string;
-                    recoveryBackupShareHash: string;
                     challengeSolution: string;
-                    recoveryFileServerSignature: string;
+                    recoveryBackupShareHash?: string | undefined;
+                    recoveryFileServerSignature?: string | undefined;
                 };
                 _input_out: {
                     walletId: string;
-                    recoveryBackupShareHash: string;
                     challengeSolution: string;
-                    recoveryFileServerSignature: string;
+                    recoveryBackupShareHash?: string | undefined;
+                    recoveryFileServerSignature?: string | undefined;
                 };
                 _output_in: typeof _trpc_server.unsetMarker;
                 _output_out: typeof _trpc_server.unsetMarker;
@@ -5212,7 +5212,7 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                 rotationChallenge?: undefined;
             } | {
                 wallet: DbWallet;
-                recoveryAuthShare: string;
+                recoveryAuthShare: string | undefined;
                 rotationChallenge: {
                     id: string;
                     createdAt: Date;
