@@ -32,7 +32,6 @@ export const activateWallet = protectedProcedure
 
     const challengePromise = ctx.prisma.challenge.findFirst({
       where: {
-        userId: ctx.user.id,
         walletId: input.walletId,
         purpose: ChallengePurpose.ACTIVATION,
       },

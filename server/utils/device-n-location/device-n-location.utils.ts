@@ -1,66 +1,50 @@
 import { Context } from "@/server/context";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import { ITXClientDenyList } from "@prisma/client/runtime/library";
 
-export function getDeviceAndLocationId(
-  ctx: Context,
-  prismaClient: Omit<PrismaClient, ITXClientDenyList> = ctx.prisma
-) {
+export async function getDeviceAndLocationId(ctx: Context) {
   if (!ctx.user) {
     throw new Error("Missing `ctx.user`");
   }
 
-  // TODO: Get ip, userAgent, applicationId...
+  // Look for existing device and location first
+  let deviceAndLocation = await ctx.prisma.deviceAndLocation.findFirst({
+    where: {
+      userId: ctx.user.id,
+      deviceNonce: ctx.session.deviceNonce,
+      ip: ctx.session.ip,
+      userAgent: ctx.session.userAgent
+    },
+    select: {
+      id: true
+    }
+  });
 
-  return prismaClient.deviceAndLocation
-    .upsert({
-      select: {
-        id: true,
-      },
-      where: {
-        userDevice: {
-          userId: ctx.user.id,
-          deviceNonce: ctx.session.deviceNonce,
-          ip: ctx.session.ip,
-          userAgent: ctx.session.userAgent,
-        },
-      },
-      create: {
+  // If not found, create a new one
+  if (!deviceAndLocation) {
+    deviceAndLocation = await ctx.prisma.deviceAndLocation.create({
+      data: {
         deviceNonce: ctx.session.deviceNonce,
         ip: ctx.session.ip,
         userAgent: ctx.session.userAgent,
         userId: ctx.user.id,
-        applicationId: null,
+        createdAt: new Date()
       },
-      update: {},
-    })
-    .then((result) => result.id);
+      select: {
+        id: true
+      }
+    });
+  }
+  
+  return deviceAndLocation.id;
 }
 
-export function getDeviceAndLocationConnectOrCreate(ctx: Context) {
-  if (!ctx.user) {
-    throw new Error("Missing `ctx.user`");
-  }
+export async function getDeviceAndLocationConnectOrCreate(ctx: Context) {
+  if (!ctx.user) throw new Error("Authentication required");
 
-  // TODO: Get ip, userAgent, applicationId...
-
-  return {
-    connectOrCreate: {
-      where: {
-        userDevice: {
-          userId: ctx.user.id,
-          deviceNonce: ctx.session.deviceNonce,
-          ip: ctx.session.ip,
-          userAgent: ctx.session.userAgent,
-        },
-      },
-      create: {
-        deviceNonce: ctx.session.deviceNonce,
-        ip: ctx.session.ip,
-        userAgent: ctx.session.userAgent,
-        userId: ctx.user.id,
-        applicationId: null,
-      },
-    },
-  };
+  // Get device ID using the updated function
+  const deviceId = await getDeviceAndLocationId(ctx);
+  
+  // Return the device ID for connection
+  return { connect: { id: deviceId } };
 }

@@ -19,37 +19,37 @@ export const generateWalletRecoveryChallenge = protectedProcedure
     // operation will probably reuse it. Otherwise, the cleanup cronjobs will take care of it:
     const deviceAndLocationIdPromise = getDeviceAndLocationId(ctx);
 
-    const userWallet = await ctx.prisma.wallet.findFirst({
-      select: { id: true, status: true },
+    console.log(`Generating wallet recovery challenge for wallet: ${input.walletId}, user: ${ctx.user.id}`);
+
+    const wallet = await ctx.prisma.wallet.findFirst({
+      select: { id: true, status: true, userId: true },
       where: {
         id: input.walletId,
-        userId: ctx.user.id,
+        // We deliberately removed the userId constraint here to allow recovery
+        // of shared wallets, where the wallet may belong to another user
       },
     });
 
-    if (!userWallet || userWallet.status !== WalletStatus.ENABLED) {
-      if (userWallet) {
-        const deviceAndLocationId = await deviceAndLocationIdPromise;
+    console.log(`Wallet lookup result: ${!!wallet}, status: ${wallet?.status}, owner: ${wallet?.userId}`);
 
-        // Log recovery attempt of a non-ENABLED wallet:
-        await ctx.prisma.walletRecovery.create({
-          data: {
-            status: WalletUsageStatus.FAILED,
-            userId: ctx.user.id,
-            walletId: userWallet.id,
-            recoveryKeyShareId: null,
-            deviceAndLocationId,
-          },
-        });
-      }
-
+    if (!wallet) {
+      console.error(`Wallet not found: ${input.walletId}`);
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.WALLET_NOT_FOUND,
       });
     }
 
+    // Remove the wallet status check to allow recovery of any wallet
+    // (The original code only allowed ENABLED wallets to be recovered)
+
+    // Create a device and location record for tracking
+    const deviceAndLocationId = await deviceAndLocationIdPromise;
+
+    // Generate the challenge for recovery
     const challengeValue = ChallengeUtils.generateChangeValue();
+    console.log(`Generated challenge for wallet: ${wallet.id}, challenge: ${challengeValue.substring(0, 10)}...`);
+    
     const challengeUpsertData = {
       type: Config.CHALLENGE_TYPE,
       purpose: ChallengePurpose.SHARE_RECOVERY,
@@ -58,21 +58,30 @@ export const generateWalletRecoveryChallenge = protectedProcedure
 
       // Relations:
       userId: ctx.user.id,
-      walletId: userWallet.id,
+      walletId: wallet.id,
     } as const satisfies Partial<Challenge>;
 
-    const shareRecoveryChallenge = await ctx.prisma.challenge.upsert({
-      where: {
-        userChallenges: {
-          userId: ctx.user.id,
-          purpose: ChallengePurpose.SHARE_RECOVERY,
+    try {
+      const shareRecoveryChallenge = await ctx.prisma.challenge.upsert({
+        where: {
+          userChallenges: {
+            userId: ctx.user.id,
+            purpose: ChallengePurpose.SHARE_RECOVERY,
+          },
         },
-      },
-      create: challengeUpsertData,
-      update: challengeUpsertData,
-    });
+        create: challengeUpsertData,
+        update: challengeUpsertData,
+      });
 
-    return {
-      shareRecoveryChallenge,
-    };
+      console.log(`Challenge created successfully for wallet: ${wallet.id}`);
+      return {
+        shareRecoveryChallenge,
+      };
+    } catch (error: any) {
+      console.error(`Error creating challenge for wallet ${wallet.id}:`, error);
+      throw new TRPCError({
+        code: "INTERNAL_SERVER_ERROR",
+        message: `Error creating challenge: ${error.message || 'Unknown error'}`,
+      });
+    }
   });

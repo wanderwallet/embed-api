@@ -76,24 +76,32 @@ async function verifyRecoveryFileSignature({
   recoveryFileServerSignature,
   ...recoveryFileData
 }: VerifyRecoveryFileSignature) {
+  try {
+    console.log(`Importing public key for verification: ${Config.BACKUP_FILE_PUBLIC_KEY.substring(0, 20)}...`);
+    const publicKey = await crypto.subtle.importKey(
+      "spki",
+      Buffer.from(Config.BACKUP_FILE_PUBLIC_KEY, "base64"),
+      IMPORT_KEY_ALGORITHM,
+      true,
+      ["verify"],
+    );
 
-  const publicKey = await crypto.subtle.importKey(
-    "spki",
-    Buffer.from(Config.BACKUP_FILE_PUBLIC_KEY, "base64"),
-    IMPORT_KEY_ALGORITHM,
-    true,
-    ["sign"],
-  );
+    const recoveryFileRawData = getRecoveryFileSignatureRawData(recoveryFileData);
+    const recoveryFileRawDataBuffer = Buffer.from(recoveryFileRawData);
 
-  const recoveryFileRawData = getRecoveryFileSignatureRawData(recoveryFileData);
-  const recoveryFileRawDataBuffer = Buffer.from(recoveryFileRawData);
-
-  return crypto.subtle.verify(
-    SIGN_ALGORITHM,
-    publicKey,
-    Buffer.from(recoveryFileServerSignature, "base64"),
-    recoveryFileRawDataBuffer,
-  );
+    console.log(`Verifying signature for wallet: ${recoveryFileData.walletId}`);
+    console.log(`Data to verify: ${recoveryFileRawData}`);
+    
+    return crypto.subtle.verify(
+      SIGN_ALGORITHM,
+      publicKey,
+      Buffer.from(recoveryFileServerSignature, "base64"),
+      recoveryFileRawDataBuffer,
+    );
+  } catch (error) {
+    console.error('Error verifying recovery file signature:', error);
+    throw error;
+  }
 }
 
 export const BackupUtils = {

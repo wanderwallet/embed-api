@@ -37,9 +37,9 @@ export const createReadOnlyWallet = protectedProcedure
           canRecoverAccountSetting: false,
           canBeRecovered: false,
 
-          userProfile: getUserConnectOrCreate(ctx),
+          userProfile: await getUserConnectOrCreate(ctx),
 
-          deviceAndLocation: getDeviceAndLocationConnectOrCreate(ctx),
+          deviceAndLocation: await getDeviceAndLocationConnectOrCreate(ctx),
         },
       });
 

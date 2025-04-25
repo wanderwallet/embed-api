@@ -72,9 +72,9 @@ export const createPrivateWallet = protectedProcedure
         canBeRecovered,
         source: input.source as InputJsonValue,
 
-        userProfile: getUserConnectOrCreate(ctx),
+        userProfile: await getUserConnectOrCreate(ctx),
 
-        deviceAndLocation: getDeviceAndLocationConnectOrCreate(ctx),
+        deviceAndLocation: await getDeviceAndLocationConnectOrCreate(ctx),
 
         workKeyShares: {
           create: {

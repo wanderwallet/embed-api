@@ -2,7 +2,7 @@ import { inferAsyncReturnType } from "@trpc/server";
 import { Session } from "@prisma/client";
 import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import { jwtDecode } from "jwt-decode";
-import { basePrisma, createAuthenticatedPrismaClient } from "./utils/prisma/prisma-client";
+import { prisma, createAuthenticatedPrismaClient } from "./utils/prisma/prisma-client";
 import {
   getClientIp,
   getIpInfo,
@@ -15,7 +15,7 @@ export async function createContext({ req }: { req: Request }) {
   const applicationId = req.headers.get("x-application-id") || "";
 
   // Default to using unauthenticated prisma client
-  let prisma = basePrisma;
+  let prismaClient = prisma;
   
   if (!authHeader || !clientId) {
     return createEmptyContext();
@@ -47,9 +47,7 @@ export async function createContext({ req }: { req: Request }) {
   const user = data.user;
   
   // Create an authenticated Prisma client with the user's JWT token
-  // Pass 'authenticated' role to activate RLS policies
-  // This will pass the user.id as the sub claim which is what RLS policies check
-  prisma = createAuthenticatedPrismaClient(user.id, 'authenticated') as typeof basePrisma;
+  prismaClient = createAuthenticatedPrismaClient(user.id) as typeof prisma;
   
   let ip = getClientIp(req);
 
@@ -65,13 +63,13 @@ export async function createContext({ req }: { req: Request }) {
       userAgent,
       deviceNonce,
       ip,
-    });
+    }, prismaClient, user.id);
 
     // TODO: Get `data.user.user_metadata.ipFilterSetting` and `data.user.user_metadata.countryFilterSetting` and
     // check if they are defined and, if so, if they pass.
 
     return {
-      prisma,
+      prisma: prismaClient,
       user,
       session: createSessionObject(sessionData, applicationId),
     };
@@ -83,9 +81,11 @@ export async function createContext({ req }: { req: Request }) {
 
 async function getAndUpdateSession(
   token: string,
-  updates: Pick<Session, "userAgent" | "deviceNonce" | "ip">
+  updates: Pick<Session, "userAgent" | "deviceNonce" | "ip">,
+  prismaClient: PrismaClient,
+  userId: string
 ): Promise<Session> {
-  const { sub: userId, session_id: sessionId, sessionData } = decodeJwt(token);
+  const { sub, session_id: sessionId, sessionData } = decodeJwt(token);
 
   const sessionUpdates: Partial<typeof updates> = {};
   for (const [key, value] of Object.entries(updates) as [
@@ -100,17 +100,7 @@ async function getAndUpdateSession(
   if (Object.keys(sessionUpdates).length > 0) {
     console.log("Updating session:", sessionUpdates);
 
-    // Use the secure database function with SECURITY DEFINER
     try {
-      // PgBouncer in transaction mode requires special handling
-      const authPrisma = new PrismaClient({
-        datasources: {
-          db: {
-            url: process.env.POSTGRES_PRISMA_URL,
-          },
-        },
-      });
-      
       // Maximum retry attempts
       const maxRetries = 3;
       let attempts = 0;
@@ -118,17 +108,25 @@ async function getAndUpdateSession(
       
       while (attempts < maxRetries && !success) {
         try {
-          // Call the upsert_session function using a simpler query format
-          // This works better with PgBouncer
-          await authPrisma.$executeRawUnsafe(`
-            SELECT public.upsert_session(
-              '${sessionId}'::uuid, 
-              '${userId}'::uuid, 
-              '${updates.deviceNonce || ''}', 
-              '${updates.ip || ''}', 
-              '${updates.userAgent || ''}'
-            )
-          `);
+          // Use direct Prisma upsert operation with the authenticated client
+          await prismaClient.session.upsert({
+            where: { id: sessionId },
+            update: {
+              updatedAt: new Date(),
+              deviceNonce: updates.deviceNonce || '',
+              ip: updates.ip || '',
+              userAgent: updates.userAgent || ''
+            },
+            create: {
+              id: sessionId,
+              userId,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              deviceNonce: updates.deviceNonce || '',
+              ip: updates.ip || '',
+              userAgent: updates.userAgent || ''
+            }
+          });
           
           success = true;
         } catch (retryError) {
@@ -142,10 +140,8 @@ async function getAndUpdateSession(
           }
         }
       }
-      
-      await authPrisma.$disconnect();
     } catch (error) {
-      console.error("Error setting up session client:", error);
+      console.error("Error updating session:", error);
       // Continue without failing - we'll still return a valid session object
     }
   }
@@ -168,7 +164,7 @@ function decodeJwt(token: string) {
 
 function createEmptyContext() {
   return {
-    prisma: basePrisma, // Use base prisma client for unauthenticated requests
+    prisma, // Use base prisma client for unauthenticated requests
     user: null,
     session: createSessionObject(null),
   };
