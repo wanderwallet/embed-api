@@ -39,7 +39,7 @@ export function createAuthenticatedPrismaClient(userId: string) {
     log: ['query', 'error', 'warn'],
     datasources: {
       db: {
-        url: process.env.POSTGRES_URL_NON_POOLING,
+        url: process.env.POSTGRES_PRISMA_URL,
       },
     },
   });

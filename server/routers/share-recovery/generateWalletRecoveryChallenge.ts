@@ -1,6 +1,6 @@
 import { protectedProcedure } from "@/server/trpc"
 import { z } from "zod"
-import { Challenge, ChallengePurpose, WalletStatus, WalletUsageStatus } from '@prisma/client';
+import { Challenge, ChallengePurpose } from '@prisma/client';
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
@@ -20,6 +20,29 @@ export const generateWalletRecoveryChallenge = protectedProcedure
     const deviceAndLocationIdPromise = getDeviceAndLocationId(ctx);
 
     console.log(`Generating wallet recovery challenge for wallet: ${input.walletId}, user: ${ctx.user.id}`);
+
+    // Explicitly set JWT claims before wallet lookup
+    try {
+      // Set JWT claims with session-level SET
+      const jwtClaims = JSON.stringify({
+        sub: ctx.user.id,
+        role: 'authenticated'
+      });
+      
+      // Escape single quotes for SQL safety
+      const escapedClaims = jwtClaims.replace(/'/g, "''");
+      
+      // Use direct raw query to ensure claims are set
+      await ctx.prisma.$executeRawUnsafe(
+        `SET request.jwt.claims = '${escapedClaims}'`
+      );
+      
+      // Verify claims were set
+      const currentSettings = await ctx.prisma.$queryRaw`SELECT current_setting('request.jwt.claims', true)`;
+      console.log(`Current JWT claims before wallet lookup: ${JSON.stringify(currentSettings)}`);
+    } catch (error) {
+      console.error(`Failed to set/verify JWT claims:`, error);
+    }
 
     const wallet = await ctx.prisma.wallet.findFirst({
       select: { id: true, status: true, userId: true },
@@ -45,6 +68,7 @@ export const generateWalletRecoveryChallenge = protectedProcedure
 
     // Create a device and location record for tracking
     const deviceAndLocationId = await deviceAndLocationIdPromise;
+    console.log(`Created device and location record: ${deviceAndLocationId}`);
 
     // Generate the challenge for recovery
     const challengeValue = ChallengeUtils.generateChangeValue();
@@ -77,11 +101,11 @@ export const generateWalletRecoveryChallenge = protectedProcedure
       return {
         shareRecoveryChallenge,
       };
-    } catch (error: any) {
+    } catch (error) {
       console.error(`Error creating challenge for wallet ${wallet.id}:`, error);
       throw new TRPCError({
         code: "INTERNAL_SERVER_ERROR",
-        message: `Error creating challenge: ${error.message || 'Unknown error'}`,
+        message: `Error creating challenge: ${error instanceof Error ? error.message : 'Unknown error'}`,
       });
     }
   });
