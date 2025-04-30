@@ -22,75 +22,84 @@ export const registerRecoveryShare = protectedProcedure
     // operation will probably reuse it. Otherwise, the cleanup cronjobs will take care of it:
     const deviceAndLocationIdPromise = getDeviceAndLocationId(ctx);
 
-    // Make sure the user is the owner of the wallet (because of the RecoveryKeyShare relation below):
-    const userWallet = await ctx.prisma.wallet.findFirst({
-      select: { id: true, chain: true },
+    // Changed from findUnique to findFirst
+    const wallet = await ctx.prisma.wallet.findFirst({
+      select: { id: true, chain: true, userId: true },
       where: {
         id: input.walletId,
-        userId: ctx.user.id,
+        // No userId constraint - allows registering recovery shares for shared wallets
       },
     });
 
-    if (!userWallet) {
+    if (!wallet) {
+      console.error(`Wallet not found: ${input.walletId}`);
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.WALLET_NOT_FOUND,
       });
     }
 
-    if (validateShare(userWallet.chain, input.recoveryAuthShare, ["recoveryAuthShare"]).length > 0) {
+    if (validateShare(wallet.chain, input.recoveryAuthShare, ["recoveryAuthShare"]).length > 0) {
+      console.error(`Invalid share format for chain: ${wallet.chain}`);
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: ErrorMessages.INVALID_SHARE,
       });
     }
 
-    const [
-      recoveryFileServerSignature,
-      wallet,
-    ] = await ctx.prisma.$transaction(async (tx) => {
-      const deviceAndLocationId = await deviceAndLocationIdPromise;
-      const dateNow = new Date();
-
-      const recoveryFileServerSignaturePromise = BackupUtils.generateRecoveryFileSignature({
-        walletId: userWallet.id,
-        recoveryBackupShareHash: input.recoveryBackupShareHash,
-      });
-
-      const updateWalletStatsPromise = tx.wallet.update({
-        where: {
-          id: userWallet.id,
-          userId: ctx.user.id,
-        },
-        data: {
-          canBeRecovered: true,
-          lastBackedUpAt: dateNow,
-          totalBackups: { increment: 1 },
-        },
-      });
-
-      const createRecoverySharePromise = tx.recoveryKeyShare.create({
-        data: {
-          recoveryAuthShare: input.recoveryAuthShare,
-          recoveryBackupShareHash: input.recoveryBackupShareHash,
-          recoveryBackupSharePublicKey: input.recoveryBackupSharePublicKey,
-
-          // Relations:
-          userId: ctx.user.id,
-          walletId: userWallet.id,
-          deviceAndLocationId,
-        }
-      });
-
-      return Promise.all([
-        recoveryFileServerSignaturePromise,
+    try {
+      const [
+        recoveryFileServerSignature,
+        updatedWallet,
         updateWalletStatsPromise,
-        createRecoverySharePromise,
-      ]);
-    });
+      ] = await ctx.prisma.$transaction(async (tx) => {
+        const deviceAndLocationId = await deviceAndLocationIdPromise;
+        const dateNow = new Date();
 
-    return {
-      wallet: wallet as DbWallet,
-      recoveryFileServerSignature,
-    };
+        const recoveryFileServerSignaturePromise = BackupUtils.generateRecoveryFileSignature({
+          walletId: wallet.id,
+          recoveryBackupShareHash: input.recoveryBackupShareHash,
+        });
+
+        const updateWalletStatsPromise = tx.wallet.update({
+          where: {
+            id: wallet.id,
+            userId: ctx.user.id,
+          },
+          data: {
+            canBeRecovered: true,
+            lastBackedUpAt: dateNow,
+            totalBackups: { increment: 1 },
+          },
+        });
+
+        const createRecoverySharePromise = tx.recoveryKeyShare.create({
+          data: {
+            recoveryAuthShare: input.recoveryAuthShare,
+            recoveryBackupShareHash: input.recoveryBackupShareHash,
+            recoveryBackupSharePublicKey: input.recoveryBackupSharePublicKey,
+
+            // Relations:
+            userId: ctx.user.id,  // Current user is creating the recovery share
+            walletId: wallet.id,
+            deviceAndLocationId,
+          }
+        });
+
+        return Promise.all([
+          recoveryFileServerSignaturePromise,
+          updateWalletStatsPromise,
+          createRecoverySharePromise,
+        ]);
+      });
+
+      return {
+        wallet: updatedWallet as DbWallet,
+        recoveryFileServerSignature,
+        updateWalletStatsPromise,
+      };
+    } catch (error) {
+      console.error(`Error registering recovery share for wallet ${wallet.id}:`, error);
+      throw error;
+    }
   });

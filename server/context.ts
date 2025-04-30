@@ -2,18 +2,21 @@ import { inferAsyncReturnType } from "@trpc/server";
 import { Session } from "@prisma/client";
 import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import { jwtDecode } from "jwt-decode";
-import { prisma } from "./utils/prisma/prisma-client";
+import { prisma, createAuthenticatedPrismaClient } from "./utils/prisma/prisma-client";
 import {
-  getClientCountryCode,
   getClientIp,
   getIpInfo,
 } from "./utils/ip/ip.utils";
+import { PrismaClient } from "@prisma/client";
 
 export async function createContext({ req }: { req: Request }) {
   const authHeader = req.headers.get("authorization");
   const clientId = req.headers.get("x-client-id");
   const applicationId = req.headers.get("x-application-id") || "";
 
+  // Default to using unauthenticated prisma client
+  let prismaClient = prisma;
+  
   if (!authHeader || !clientId) {
     return createEmptyContext();
   }
@@ -42,6 +45,10 @@ export async function createContext({ req }: { req: Request }) {
   }
 
   const user = data.user;
+  
+  // Create an authenticated Prisma client with the user's JWT token
+  prismaClient = createAuthenticatedPrismaClient(user.id) as typeof prisma;
+  
   let ip = getClientIp(req);
 
   if (process.env.NODE_ENV === "development") {
@@ -56,13 +63,13 @@ export async function createContext({ req }: { req: Request }) {
       userAgent,
       deviceNonce,
       ip,
-    });
+    }, prismaClient, user.id);
 
     // TODO: Get `data.user.user_metadata.ipFilterSetting` and `data.user.user_metadata.countryFilterSetting` and
     // check if they are defined and, if so, if they pass.
 
     return {
-      prisma,
+      prisma: prismaClient,
       user,
       session: createSessionObject(sessionData, applicationId),
     };
@@ -74,9 +81,11 @@ export async function createContext({ req }: { req: Request }) {
 
 async function getAndUpdateSession(
   token: string,
-  updates: Pick<Session, "userAgent" | "deviceNonce" | "ip">
+  updates: Pick<Session, "userAgent" | "deviceNonce" | "ip">,
+  prismaClient: PrismaClient,
+  userId: string
 ): Promise<Session> {
-  const { sub: userId, session_id: sessionId, sessionData } = decodeJwt(token);
+  const { sub, session_id: sessionId, sessionData } = decodeJwt(token);
 
   const sessionUpdates: Partial<typeof updates> = {};
   for (const [key, value] of Object.entries(updates) as [
@@ -91,14 +100,50 @@ async function getAndUpdateSession(
   if (Object.keys(sessionUpdates).length > 0) {
     console.log("Updating session:", sessionUpdates);
 
-    prisma.session
-      .update({
-        where: { id: sessionId },
-        data: sessionUpdates,
-      })
-      .catch((error) => {
-        console.error("Error updating session:", error);
-      });
+    try {
+      // Maximum retry attempts
+      const maxRetries = 3;
+      let attempts = 0;
+      let success = false;
+      
+      while (attempts < maxRetries && !success) {
+        try {
+          // Use direct Prisma upsert operation with the authenticated client
+          await prismaClient.session.upsert({
+            where: { id: sessionId },
+            update: {
+              updatedAt: new Date(),
+              deviceNonce: updates.deviceNonce || '',
+              ip: updates.ip || '',
+              userAgent: updates.userAgent || ''
+            },
+            create: {
+              id: sessionId,
+              userId,
+              createdAt: new Date(),
+              updatedAt: new Date(),
+              deviceNonce: updates.deviceNonce || '',
+              ip: updates.ip || '',
+              userAgent: updates.userAgent || ''
+            }
+          });
+          
+          success = true;
+        } catch (retryError) {
+          attempts++;
+          console.error(`Error updating session (attempt ${attempts}/${maxRetries}):`, retryError);
+          
+          // Only retry if we haven't exceeded max attempts
+          if (attempts < maxRetries) {
+            // Exponential backoff: wait longer between each retry
+            await new Promise(resolve => setTimeout(resolve, 100 * Math.pow(2, attempts)));
+          }
+        }
+      }
+    } catch (error) {
+      console.error("Error updating session:", error);
+      // Continue without failing - we'll still return a valid session object
+    }
   }
 
   return {
@@ -119,7 +164,7 @@ function decodeJwt(token: string) {
 
 function createEmptyContext() {
   return {
-    prisma,
+    prisma, // Use base prisma client for unauthenticated requests
     user: null,
     session: createSessionObject(null),
   };

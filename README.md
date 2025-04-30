@@ -143,3 +143,27 @@ pnpm db:regenerate-migrations
 If this worked, you should see 5 triggers in Supabase under [Database > Triggers > auth](https://supabase.com/dashboard/project/pboorlggoqpyiucxmneq/database/triggers?schema=auth).
 
 Also, make sure you delete your Supabase users under Authentication, as those are no longer duplicated in the `UserProfile` table.
+
+## Dynamic Database Credentials with Vercel
+
+This project supports dynamic database credentials, making it easy to change the database user without modifying the code.
+
+### Local Setup
+1. Set `POSTGRES_USER` and `POSTGRES_PASSWORD` in your `.env` file
+2. Run migrations with `npm run db:migrate:prod`
+
+### Vercel Setup
+1. Add the following environment variables in your Vercel project:
+   - `POSTGRES_USER`: Your database user (e.g., "prisma" or any custom user)
+   - `POSTGRES_PASSWORD`: Your database password
+
+2. Update the build command in your Vercel project to use the migration script:
+   ```
+   npm run build && npm run db:migrate:prod
+   ```
+
+3. When you need to change database credentials:
+   - Update the `POSTGRES_USER` and `POSTGRES_PASSWORD` environment variables in Vercel
+   - Redeploy your application
+   
+This approach allows you to change database credentials without modifying the codebase, migration files, or prisma schema.

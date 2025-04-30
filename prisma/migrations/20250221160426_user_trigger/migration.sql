@@ -10,25 +10,24 @@
 
 -- inserts a row into public.UserProfiles
 
-create function public.handle_new_user()
+create or replace function public.handle_new_user()
 returns trigger as $$
 begin
+    -- Set the user ID as the current user for RLS policies
+    PERFORM set_config('app.current_user_id', NEW.id::text, true);
+    
     insert into public."UserProfiles" ("supId", "supEmail", "supPhone", "name", "email", "phone", "picture", "updatedAt")
     values (new.id, new.email, new.phone, new.raw_user_meta_data->>'full_name', new.email, new.phone, coalesce(new.raw_user_meta_data->>'avatar_url', new.raw_user_meta_data->>'picture'), now());
     return new;
 end;
+$$ language plpgsql SECURITY DEFINER set search_path = public;
 
 -- trigger the function above every time an auth.user is created
-
--- $$ language plpgsql security definer;
--- create trigger on_auth_user_created
---     after insert on auth.users
---     for each row execute procedure public.handle_new_user();
 
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'auth') THEN
-        EXECUTE 'CREATE TRIGGER on_auth_user_created
+        EXECUTE 'CREATE OR REPLACE TRIGGER on_auth_user_created
                   AFTER INSERT ON auth.users
                   FOR EACH ROW EXECUTE PROCEDURE public.handle_new_user();';
     END IF;
@@ -39,6 +38,9 @@ END $$;
 create or replace function public.handle_update_user_email_n_phone()
 returns trigger as $$
 begin
+    -- Set the user ID as the current user for RLS policies
+    PERFORM set_config('app.current_user_id', NEW.id::text, true);
+    
     update public."UserProfiles"
     set
       "supEmail" = coalesce(new.email, "supEmail"),
@@ -46,18 +48,14 @@ begin
     where "supId" = new.id;
     return new;
 end;
+$$ language plpgsql SECURITY DEFINER set search_path = public;
 
 -- trigger the function above every time an auth.user's email or phone are updated
-
--- $$ language plpgsql security definer set search_path = public;
--- create trigger on_auth_user_updated
---     after update of email, phone on auth.users
---   for each row execute procedure public.handle_update_user_email_n_phone();
 
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'auth') THEN
-        EXECUTE 'CREATE TRIGGER on_auth_user_updated
+        EXECUTE 'CREATE OR REPLACE TRIGGER on_auth_user_updated
                   AFTER UPDATE OF email, phone ON auth.users
                   FOR EACH ROW EXECUTE PROCEDURE public.handle_update_user_email_n_phone();';
     END IF;
@@ -69,21 +67,20 @@ END $$;
 create or replace function public.handle_delete_user()
 returns trigger as $$
 begin
+    -- Set the user ID as the current user for RLS policies
+    PERFORM set_config('app.current_user_id', OLD.id::text, true);
+    
     delete from public."UserProfiles" where "supId" = old.id;
     return old;
 end;
+$$ language plpgsql SECURITY DEFINER set search_path = public;
 
 -- Trigger the function above every time an auth.user is deleted
-
--- $$ language plpgsql security definer set search_path = public;
--- create trigger on_auth_user_deleted
---     after delete on auth.users
---     for each row execute procedure public.handle_delete_user();
 
 DO $$
 BEGIN
     IF EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'auth') THEN
-        EXECUTE 'CREATE TRIGGER on_auth_user_deleted
+        EXECUTE 'CREATE OR REPLACE TRIGGER on_auth_user_deleted
                   AFTER DELETE ON auth.users
                   FOR EACH ROW EXECUTE PROCEDURE public.handle_delete_user();';
     END IF;

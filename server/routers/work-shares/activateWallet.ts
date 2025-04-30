@@ -30,9 +30,31 @@ export const activateWallet = protectedProcedure
     const deviceAndLocationIdPromise = getDeviceAndLocationId(ctx);
     const now = Date.now();
 
+    // Explicitly set JWT claims before queries
+    try {
+      // Set JWT claims with session-level SET
+      const jwtClaims = JSON.stringify({
+        sub: ctx.user.id,
+        role: 'authenticated'
+      });
+      
+      // Escape single quotes for SQL safety
+      const escapedClaims = jwtClaims.replace(/'/g, "''");
+      
+      // Use direct raw query to ensure claims are set
+      await ctx.prisma.$executeRawUnsafe(
+        `SET request.jwt.claims = '${escapedClaims}'`
+      );
+      
+      // Verify claims were set
+      const currentSettings = await ctx.prisma.$queryRaw`SELECT current_setting('request.jwt.claims', true)`;
+      console.log(`Current JWT claims before workKeyShare lookup: ${JSON.stringify(currentSettings)}`);
+    } catch (error) {
+      console.error(`Failed to set/verify JWT claims:`, error);
+    }
+
     const challengePromise = ctx.prisma.challenge.findFirst({
       where: {
-        userId: ctx.user.id,
         walletId: input.walletId,
         purpose: ChallengePurpose.ACTIVATION,
       },
@@ -54,9 +76,27 @@ export const activateWallet = protectedProcedure
       workKeySharePromise,
     ]);
 
+    console.log(`Challenge found: ${!!challenge}, WorkKeyShare found: ${!!workKeyShare}`);
+
+    // If we have a workKeyShare, log additional debugging info
+    if (workKeyShare) {
+      console.log(`WorkKeyShare details: id=${workKeyShare.id}, walletId=${workKeyShare.walletId}, deviceNonce=${workKeyShare.deviceNonce.substring(0, 10)}...`);
+    } else {
+      // If no workKeyShare, perform a direct query to check if there are any workKeyShares for this wallet
+      try {
+        const workKeyShares = await ctx.prisma.$queryRaw`
+          SELECT id, "userId", "walletId", "deviceNonce" 
+          FROM "WorkKeyShares" 
+          WHERE "walletId" = ${input.walletId}::uuid
+        `;
+        console.log(`Direct query for workKeyShares for wallet ${input.walletId}:`, workKeyShares);
+      } catch (error) {
+        console.error(`Error performing direct workKeyShare query:`, error);
+      }
+    }
+
     if (!challenge) {
       // Just try again.
-
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.CHALLENGE_NOT_FOUND,

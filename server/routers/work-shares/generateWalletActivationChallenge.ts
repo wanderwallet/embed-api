@@ -19,6 +19,29 @@ export const generateWalletActivationChallenge = protectedProcedure
     // operation will probably reuse it. Otherwise, the cleanup cronjobs will take care of it:
     const deviceAndLocationIdPromise = getDeviceAndLocationId(ctx);
 
+    // Explicitly set JWT claims before wallet lookup
+    try {
+      // Set JWT claims with session-level SET
+      const jwtClaims = JSON.stringify({
+        sub: ctx.user.id,
+        role: 'authenticated'
+      });
+      
+      // Escape single quotes for SQL safety
+      const escapedClaims = jwtClaims.replace(/'/g, "''");
+      
+      // Use direct raw query to ensure claims are set
+      await ctx.prisma.$executeRawUnsafe(
+        `SET request.jwt.claims = '${escapedClaims}'`
+      );
+      
+      // Verify claims were set
+      const currentSettings = await ctx.prisma.$queryRaw`SELECT current_setting('request.jwt.claims', true)`;
+      console.log(`Current JWT claims before wallet lookup: ${JSON.stringify(currentSettings)}`);
+    } catch (error) {
+      console.error(`Failed to set/verify JWT claims:`, error);
+    }
+
     const userWallet = await ctx.prisma.wallet.findFirst({
       select: { id: true, status: true },
       where: {
@@ -26,6 +49,8 @@ export const generateWalletActivationChallenge = protectedProcedure
         userId: ctx.user.id,
       },
     });
+
+    console.log(`Wallet lookup result for activation challenge: ${!!userWallet}, status: ${userWallet?.status}`);
 
     if (!userWallet || userWallet.status !== WalletStatus.ENABLED) {
       if (userWallet) {

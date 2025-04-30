@@ -4,7 +4,7 @@ import { Chain, WalletPrivacySetting, WalletStatus } from "@prisma/client";
 import { validateWallet } from "@/server/utils/wallet/wallet.validators";
 import { getDeviceAndLocationConnectOrCreate } from "@/server/utils/device-n-location/device-n-location.utils";
 import { DbWallet } from "@/prisma/types/types";
-import { getUserConnectOrCreate } from "@/server/utils/user/user.utils";
+import { getUserProfile } from "@/server/utils/user/user.utils";
 
 export const CreateReadOnlyWalletInputSchema = z.object({
   status: z.enum([WalletStatus.READONLY, WalletStatus.LOST]),
@@ -37,9 +37,9 @@ export const createReadOnlyWallet = protectedProcedure
           canRecoverAccountSetting: false,
           canBeRecovered: false,
 
-          userProfile: getUserConnectOrCreate(ctx),
+          userProfile: await getUserProfile(ctx),
 
-          deviceAndLocation: getDeviceAndLocationConnectOrCreate(ctx),
+          deviceAndLocation: await getDeviceAndLocationConnectOrCreate(ctx),
         },
       });
 
