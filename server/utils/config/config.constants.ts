@@ -73,7 +73,7 @@ export function initConfig() {
 
   // Challenges:
   const CHALLENGE_TYPE = process.env.CHALLENGE_TYPE as ChallengeType;
-  const CHALLENGE_VERSION = process.env.CHALLENGE_TYPE;
+  const CHALLENGE_VERSION = process.env.CHALLENGE_VERSION;
   const CHALLENGE_BUFFER_SIZE = process.env.CHALLENGE_BUFFER_SIZE;
   const CHALLENGE_TTL_MS = process.env.CHALLENGE_TTL_MS;
   const CHALLENGE_ROTATION_TTL_MS = process.env.CHALLENGE_ROTATION_TTL_MS;

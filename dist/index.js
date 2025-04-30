@@ -171,7 +171,8 @@ function createSupabaseClient(supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 var import_client2 = require("@prisma/client");
 var CHALLENGES_WITHOUT_SHARE_HASH = [
   import_client2.ChallengePurpose.SHARE_ROTATION,
-  import_client2.ChallengePurpose.ACCOUNT_RECOVERY
+  import_client2.ChallengePurpose.ACCOUNT_RECOVERY,
+  import_client2.ChallengePurpose.SHARE_RECOVERY
 ];
 function isAnonChallenge(challenge) {
   return !!challenge.chain && !!challenge.address;
@@ -179,7 +180,7 @@ function isAnonChallenge(challenge) {
 function getChallengeRawData({ challenge, session, shareHash }) {
   const commonChallengeData = [
     challenge.id,
-    challenge.createdAt,
+    challenge.createdAt.toISOString(),
     challenge.value,
     challenge.version,
     session.id,
