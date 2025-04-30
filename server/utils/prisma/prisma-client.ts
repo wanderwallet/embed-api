@@ -60,25 +60,6 @@ export function createAuthenticatedPrismaClient(userId: string) {
             // Ensure JWT claims are set before executing any query
             await ensureJwtClaimsSet(userClient, userId);
             
-            // Special handling for wallet searches
-            if (model === 'Wallet' && (operation === 'findUnique' || operation === 'findFirst')) {
-              console.log(`Wallet lookup operation: ${operation}`, JSON.stringify(args));
-              
-              // Add additional logging for wallet searches
-              try {
-                // Direct SQL query to check if wallet exists bypassing RLS
-                const walletId = args.where?.id;
-                if (walletId) {
-                  const results = await userClient.$queryRawUnsafe(`
-                    SELECT id, "userId" FROM "Wallets" WHERE id = '${walletId}'
-                  `);
-                  console.log(`Direct wallet lookup results:`, results);
-                }
-              } catch (error) {
-                console.error(`Error during direct wallet lookup:`, error);
-              }
-            }
-            
             // For create operations, ensure userId is included in models that require it
             if (operation.includes('create')) {
               const modelsWithUserId = ['DeviceAndLocation', 'Challenge', 'Session'];

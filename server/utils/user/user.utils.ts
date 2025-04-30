@@ -1,8 +1,6 @@
 import { Context } from "@/server/context";
-import { PrismaClient } from "@prisma/client";
-import { ITXClientDenyList } from "@prisma/client/runtime/library";
 
-export async function getUserConnectOrCreate(ctx: Context) {
+export async function getUserProfile(ctx: Context) {
   if (!ctx.user) {
     throw new Error("Missing `ctx.user`");
   }
@@ -17,21 +15,14 @@ export async function getUserConnectOrCreate(ctx: Context) {
     },
   });
   
-  // If user profile exists, return a connect object
-  if (existingProfile) {
-    return {
-      connect: {
-        supId: ctx.user.id,
-      },
-    };
+  if (!existingProfile) {
+    throw new Error(`User profile not found for user ID: ${ctx.user.id}`); 
   }
-  
-  // If not found, return a create object with minimal required fields
+
+  // If user profile exists, return a connect object
   return {
-    create: {
+    connect: {
       supId: ctx.user.id,
-      email: ctx.user.email,
-      updatedAt: new Date(),
     },
   };
 }

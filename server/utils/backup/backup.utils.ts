@@ -88,9 +88,6 @@ async function verifyRecoveryFileSignature({
 
     const recoveryFileRawData = getRecoveryFileSignatureRawData(recoveryFileData);
     const recoveryFileRawDataBuffer = Buffer.from(recoveryFileRawData);
-
-    console.log(`Verifying signature for wallet: ${recoveryFileData.walletId}`);
-    console.log(`Data to verify: ${recoveryFileRawData}`);
     
     return crypto.subtle.verify(
       SIGN_ALGORITHM,

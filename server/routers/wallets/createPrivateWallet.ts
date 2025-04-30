@@ -18,7 +18,7 @@ import {
   validateShare,
 } from "@/server/utils/share/share.validators";
 import { DbWallet } from "@/prisma/types/types";
-import { getUserConnectOrCreate } from "@/server/utils/user/user.utils";
+import { getUserProfile } from "@/server/utils/user/user.utils";
 
 export const CreatePrivateWalletInputSchema = z
   .object({
@@ -72,7 +72,7 @@ export const createPrivateWallet = protectedProcedure
         canBeRecovered,
         source: input.source as InputJsonValue,
 
-        userProfile: await getUserConnectOrCreate(ctx),
+        userProfile: await getUserProfile(ctx),
 
         deviceAndLocation: await getDeviceAndLocationConnectOrCreate(ctx),
 

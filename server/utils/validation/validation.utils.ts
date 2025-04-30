@@ -34,7 +34,13 @@ export async function validateApplication(
   userId?: string
 ): Promise<string> {
   try {
-    const prisma = createAuthenticatedPrismaClient(userId, 'authenticated');
+    if (!userId) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Missing `userId`",
+      });
+    }
+    const prisma = createAuthenticatedPrismaClient(userId);
 
     const application = await prisma.application
       .findUnique({

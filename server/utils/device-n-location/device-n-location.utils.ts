@@ -40,11 +40,28 @@ export async function getDeviceAndLocationId(ctx: Context) {
 }
 
 export async function getDeviceAndLocationConnectOrCreate(ctx: Context) {
-  if (!ctx.user) throw new Error("Authentication required");
+  if (!ctx.user) {
+    throw new Error("Missing `ctx.user`");
+  }
 
-  // Get device ID using the updated function
-  const deviceId = await getDeviceAndLocationId(ctx);
-  
-  // Return the device ID for connection
-  return { connect: { id: deviceId } };
+  // TODO: Get ip, userAgent, applicationId...
+  return {
+    connectOrCreate: {
+      where: {
+        userDevice: {
+          userId: ctx.user.id,
+          deviceNonce: ctx.session.deviceNonce,
+          ip: ctx.session.ip,
+          userAgent: ctx.session.userAgent,
+        },
+      },
+      create: {
+        deviceNonce: ctx.session.deviceNonce,
+        ip: ctx.session.ip,
+        userAgent: ctx.session.userAgent,
+        userId: ctx.user.id,
+        applicationId: null,
+      },
+    },
+  };
 }
