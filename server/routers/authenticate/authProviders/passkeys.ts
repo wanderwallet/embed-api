@@ -16,6 +16,7 @@ import {
 import { stringToUint8Array, uint8ArrayToString } from "@/server/services/auth";
 import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import { PasskeyChallengePurpose, UserProfile, PrismaClient } from "@prisma/client";
+import { createWebAuthnAccessTokenForUser, createWebAuthnRefreshTokenForUser } from "@/server/utils/passkey/session";
 
 // Helper function to convert base64 to Uint8Array
 function base64ToArrayBuffer(base64: string): ArrayBuffer {
@@ -840,11 +841,38 @@ export const passkeysRoutes = {
               // Store this information in localStorage to maintain the session
               console.log("Passkey authentication successful for user:", passkey.userId);
               
-              return {
-                ...authData,
-                // Include any additional information needed by client
-                needsWalletActivation: true
+              // Create Supabase-compatible tokens
+              const sessionData = {
+                id: sessionId,
+                deviceNonce: newDeviceNonce,
+                ip: ctx.session?.ip ? ctx.session.ip.split(',')[0].trim() : '127.0.0.1',
+                userAgent: ctx.session?.userAgent || 'unknown',
+                createdAt: new Date(),
+                updatedAt: new Date()
               };
+              
+              try {
+                // Generate access and refresh tokens
+                const access_token = createWebAuthnAccessTokenForUser(userProfile, sessionData);
+                const refresh_token = createWebAuthnRefreshTokenForUser(userProfile, sessionId, sessionData);
+                
+                return {
+                  ...authData,
+                  // Include Supabase-compatible tokens
+                  access_token,
+                  refresh_token,
+                  // Include any additional information needed by client
+                  needsWalletActivation: true
+                };
+              } catch (tokenError) {
+                console.error("Failed to generate auth tokens:", tokenError);
+                
+                // Return data without tokens if generation fails
+                return {
+                  ...authData,
+                  needsWalletActivation: true
+                };
+              }
             } else {
               throw new TRPCError({
                 code: "UNAUTHORIZED",
@@ -978,12 +1006,40 @@ export const passkeysRoutes = {
             },
           });
           
-          return {
-            verified: true,
-            userId: userProfile.supId,
-            sessionId: sessionResult.sessionId,
+          // Create Supabase-compatible tokens
+          const sessionData = {
+            id: sessionResult.sessionId,
             deviceNonce: sessionResult.deviceNonce,
+            ip: ctx.session?.ip ? ctx.session.ip.split(',')[0].trim() : '127.0.0.1',
+            userAgent: ctx.session?.userAgent || 'unknown',
+            createdAt: new Date(),
+            updatedAt: new Date()
           };
+          
+          try {
+            // Generate access and refresh tokens
+            const access_token = createWebAuthnAccessTokenForUser(userProfile, sessionData);
+            const refresh_token = createWebAuthnRefreshTokenForUser(userProfile, sessionResult.sessionId, sessionData);
+            
+            return {
+              verified: true,
+              userId: userProfile.supId,
+              sessionId: sessionResult.sessionId,
+              deviceNonce: sessionResult.deviceNonce,
+              access_token,
+              refresh_token
+            };
+          } catch (tokenError) {
+            console.error("Failed to generate auth tokens:", tokenError);
+            
+            // Return without tokens if generation fails
+            return {
+              verified: true,
+              userId: userProfile.supId,
+              sessionId: sessionResult.sessionId,
+              deviceNonce: sessionResult.deviceNonce
+            };
+          }
         } catch (error) {
           console.error("Finalize passkey error:", error);
           throw error;
