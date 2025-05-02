@@ -19,7 +19,6 @@ export const RecoverWalletSchema = z
     recoveryBackupShareHash: getShareHashValidator().optional(),
     recoveryFileServerSignature: z.string().length(684).optional(), // RSA 4096 signature => 512 bytes => 684 characters in base64
     challengeSolution: z.string(), // Format validation implicit in `verifyChallenge()`.
-    crossAuthRecovery: z.boolean().optional(), // Optional flag to indicate cross-auth recovery
   })
   .superRefine((data, ctx) => {
     const hasBackupShareHash = !!data.recoveryBackupShareHash;
@@ -40,7 +39,6 @@ export const recoverWallet = protectedProcedure
   .mutation(async ({ input, ctx }) => {
     console.log("Recover wallet called with input:", { 
       walletId: input.walletId,
-      crossAuthRecovery: input.crossAuthRecovery || false,
       challengeSolutionPrefix: input.challengeSolution?.substring(0, 5) + '...',
       authMethod: ctx.user ? 'available' : 'unknown'
     });
@@ -106,63 +104,28 @@ export const recoverWallet = protectedProcedure
       });
     }
 
-    // Check if this is a cross-auth recovery attempt
-    const isCrossAuthRecovery = input.crossAuthRecovery === true;
-    
-    // Log auth provider and the cross-auth recovery flag
-    if (isCrossAuthRecovery) {
-      console.log("Cross-auth recovery requested, user authenticated:", ctx.user ? 'yes' : 'no');
-    }
+    // Standard challenge validation
+    const publicKey =
+      recoveryKeyShare?.recoveryBackupSharePublicKey ||
+      (
+        await ctx.prisma.wallet.findFirst({
+          select: { publicKey: true },
+          where: {
+            id: input.walletId,
+            userId: ctx.user.id,
+          },
+        })
+      )?.publicKey ||
+      null;
 
-    // For normal auth or if cross-auth has already been validated by signature,
-    // proceed with standard or simplified validation
-    let isChallengeValid = false;
-    
-    // Special handling for signature-based challenge solution (v1.signature format)
-    const isSignatureChallenge = input.challengeSolution.startsWith('v1.') && 
-                                input.challengeSolution.substring(3) === input.recoveryFileServerSignature;
-
-    if (isCrossAuthRecovery && isSignatureChallenge) {
-      console.log("Using signature-based validation for cross-auth recovery");
-      
-      // Verify the recovery file signature directly
-      const isSignatureValid = await BackupUtils.verifyRecoveryFileSignature({
-        walletId: input.walletId,
-        recoveryBackupShareHash: input.recoveryBackupShareHash || '',
-        recoveryFileServerSignature: input.recoveryFileServerSignature || ''
-      });
-      
-      if (!isSignatureValid) {
-        console.log("Cross-auth recovery signature verification failed");
-        isChallengeValid = false;
-      } else {
-        console.log("Cross-auth recovery signature verified successfully");
-        isChallengeValid = true;
-      }
-    } else {
-      // Standard challenge validation
-      const publicKey =
-        recoveryKeyShare?.recoveryBackupSharePublicKey ||
-        (
-          await ctx.prisma.wallet.findFirst({
-            select: { publicKey: true },
-            where: {
-              id: input.walletId,
-              userId: ctx.user.id,
-            },
-          })
-        )?.publicKey ||
-        null;
-
-      isChallengeValid = await ChallengeUtils.verifyChallenge({
-        challenge,
-        session: ctx.session,
-        shareHash: recoveryKeyShare?.recoveryBackupShareHash || null,
-        now,
-        solution: input.challengeSolution,
-        publicKey,
-      });
-    }
+    const isChallengeValid = await ChallengeUtils.verifyChallenge({
+      challenge,
+      session: ctx.session,
+      shareHash: recoveryKeyShare?.recoveryBackupShareHash || null,
+      now,
+      solution: input.challengeSolution,
+      publicKey,
+    });
 
     if (!isChallengeValid) {
       // TODO: Add a wallet recovery attempt limit?

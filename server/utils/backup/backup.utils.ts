@@ -99,27 +99,6 @@ export async function verifyRecoveryFileSignature({
     });
     
     try {
-      // Try RSA-PSS first (newer format)
-      const isValidPSS = await crypto.subtle.verify(
-        {
-          name: 'RSA-PSS',
-          saltLength: 32,
-        },
-        await importRSAPublicKey(Config.BACKUP_FILE_PUBLIC_KEY, 'RSA-PSS'),
-        signatureBuffer,
-        Buffer.from(verificationData)
-      );
-      
-      if (isValidPSS) {
-        console.log("Recovery file signature verified successfully using RSA-PSS");
-        return true;
-      }
-    } catch (pssError) {
-      console.log("RSA-PSS verification failed, trying RSASSA-PKCS1-v1_5:", pssError);
-    }
-    
-    try {
-      // Fall back to RSASSA-PKCS1-v1_5 (older format)
       const isValidPKCS = await crypto.subtle.verify(
         {
           name: 'RSASSA-PKCS1-v1_5',
