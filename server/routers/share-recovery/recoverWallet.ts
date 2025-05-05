@@ -12,35 +12,27 @@ import { BackupUtils } from "@/server/utils/backup/backup.utils";
 import { Config } from "@/server/utils/config/config.constants";
 import { getShareHashValidator } from "@/server/utils/share/share.validators";
 import { DbWallet } from "@/prisma/types/types";
-import { createHash } from "crypto";
 
 export const RecoverWalletSchema = z
   .object({
     walletId: z.string().uuid(),
     recoveryBackupShareHash: getShareHashValidator().optional(),
-    recoveryBackupShare: z.string().optional(),
     recoveryFileServerSignature: z.string().length(684).optional(), // RSA 4096 signature => 512 bytes => 684 characters in base64
     challengeSolution: z.string(), // Format validation implicit in `verifyChallenge()`.
   })
   .superRefine((data, ctx) => {
-    // If recoveryBackupShare is provided, we'll compute the hash, so no need for recoveryBackupShareHash
-    const hasBackupShareHash = !!data.recoveryBackupShareHash || !!data.recoveryBackupShare;
+    const hasBackupShareHash = !!data.recoveryBackupShareHash;
     const hasFileServerSignature = !!data.recoveryFileServerSignature;
 
     if (hasBackupShareHash !== hasFileServerSignature) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message:
-          "Both recoveryBackupShare/recoveryBackupShareHash and recoveryFileServerSignature must be provided together.",
+          "Both recoveryBackupShareHash and recoveryFileServerSignature must be provided together.",
         path: ["recoveryBackupShareHash", "recoveryFileServerSignature"],
       });
     }
   });
-
-// Helper function to generate hash from recoveryBackupShare
-function calculateShareHash(recoveryBackupShare: string): string {
-  return createHash('sha256').update(recoveryBackupShare).digest('base64');
-}
 
 export const recoverWallet = protectedProcedure
   .input(RecoverWalletSchema)
@@ -51,16 +43,6 @@ export const recoverWallet = protectedProcedure
     const deviceAndLocationIdPromise = getDeviceAndLocationId(ctx);
     const now = Date.now();
 
-    console.log(`Starting wallet recovery for wallet: ${input.walletId}, user: ${ctx.user.id}`);
-
-    // If recoveryBackupShare is provided, calculate its hash
-    let recoveryBackupShareHash = input.recoveryBackupShareHash;
-    if (input.recoveryBackupShare && !recoveryBackupShareHash) {
-      console.log('Computing hash from recoveryBackupShare');
-      recoveryBackupShareHash = calculateShareHash(input.recoveryBackupShare);
-      console.log(`Computed hash: ${recoveryBackupShareHash.substring(0, 10)}...`);
-    }
-
     const challengePromise = ctx.prisma.challenge.findFirst({
       where: {
         userId: ctx.user.id,
@@ -69,22 +51,18 @@ export const recoverWallet = protectedProcedure
       },
     });
 
-    const recoveryKeySharePromise = recoveryBackupShareHash
-      ? ctx.prisma.recoveryKeyShare.findFirst({
-          where: {
-            userId: ctx.user.id,
-            walletId: input.walletId,
-            recoveryBackupShareHash: recoveryBackupShareHash,
-          },
-        })
-      : null;
+    const recoveryKeySharePromise = ctx.prisma.recoveryKeyShare.findFirst({
+      where: {
+        userId: ctx.user.id,
+        walletId: input.walletId,
+        recoveryBackupShareHash: input.recoveryBackupShareHash,
+      },
+    });
 
     const [challenge, recoveryKeyShare] = await Promise.all([
       challengePromise,
       recoveryKeySharePromise,
     ]);
-
-    console.log(`Challenge found: ${!!challenge}, Recovery key share found: ${!!recoveryKeyShare}`);
 
     if (!challenge) {
       // Just try again.
@@ -97,14 +75,14 @@ export const recoverWallet = protectedProcedure
 
     if (
       !recoveryKeyShare &&
-      recoveryBackupShareHash &&
+      input.recoveryBackupShareHash &&
       input.recoveryFileServerSignature
     ) {
       console.log(`Verifying recovery file signature for wallet: ${input.walletId}`);
       try {
         const isSignatureValid = await BackupUtils.verifyRecoveryFileSignature({
           walletId: input.walletId,
-          recoveryBackupShareHash: recoveryBackupShareHash,
+          recoveryBackupShareHash: input.recoveryBackupShareHash,
           recoveryFileServerSignature: input.recoveryFileServerSignature,
         });
 
@@ -154,13 +132,11 @@ export const recoverWallet = protectedProcedure
     const isChallengeValid = await ChallengeUtils.verifyChallenge({
       challenge,
       session: ctx.session,
-      shareHash: recoveryKeyShare?.recoveryBackupShareHash || recoveryBackupShareHash || null,
+      shareHash: recoveryKeyShare?.recoveryBackupShareHash || input.recoveryBackupShareHash || null,
       now,
       solution: input.challengeSolution,
       publicKey,
     });
-
-    console.log(`Challenge validation result: ${isChallengeValid}`);
 
     if (!isChallengeValid) {
       // TODO: Add a wallet recovery attempt limit?
