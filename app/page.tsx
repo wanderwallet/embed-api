@@ -110,10 +110,10 @@ export default function Login() {
             </div>
             <button
               type="submit"
-              disabled={loginMutation.isLoading}
+              disabled={loginMutation.isPending }
               className="w-full bg-blue-500 text-white font-semibold py-2 px-4 rounded shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
-              {loginMutation.isLoading ? "Loading..." : "Sign in"}
+              {loginMutation.isPending  ? "Loading..." : "Sign in"}
             </button>
             <button
               type="button"
@@ -127,7 +127,7 @@ export default function Login() {
           <>
             <button
               onClick={() => setShowEmailForm(true)}
-              disabled={loginMutation.isLoading || isLoading}
+              disabled={loginMutation.isPending || isLoading}
               className="bg-blue-500 text-white font-semibold py-2 px-4 border border-blue-600 rounded shadow-sm hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Sign in with Email & Password
@@ -135,7 +135,7 @@ export default function Login() {
 
             <button
               onClick={handleGoogleSignIn}
-              disabled={loginMutation.isLoading || isLoading}
+              disabled={loginMutation.isPending || isLoading}
               className="bg-white text-gray-700 font-semibold py-2 px-4 border border-gray-300 rounded shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Sign in with Google
@@ -143,7 +143,7 @@ export default function Login() {
 
             <button
               onClick={() => handleOAuthSignIn("FACEBOOK")}
-              disabled={loginMutation.isLoading || isLoading}
+              disabled={loginMutation.isPending || isLoading}
               className="bg-blue-600 text-white font-semibold py-2 px-4 border border-blue-700 rounded shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
             >
               Sign in with Facebook
@@ -151,7 +151,7 @@ export default function Login() {
 
             <button
               onClick={() => handleOAuthSignIn("X")}
-              disabled={loginMutation.isLoading || isLoading}
+              disabled={loginMutation.isPending || isLoading}
               className="bg-black text-white font-semibold py-2 px-4 border border-black rounded shadow-sm hover:bg-gray-900 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
             >
               Sign in with X
@@ -159,7 +159,7 @@ export default function Login() {
 
             <button
               onClick={() => handleOAuthSignIn("APPLE")}
-              disabled={loginMutation.isLoading || isLoading}
+              disabled={loginMutation.isPending || isLoading}
               className="bg-black text-white font-semibold py-2 px-4 border border-black rounded shadow-sm hover:bg-gray-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500"
             >
               Sign in with Apple

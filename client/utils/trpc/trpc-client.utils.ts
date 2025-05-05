@@ -1,4 +1,4 @@
-import { createTRPCProxyClient, httpBatchLink, TRPCLink } from "@trpc/client";
+import { createTRPCClient as _createTRPCClient, httpBatchLink, TRPCLink } from "@trpc/client";
 import type { AppRouter } from "@/server/routers/_app";
 import superjson from "superjson";
 import { observable } from "@trpc/server/observable";
@@ -110,8 +110,7 @@ export function createTRPCClient({
 
   if (!url) throw new Error("No `baseURL` or `trpcURL` provided.");
 
-  const client = createTRPCProxyClient<AppRouter>({
-    transformer: superjson,
+  const client = _createTRPCClient<AppRouter>({
     links: [
       authErrorLink({
         onAuthError,
@@ -120,6 +119,7 @@ export function createTRPCClient({
       }),
       httpBatchLink({
         url,
+        transformer: superjson,
         headers() {
           if (!deviceNonce) {
             throw new Error(`Missing device nonce header.`);

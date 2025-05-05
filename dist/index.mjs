@@ -10,7 +10,7 @@ import {
 } from "@prisma/client";
 
 // client/utils/trpc/trpc-client.utils.ts
-import { createTRPCProxyClient, httpBatchLink } from "@trpc/client";
+import { createTRPCClient as _createTRPCClient, httpBatchLink } from "@trpc/client";
 import superjson from "superjson";
 import { observable } from "@trpc/server/observable";
 var authErrorLink = (opts) => {
@@ -80,8 +80,7 @@ function createTRPCClient({
   }
   const url = trpcURL || (baseURL ? `${baseURL.replace(/\/$/, "")}/api/trpc` : "");
   if (!url) throw new Error("No `baseURL` or `trpcURL` provided.");
-  const client = createTRPCProxyClient({
-    transformer: superjson,
+  const client = _createTRPCClient({
     links: [
       authErrorLink({
         onAuthError,
@@ -90,6 +89,7 @@ function createTRPCClient({
       }),
       httpBatchLink({
         url,
+        transformer: superjson,
         headers() {
           if (!deviceNonce) {
             throw new Error(`Missing device nonce header.`);
