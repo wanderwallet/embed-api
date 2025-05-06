@@ -12,6 +12,7 @@
 # next.js
 .next
 /out/
+# /dist
 
 # production
 /build
@@ -19,6 +20,7 @@
 # misc
 .DS_Store
 *.pem
+/.vscode
 
 # debug
 npm-debug.log*
@@ -34,3 +36,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.env
+
+## supabase
+/supabase/
