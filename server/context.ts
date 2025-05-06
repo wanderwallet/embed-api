@@ -16,11 +16,10 @@ function nodeDecode(base64String: string): string {
 export async function createContext({ req }: { req: Request }) {
 
   const authHeader = req.headers.get("authorization");
-  const customAuthHeader = req.headers.get("x-custom-auth");
   const clientId = req.headers.get("x-client-id");
   const applicationId = req.headers.get("x-application-id") || "";
 
-  if ((!authHeader && !customAuthHeader) || !clientId) {
+  if ((!authHeader) || !clientId) {
     console.log("Missing required headers for authentication");
     return createEmptyContext();
   }
@@ -33,120 +32,6 @@ export async function createContext({ req }: { req: Request }) {
     const ipInfo = await getIpInfo();
     if (ipInfo) {
       ({ ip } = ipInfo);
-    }
-  }
-
-  // Prioritize the custom auth token if present
-  if (customAuthHeader) {
-    console.log("Processing custom auth token");
-    try {
-      // Parse the base64 encoded JSON token using Node.js Buffer
-      let decodedTokenString;
-      try {
-        decodedTokenString = nodeDecode(customAuthHeader);
-        console.log("Decoded token string length:", decodedTokenString.length);
-      } catch (decodeError) {
-        console.error("Failed to decode custom auth token:", decodeError);
-        console.log("Raw token (first 50 chars):", customAuthHeader.substring(0, 50));
-        return createEmptyContext();
-      }
-      
-      let decodedToken;
-      try {
-        decodedToken = JSON.parse(decodedTokenString);
-        console.log("Parsed token with fields:", Object.keys(decodedToken));
-      } catch (parseError) {
-        console.error("Failed to parse token JSON:", parseError);
-        console.log("Decoded string:", decodedTokenString);
-        return createEmptyContext();
-      }
-      
-      // Validate the token (basic checks)
-      if (!decodedToken.user_id || !decodedToken.session_id) {
-        console.error("Invalid custom auth token format - missing required fields");
-        console.log("Token fields:", Object.keys(decodedToken));
-        return createEmptyContext();
-      }
-      
-      // Check token expiration
-      if (decodedToken.exp && decodedToken.exp < Math.floor(Date.now() / 1000)) {
-        console.error("Custom auth token expired");
-        return createEmptyContext();
-      }
-      
-      // Fetch the user from the database
-      const userProfile = await prisma.userProfile.findUnique({
-        where: { supId: decodedToken.user_id }
-      });
-      
-      if (!userProfile) {
-        console.error("User not found for custom auth token");
-        return createEmptyContext();
-      }
-      
-      console.log("Found user profile for custom auth:", {
-        id: userProfile.supId,
-        email: userProfile.supEmail ? "present" : "missing"
-      });
-      
-      // Look for the session in the database to validate
-      const sessionRecord = await prisma.session.findUnique({
-        where: { id: decodedToken.session_id }
-      });
-      
-      if (!sessionRecord) {
-        console.log("Session not found in database, creating new session record");
-        
-        // If session doesn't exist, create it based on the token data
-        const newSessionId = decodedToken.session_id || crypto.randomUUID();
-        const newDeviceNonce = decodedToken.device_nonce || deviceNonce || crypto.randomUUID();
-        
-        try {
-          await prisma.session.create({
-            data: {
-              id: newSessionId,
-              userId: decodedToken.user_id,
-              deviceNonce: newDeviceNonce,
-              ip: ip ? ip.split(',')[0].trim() : '127.0.0.1',
-              userAgent,
-              createdAt: new Date(decodedToken.iat ? decodedToken.iat * 1000 : Date.now()),
-              updatedAt: new Date()
-            }
-          });
-          
-          console.log("Created session from token data:", newSessionId);
-        } catch (sessionError) {
-          console.error("Failed to create session:", sessionError);
-          // Continue anyway - the session might exist but we couldn't find it
-        }
-      } else {
-        console.log("Found existing session:", sessionRecord.id);
-      }
-      
-      // Create a session object from the decoded token
-      const sessionData = {
-        userId: decodedToken.user_id,
-        id: decodedToken.session_id,
-        deviceNonce: deviceNonce || decodedToken.device_nonce,
-        ip,
-        userAgent,
-        createdAt: new Date(decodedToken.iat ? decodedToken.iat * 1000 : Date.now()),
-        updatedAt: new Date()
-      };
-      
-      console.log("Created session object with ID:", sessionData.id);
-      
-      return {
-        prisma,
-        user: {
-          id: userProfile.supId,
-          email: userProfile.supEmail
-        },
-        session: createSessionObject(sessionData, applicationId),
-      };
-    } catch (error) {
-      console.error("Error processing custom auth token:", error);
-      return createEmptyContext();
     }
   }
 
@@ -256,7 +141,8 @@ export async function createContext({ req }: { req: Request }) {
               
               // Create a new session if needed
               const newSessionId = decodedToken.session_id || crypto.randomUUID();
-              const newDeviceNonce = decodedToken.device_nonce || deviceNonce || crypto.randomUUID();
+              // Prioritize client-provided device nonce whenever possible
+              const newDeviceNonce = deviceNonce || decodedToken.device_nonce || crypto.randomUUID();
               
               try {
                 await prisma.session.create({

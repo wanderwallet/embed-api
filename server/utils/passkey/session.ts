@@ -28,18 +28,6 @@ export function createWebAuthnAccessTokenForUser(
   const issuedAt = Math.floor(Date.now() / 1000)
   const expirationTime = issuedAt + 3600 // 1 hour expiry
   
-  // Create session data for app_metadata
-  const sessionMetadata = sessionData ? {
-    sessionData: {
-      ip: sessionData.ip || '',
-      userAgent: sessionData.userAgent || '',
-      deviceNonce: sessionData.deviceNonce || '',
-      createdAt: sessionData.createdAt ? sessionData.createdAt.toISOString() : '',
-      updatedAt: sessionData.updatedAt ? sessionData.updatedAt.toISOString() : '',
-      applicationIds: sessionData.applicationIds || []
-    }
-  } : {};
-  
   // Define the payload type with optional session_id
   type JWTPayload = {
     iss: string;
@@ -50,24 +38,23 @@ export function createWebAuthnAccessTokenForUser(
     email: string | null;
     phone: string | null;
     app_metadata: {
-      sessionData?: {
-        ip: string;
-        userAgent: string;
-        deviceNonce: string;
-        createdAt: string;
-        updatedAt: string;
-        applicationIds: string[];
-      };
+      provider: string;
+      providers: string[];
       [key: string]: unknown;
     };
     user_metadata: {
-      auth_method: string;
       name: string | null;
       picture: string | null;
+      auth_method?: string;
     };
     role: string;
     is_anonymous: boolean;
     session_id?: string;
+    // Session data at root level
+    ip?: string;
+    userAgent?: string;
+    deviceNonce?: string;
+    applicationIds?: string[];
   }
   
   // Create a payload that matches Supabase's expected format
@@ -81,13 +68,13 @@ export function createWebAuthnAccessTokenForUser(
     email: user.supEmail,
     phone: user.supPhone,
     app_metadata: {
-      ...sessionMetadata,
-      // Any additional app_metadata can be added here
+      provider: 'passkey',
+      providers: ['passkey'],
     }, 
     user_metadata: {
-      auth_method: 'passkey',
       name: user.name,
       picture: user.picture,
+      auth_method: 'passkey',
     },
     role: 'authenticated',
     is_anonymous: false,
@@ -96,6 +83,14 @@ export function createWebAuthnAccessTokenForUser(
   // Add session_id to the token if provided
   if (sessionData?.id) {
     payload.session_id = sessionData.id;
+  }
+  
+  // Add session data at root level
+  if (sessionData) {
+    if (sessionData.ip) payload.ip = sessionData.ip;
+    if (sessionData.userAgent) payload.userAgent = sessionData.userAgent;
+    if (sessionData.deviceNonce) payload.deviceNonce = sessionData.deviceNonce;
+    if (sessionData.applicationIds) payload.applicationIds = sessionData.applicationIds;
   }
 
   const token = jwt.sign(payload, jwtSecret, {
@@ -140,18 +135,6 @@ export function createWebAuthnRefreshTokenForUser(
   const issuedAt = Math.floor(Date.now() / 1000)
   const expirationTime = issuedAt + 604800 // 7 days expiry for refresh token
   
-  // Create session data for app_metadata
-  const sessionMetadata = sessionData ? {
-    sessionData: {
-      ip: sessionData.ip || '',
-      userAgent: sessionData.userAgent || '',
-      deviceNonce: sessionData.deviceNonce || '',
-      createdAt: sessionData.createdAt ? sessionData.createdAt.toISOString() : '',
-      updatedAt: sessionData.updatedAt ? sessionData.updatedAt.toISOString() : '',
-      applicationIds: sessionData.applicationIds || []
-    }
-  } : {};
-  
   // Define payload type with refresh token specifics
   type RefreshTokenPayload = {
     iss: string;
@@ -163,24 +146,23 @@ export function createWebAuthnRefreshTokenForUser(
     phone: string | null;
     session_id: string;
     refresh_token_type: boolean;
-    app_metadata?: {
-      sessionData?: {
-        ip: string;
-        userAgent: string;
-        deviceNonce: string;
-        createdAt: string;
-        updatedAt: string;
-        applicationIds: string[];
-      };
+    app_metadata: {
+      provider: string;
+      providers: string[];
       [key: string]: unknown;
     };
     user_metadata: {
-      auth_method: string;
       name: string | null;
       picture: string | null;
+      auth_method?: string;
     };
     role: string;
     is_anonymous: boolean;
+    // Session data at root level
+    ip?: string;
+    userAgent?: string;
+    deviceNonce?: string;
+    applicationIds?: string[];
   }
   
   // Create a payload that matches Supabase's expected format for refresh tokens
@@ -195,18 +177,25 @@ export function createWebAuthnRefreshTokenForUser(
     phone: user.supPhone,
     session_id: sessionId || crypto.randomUUID(), // Use provided session ID or generate one as fallback
     refresh_token_type: true, // Indicate this is a refresh token
+    app_metadata: {
+      provider: 'passkey',
+      providers: ['passkey'],
+    },
     user_metadata: {
-      auth_method: 'passkey',
       name: user.name,
       picture: user.picture,
+      auth_method: 'passkey',
     },
     role: 'authenticated',
     is_anonymous: false,
   }
   
-  // Add session metadata if available
-  if (Object.keys(sessionMetadata).length > 0) {
-    payload.app_metadata = sessionMetadata;
+  // Add session data at root level
+  if (sessionData) {
+    if (sessionData.ip) payload.ip = sessionData.ip;
+    if (sessionData.userAgent) payload.userAgent = sessionData.userAgent;
+    if (sessionData.deviceNonce) payload.deviceNonce = sessionData.deviceNonce;
+    if (sessionData.applicationIds) payload.applicationIds = sessionData.applicationIds;
   }
 
   const token = jwt.sign(payload, jwtSecret, {
