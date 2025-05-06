@@ -16,10 +16,11 @@ function nodeDecode(base64String: string): string {
 export async function createContext({ req }: { req: Request }) {
 
   const authHeader = req.headers.get("authorization");
+  const customAuthHeader = req.headers.get("x-custom-auth");
   const clientId = req.headers.get("x-client-id");
   const applicationId = req.headers.get("x-application-id") || "";
 
-  if ((!authHeader) || !clientId) {
+  if ((!authHeader && !customAuthHeader) || !clientId) {
     console.log("Missing required headers for authentication");
     return createEmptyContext();
   }
@@ -32,6 +33,102 @@ export async function createContext({ req }: { req: Request }) {
     const ipInfo = await getIpInfo();
     if (ipInfo) {
       ({ ip } = ipInfo);
+    }
+  }
+
+  // Process custom auth token if present
+  if (customAuthHeader) {
+    console.log("Processing custom auth token");
+    try {
+      // Parse the base64 encoded JSON token
+      const decodedTokenString = nodeDecode(customAuthHeader);
+      const decodedToken = JSON.parse(decodedTokenString);
+      
+      // Validate the token has required fields
+      if (!decodedToken.user_id || !decodedToken.session_id) {
+        console.error("Invalid custom auth token format - missing required fields");
+        return createEmptyContext();
+      }
+      
+      // Check token expiration
+      if (decodedToken.exp && decodedToken.exp < Math.floor(Date.now() / 1000)) {
+        console.error("Custom auth token expired");
+        return createEmptyContext();
+      }
+      
+      // Fetch the user from the database
+      const userProfile = await prisma.userProfile.findUnique({
+        where: { supId: decodedToken.user_id }
+      });
+      
+      if (!userProfile) {
+        console.error("User not found for custom auth token");
+        return createEmptyContext();
+      }
+      
+      console.log("Found user profile for custom auth:", {
+        id: userProfile.supId,
+        email: userProfile.supEmail ? "present" : "missing"
+      });
+      
+      // Look for the session in the database
+      const sessionRecord = await prisma.session.findUnique({
+        where: { id: decodedToken.session_id }
+      });
+      
+      if (!sessionRecord) {
+        console.log("Session not found for custom token, creating new session record");
+        
+        // Create a new session if needed
+        const newSessionId = decodedToken.session_id || crypto.randomUUID();
+        // Prioritize client-provided device nonce whenever possible
+        const newDeviceNonce = deviceNonce || decodedToken.device_nonce || crypto.randomUUID();
+        
+        try {
+          await prisma.session.create({
+            data: {
+              id: newSessionId,
+              userId: decodedToken.user_id,
+              deviceNonce: newDeviceNonce,
+              ip: ip ? ip.split(',')[0].trim() : '127.0.0.1',
+              userAgent,
+              createdAt: new Date(decodedToken.iat ? decodedToken.iat * 1000 : Date.now()),
+              updatedAt: new Date()
+            }
+          });
+          
+          console.log("Created session from custom token:", newSessionId);
+        } catch (sessionError) {
+          console.error("Failed to create session:", sessionError);
+        }
+      } else {
+        console.log("Found existing session for custom token:", sessionRecord.id);
+      }
+      
+      // Create a session object
+      const sessionData = {
+        userId: decodedToken.user_id,
+        id: decodedToken.session_id,
+        deviceNonce: deviceNonce || decodedToken.device_nonce,
+        ip,
+        userAgent,
+        createdAt: new Date(decodedToken.iat ? decodedToken.iat * 1000 : Date.now()),
+        updatedAt: new Date()
+      };
+      
+      console.log("Created session object from custom token with ID:", sessionData.id);
+      
+      return {
+        prisma,
+        user: {
+          id: userProfile.supId,
+          email: userProfile.supEmail
+        },
+        session: createSessionObject(sessionData, applicationId),
+      };
+    } catch (error) {
+      console.error("Error processing custom auth token:", error);
+      return createEmptyContext();
     }
   }
 
