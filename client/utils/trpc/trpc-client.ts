@@ -37,12 +37,13 @@ export function setDeviceNonce() {
 }
 
 export const trpc = createTRPCNext<AppRouter>({
+  transformer: superjson,
   config() {
     return {
-      transformer: superjson,
       links: [
         httpBatchLink({
           url: `${getBaseUrl()}/api/trpc`,
+          transformer: superjson,
           headers() {
             return token
               ? {

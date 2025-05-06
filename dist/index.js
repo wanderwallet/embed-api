@@ -115,8 +115,7 @@ function createTRPCClient({
   }
   const url = trpcURL || (baseURL ? `${baseURL.replace(/\/$/, "")}/api/trpc` : "");
   if (!url) throw new Error("No `baseURL` or `trpcURL` provided.");
-  const client = (0, import_client.createTRPCProxyClient)({
-    transformer: import_superjson.default,
+  const client = (0, import_client.createTRPCClient)({
     links: [
       authErrorLink({
         onAuthError,
@@ -125,6 +124,7 @@ function createTRPCClient({
       }),
       (0, import_client.httpBatchLink)({
         url,
+        transformer: import_superjson.default,
         headers() {
           if (!deviceNonce) {
             throw new Error(`Missing device nonce header.`);
