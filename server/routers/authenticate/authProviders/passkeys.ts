@@ -18,14 +18,42 @@ import { createServerClient } from "@/server/utils/supabase/supabase-server-clie
 import { PasskeyChallengePurpose, UserProfile, PrismaClient } from "@prisma/client";
 import { createWebAuthnAccessTokenForUser, createWebAuthnRefreshTokenForUser } from "@/server/utils/passkey/session";
 
-// Helper function to convert base64 to Uint8Array
+/**
+ * Helper function to convert base64url to ArrayBuffer
+ * This function properly handles base64url encoded strings (used by WebAuthn) 
+ * by replacing URL-safe characters before decoding
+ */
 function base64ToArrayBuffer(base64: string): ArrayBuffer {
-  const binaryString = atob(base64.replace(/-/g, '+').replace(/_/g, '/').replace(/\s/g, ''));
-  const bytes = new Uint8Array(binaryString.length);
-  for (let i = 0; i < binaryString.length; i++) {
-    bytes[i] = binaryString.charCodeAt(i);
+  try {
+    // Check if input is a base64url string
+    // First prepare the string: convert base64url to standard base64
+    // - Replace '-' with '+'
+    // - Replace '_' with '/'
+    // - Add padding '=' if needed
+    let normalizedBase64 = base64.replace(/-/g, '+').replace(/_/g, '/');
+    
+    // Add padding
+    while (normalizedBase64.length % 4 !== 0) {
+      normalizedBase64 += '=';
+    }
+    
+    // Now decode to binary string
+    const binaryString = atob(normalizedBase64);
+    
+    // Convert to Uint8Array
+    const bytes = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      bytes[i] = binaryString.charCodeAt(i);
+    }
+    
+    return bytes.buffer;
+  } catch (error: unknown) {
+    console.error("Error decoding base64url string:", error);
+    console.error("Problematic input:", base64);
+    // Properly handle the unknown error by converting it to a string safely
+    const errorMessage = error instanceof Error ? error.message : String(error);
+    throw new Error(`Credential response was not a valid base64url string: ${errorMessage}`);
   }
-  return bytes.buffer;
 }
 
 /**
