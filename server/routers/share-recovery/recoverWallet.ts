@@ -37,6 +37,12 @@ export const RecoverWalletSchema = z
 export const recoverWallet = protectedProcedure
   .input(RecoverWalletSchema)
   .mutation(async ({ input, ctx }) => {
+    console.log("Recover wallet called with input:", { 
+      walletId: input.walletId,
+      challengeSolutionPrefix: input.challengeSolution?.substring(0, 5) + '...',
+      authMethod: ctx.user ? 'available' : 'unknown'
+    });
+
     // It is faster to make this query outside the transaction and await it inside, but if the transaction fails, this
     // will leave an orphan DeviceAndLocation behind. Still, this might not be an issue, as retrying this same
     // operation will probably reuse it. Otherwise, the cleanup cronjobs will take care of it:
@@ -68,7 +74,6 @@ export const recoverWallet = protectedProcedure
 
     if (!challenge) {
       // Just try again.
-
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.CHALLENGE_NOT_FOUND,
@@ -99,6 +104,7 @@ export const recoverWallet = protectedProcedure
       });
     }
 
+    // Standard challenge validation
     const publicKey =
       recoveryKeyShare?.recoveryBackupSharePublicKey ||
       (
@@ -215,6 +221,8 @@ export const recoverWallet = protectedProcedure
         ]);
       }
     );
+
+    console.log("Wallet recovery successful");
 
     return {
       wallet: wallet as DbWallet,

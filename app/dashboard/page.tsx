@@ -6,6 +6,7 @@ import { trpc } from "@/client/utils/trpc/trpc-client"
 import { ProtectedApiInteraction } from "../../client/components/ProtectedApiInteraction"
 import { useAuth } from "@/client/hooks/useAuth"
 import { supabase } from "@/client/utils/supabase/supabase-client-client"
+import RefreshTokenTest from "@/client/components/RefreshTokenTest"
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -19,19 +20,16 @@ export default function DashboardPage() {
     }
   }, [isAuthLoading, user, router])
 
-  const handleRefresh = async () => {
-    await supabase.auth.refreshSession();
-  }
-
   const handleLogout = async () => {
     try {
       setIsLoading(true);
 
       await logoutMutation.mutateAsync();
       await supabase.auth.signOut();
+      
+      router.push("/");
     } catch (error) {
       setIsLoading(false);
-
       console.error("Logout failed:", error)
     }
   }
@@ -44,13 +42,6 @@ export default function DashboardPage() {
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold">Dashboard</h1>
         <button
-          onClick={handleRefresh}
-          className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
-        >
-          Refresh Session
-        </button>
-
-        <button
           onClick={handleLogout}
           className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded focus:outline-none focus:shadow-outline"
         >
@@ -58,6 +49,13 @@ export default function DashboardPage() {
         </button>
       </div>
       <p className="mb-4">Welcome, user with ID: {user.id}</p>
+      
+      {/* Include the RefreshTokenTest component */}
+      <div className="mb-8">
+        <h2 className="text-xl font-bold mb-4">Session Management</h2>
+        <RefreshTokenTest />
+      </div>
+      
       <ProtectedApiInteraction />
     </div>
   )
