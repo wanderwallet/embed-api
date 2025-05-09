@@ -358,12 +358,8 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
         };
         output: {
             recoverableAccountWallets: {
-                id: string;
-                status: _prisma_client.$Enums.WalletStatus;
-                chain: _prisma_client.$Enums.Chain;
-                address: string;
-                publicKey: string | null;
                 canBeRecovered: boolean;
+                address: string;
             }[];
         };
     }>;
@@ -817,12 +813,8 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
             };
             output: {
                 recoverableAccountWallets: {
-                    id: string;
-                    status: _prisma_client.$Enums.WalletStatus;
-                    chain: _prisma_client.$Enums.Chain;
-                    address: string;
-                    publicKey: string | null;
                     canBeRecovered: boolean;
+                    address: string;
                 }[];
             };
         }>;

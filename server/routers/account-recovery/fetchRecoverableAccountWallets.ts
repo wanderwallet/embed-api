@@ -36,11 +36,8 @@ export const fetchRecoverableAccountWallets = publicProcedure
       async (tx) => {
         const recoverableAccountWalletsPromise = tx.wallet.findMany({
           select: {
-            id: true,
             publicKey: true,
             canBeRecovered: true,
-            status: true,
-            chain: true,
             address: true,
           },
           where: {
@@ -87,5 +84,14 @@ export const fetchRecoverableAccountWallets = publicProcedure
       });
     }
 
-    return { recoverableAccountWallets };
+    const finalRecoverableAccountWallets = recoverableAccountWallets.map(
+      (w) => ({
+        canBeRecovered: w.canBeRecovered,
+        address: w.address,
+      })
+    );
+
+    return {
+      recoverableAccountWallets: finalRecoverableAccountWallets,
+    };
   });
