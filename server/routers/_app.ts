@@ -1,4 +1,5 @@
 import { router } from "../trpc";
+import { fetchRecoverableAccountWallets } from "./account-recovery/fetchRecoverableAccountWallets";
 import { fetchRecoverableAccounts } from "@/server/routers/account-recovery/fetchRecoverableAccounts";
 import { generateAccountRecoveryChallenge } from "@/server/routers/account-recovery/generateAccountRecoveryChallenge";
 import { generateFetchRecoverableAccountsChallenge } from "@/server/routers/account-recovery/generateFetchRecoverableWalletsChallenge";
@@ -64,6 +65,7 @@ export const appRouter = router({
   // Account Recovery:
   generateFetchRecoverableAccountsChallenge,
   fetchRecoverableAccounts,
+  fetchRecoverableAccountWallets,
   generateAccountRecoveryChallenge,
   recoverAccount,
 });

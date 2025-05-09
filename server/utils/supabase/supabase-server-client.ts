@@ -7,13 +7,22 @@ ensureIsServer("supabase-server-client.ts");
 const NEXT_PUBLIC_SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "";
 const NEXT_PUBLIC_SUPABASE_ANON_KEY =
   process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "";
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY || "";
 
-export async function createServerClient(userAgent?: string) {
+interface CreateServerClientOptions {
+  userAgent?: string;
+  isAdmin?: boolean;
+}
+
+export async function createServerClient({
+  userAgent,
+  isAdmin = false,
+}: CreateServerClientOptions = {}) {
   const cookieStore = await cookies();
 
   return supabaseCreateServerClient(
     NEXT_PUBLIC_SUPABASE_URL,
-    NEXT_PUBLIC_SUPABASE_ANON_KEY,
+    isAdmin ? SUPABASE_SERVICE_ROLE_KEY : NEXT_PUBLIC_SUPABASE_ANON_KEY,
     {
       cookies: {
         getAll() {
