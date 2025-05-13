@@ -43,9 +43,9 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
             createdAt: Date;
             updatedAt: Date;
             userId: string;
-            userAgent: string;
             deviceNonce: string;
             ip: string;
+            userAgent: string;
         } & {
             applicationId: string;
         };
@@ -57,9 +57,9 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
             createdAt: Date;
             updatedAt: Date;
             userId: string;
-            userAgent: string;
             deviceNonce: string;
             ip: string;
+            userAgent: string;
         } & {
             applicationId: string;
         };
@@ -426,9 +426,9 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 createdAt: Date;
                 updatedAt: Date;
                 userId: string;
-                userAgent: string;
                 deviceNonce: string;
                 ip: string;
+                userAgent: string;
             } & {
                 applicationId: string;
             };
@@ -498,9 +498,9 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                 createdAt: Date;
                 updatedAt: Date;
                 userId: string;
-                userAgent: string;
                 deviceNonce: string;
                 ip: string;
+                userAgent: string;
             } & {
                 applicationId: string;
             };
@@ -512,9 +512,9 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                 createdAt: Date;
                 updatedAt: Date;
                 userId: string;
-                userAgent: string;
                 deviceNonce: string;
                 ip: string;
+                userAgent: string;
             } & {
                 applicationId: string;
             };
@@ -881,9 +881,9 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     createdAt: Date;
                     updatedAt: Date;
                     userId: string;
-                    userAgent: string;
                     deviceNonce: string;
                     ip: string;
+                    userAgent: string;
                 } & {
                     applicationId: string;
                 };

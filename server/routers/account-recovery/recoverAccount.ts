@@ -145,15 +145,7 @@ export const recoverAccount = protectedProcedure
       return { userDetails };
     });
 
-    try {
-      const supabase = await createServerClient({ isAdmin: true });
-      const { error } = await supabase.auth.admin.deleteUser(input.userId);
-      if (error) throw error;
-    } catch (error) {
-      // TODO: Remove orphaned user from database if this fails
-      // Log the error but don't fail the recovery since the main transaction succeeded
-      console.error("Failed to delete Supabase user:", error);
-    }
+    // TODO: Should we delete the user from Supabase?
 
     return { userDetails };
   });
