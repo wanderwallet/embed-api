@@ -71,6 +71,13 @@ export const recoverAccount = protectedProcedure
     const userDetails = await ctx.prisma.$transaction(async (tx) => {
       const dateNow = new Date();
 
+      if (ctx.session?.id) {
+        await tx.session.update({
+          where: { id: ctx.session.id },
+          data: { userId: input.userId },
+        });
+      }
+
       const [deletedUserProfile, unrecoverableWallets] = await Promise.all([
         // Delete the new userProfile
         tx.userProfile.delete({
