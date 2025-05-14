@@ -1,5 +1,5 @@
-import { z } from "zod"
-import { UserDetailsPrivacySetting, WalletStatus } from '@prisma/client';
+import { z } from "zod";
+import { UserDetailsPrivacySetting, WalletStatus } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { publicProcedure } from "@/server/trpc";
@@ -20,7 +20,7 @@ export const fetchRecoverableAccounts = publicProcedure
 
     const anonChallenge = await ctx.prisma.anonChallenge.findFirst({
       where: {
-        id: input.challengeId
+        id: input.challengeId,
       },
     });
 
@@ -33,9 +33,7 @@ export const fetchRecoverableAccounts = publicProcedure
       });
     }
 
-    const [
-      recoverableAccounts
-    ] = await ctx.prisma.$transaction(async (tx) => {
+    const [recoverableAccounts] = await ctx.prisma.$transaction(async (tx) => {
       const recoverableAccountsPromise = tx.userProfile.findMany({
         select: {
           supId: true,
@@ -66,14 +64,11 @@ export const fetchRecoverableAccounts = publicProcedure
 
       const deleteChallengePromise = tx.anonChallenge.delete({
         where: {
-          id: input.challengeId
+          id: input.challengeId,
         },
       });
 
-      return Promise.all([
-        recoverableAccountsPromise,
-        deleteChallengePromise,
-      ]);
+      return Promise.all([recoverableAccountsPromise, deleteChallengePromise]);
     });
 
     if (recoverableAccounts.length === 0) {
@@ -99,28 +94,46 @@ export const fetchRecoverableAccounts = publicProcedure
       });
     }
 
-    const filteredRecoverableAccounts = recoverableAccounts.map((recoverableAccount) => {
-      const {
-        supId,
-        supEmail,
-        supPhone,
-        name,
-        email,
-        phone,
-        picture,
-        userDetailsRecoveryPrivacy,
-      } = recoverableAccount;
+    const filteredRecoverableAccounts = recoverableAccounts.map(
+      (recoverableAccount) => {
+        const {
+          supId,
+          supEmail,
+          supPhone,
+          name,
+          email,
+          phone,
+          picture,
+          userDetailsRecoveryPrivacy,
+        } = recoverableAccount;
 
-      const filteredRecoverableAccount: RecoverableAccount = {
-        userId: supId,
-        name: userDetailsRecoveryPrivacy.includes(UserDetailsPrivacySetting.NAME) ? name : null,
-        email: userDetailsRecoveryPrivacy.includes(UserDetailsPrivacySetting.EMAIL) ? (email || supEmail) : null,
-        phone: userDetailsRecoveryPrivacy.includes(UserDetailsPrivacySetting.PHONE) ? (phone || supPhone) : null,
-        picture: userDetailsRecoveryPrivacy.includes(UserDetailsPrivacySetting.PICTURE) ? picture : null,
-      };
+        const filteredRecoverableAccount: RecoverableAccount = {
+          userId: supId,
+          name: userDetailsRecoveryPrivacy.includes(
+            UserDetailsPrivacySetting.NAME
+          )
+            ? name
+            : null,
+          email: userDetailsRecoveryPrivacy.includes(
+            UserDetailsPrivacySetting.EMAIL
+          )
+            ? email || supEmail
+            : null,
+          phone: userDetailsRecoveryPrivacy.includes(
+            UserDetailsPrivacySetting.PHONE
+          )
+            ? phone || supPhone
+            : null,
+          picture: userDetailsRecoveryPrivacy.includes(
+            UserDetailsPrivacySetting.PICTURE
+          )
+            ? picture
+            : null,
+        };
 
-      return filteredRecoverableAccount;
-    });
+        return filteredRecoverableAccount;
+      }
+    );
 
     return {
       recoverableAccounts: filteredRecoverableAccounts,
