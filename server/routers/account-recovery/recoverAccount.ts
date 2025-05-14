@@ -8,7 +8,6 @@ import {
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
-import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 
 export const RecoverAccountSchema = z.object({
   userId: z.string().uuid(),
@@ -20,9 +19,6 @@ export const RecoverAccountSchema = z.object({
 export const recoverAccount = protectedProcedure
   .input(RecoverAccountSchema)
   .mutation(async ({ input, ctx }) => {
-    // TODO: This procedure should be like a clone of `authenticate` but with the `userId` and `challengeSolution`
-    // needed to link an existing user to the currently used authentication method, rather than creating a new one.
-
     const now = Date.now();
 
     const challenge = await ctx.prisma.challenge.findFirst({
@@ -68,82 +64,94 @@ export const recoverAccount = protectedProcedure
       });
     }
 
-    const userDetails = await ctx.prisma.$transaction(async (tx) => {
-      const dateNow = new Date();
+    const userDetails = await ctx.prisma.$transaction(
+      async (tx) => {
+        const dateNow = new Date();
 
-      if (ctx.session?.id) {
-        await tx.session.update({
-          where: { id: ctx.session.id },
-          data: { userId: input.userId },
-        });
-      }
+        // Update session to point to recovered user
+        if (ctx.session?.id) {
+          await tx.session.update({
+            where: { id: ctx.session.id },
+            data: { userId: input.userId },
+          });
+        }
 
-      const [deletedUserProfile, unrecoverableWallets] = await Promise.all([
-        // Delete the new userProfile
-        tx.userProfile.delete({
-          where: { supId: ctx.user.id },
-        }),
-        // Find unrecoverable wallets
-        tx.wallet.findMany({
-          where: {
-            userId: ctx.user.id,
-            canBeRecovered: false,
-            source: {
-              path: ["type"],
-              equals: WalletSourceType.GENERATED,
+        const [deletedUserProfile, unrecoverableWallets] = await Promise.all([
+          // Delete the new userProfile
+          tx.userProfile.delete({ where: { supId: ctx.user.id } }),
+          // Find unrecoverable wallets
+          tx.wallet.findMany({
+            where: {
+              userId: ctx.user.id,
+              canBeRecovered: false,
+              source: {
+                path: ["type"],
+                equals: WalletSourceType.GENERATED,
+              },
             },
-          },
-        }),
-      ]);
+          }),
+        ]);
 
-      // Update the old userProfile with the deleted one's data
-      const userDetails = await tx.userProfile.update({
-        where: {
-          supId: input.userId,
-        },
-        data: {
-          ...deletedUserProfile,
-          recoveredAt: dateNow,
-        },
-      });
-
-      await Promise.all([
-        // Delete all WorkKeyShares
-        tx.workKeyShare.deleteMany({
+        const oldUserProfileData = await tx.userProfile.findUnique({
           where: {
-            userId: input.userId,
+            supId: input.userId,
           },
-        }),
-        // Handle unrecoverable wallets if any exist
-        unrecoverableWallets.length > 0
-          ? Promise.all([
-              tx.wallet.updateMany({
-                where: {
-                  id: {
-                    in: unrecoverableWallets.map((w) => w.id),
-                  },
-                },
-                data: {
-                  status: WalletStatus.LOST,
-                },
-              }),
-              tx.recoveryKeyShare.deleteMany({
-                where: {
-                  walletId: {
-                    in: unrecoverableWallets.map((w) => w.id),
-                  },
-                },
-              }),
-            ])
-          : null,
-        // Delete the challenge
-        tx.challenge.delete({
-          where: { id: challenge.id },
-        }),
-      ]);
+        });
 
-      return { userDetails };
-    });
+        // Update the old userProfile with the deleted one's data
+        const userDetails = await tx.userProfile.update({
+          where: {
+            supId: input.userId,
+          },
+          data: {
+            ...deletedUserProfile,
+            recoveredAt: dateNow,
+          },
+        });
+
+        await Promise.all([
+          // attach a new userProfile to the old user
+          tx.userProfile.create({
+            data: { ...oldUserProfileData, supId: input.userId },
+          }),
+          // Delete all WorkKeyShares
+          tx.workKeyShare.deleteMany({
+            where: {
+              userId: input.userId,
+            },
+          }),
+          // Handle unrecoverable wallets if any exist
+          unrecoverableWallets.length > 0
+            ? Promise.all([
+                tx.wallet.updateMany({
+                  where: {
+                    id: {
+                      in: unrecoverableWallets.map((w) => w.id),
+                    },
+                  },
+                  data: {
+                    status: WalletStatus.LOST,
+                  },
+                }),
+                tx.recoveryKeyShare.deleteMany({
+                  where: {
+                    walletId: {
+                      in: unrecoverableWallets.map((w) => w.id),
+                    },
+                  },
+                }),
+              ])
+            : null,
+          // Delete the challenge
+          tx.challenge.delete({
+            where: { id: challenge.id },
+          }),
+        ]);
+
+        return { userDetails };
+      },
+      { timeout: 7000 }
+    );
 
     // TODO: Should we delete the user from Supabase?
 
