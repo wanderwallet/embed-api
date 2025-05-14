@@ -21,9 +21,14 @@ export const recoverAccount = protectedProcedure
   .mutation(async ({ input, ctx }) => {
     const now = Date.now();
 
+    // User id of the account being recovered
+    const oldUserId = input.userId;
+    // User id of the account performing the recovery
+    const newUserId = ctx.user.id;
+
     const challenge = await ctx.prisma.challenge.findFirst({
       where: {
-        userId: input.userId,
+        userId: oldUserId,
         purpose: ChallengePurpose.ACCOUNT_RECOVERY,
       },
       include: {
@@ -68,58 +73,38 @@ export const recoverAccount = protectedProcedure
       async (tx) => {
         const dateNow = new Date();
 
-        // Update session to point to recovered user
+        // Move new user's current session to point to the old user
         if (ctx.session?.id) {
           await tx.session.update({
             where: { id: ctx.session.id },
-            data: { userId: input.userId },
+            data: { userId: oldUserId },
           });
         }
 
-        const [deletedUserProfile, unrecoverableWallets] = await Promise.all([
-          // Delete the new userProfile
-          tx.userProfile.delete({ where: { supId: ctx.user.id } }),
-          // Find unrecoverable wallets
-          tx.wallet.findMany({
-            where: {
-              userId: ctx.user.id,
-              canBeRecovered: false,
-              source: {
-                path: ["type"],
-                equals: WalletSourceType.GENERATED,
+        const [deletedNewUserProfile, unrecoverableWallets] = await Promise.all(
+          [
+            // Delete the new userProfile
+            tx.userProfile.delete({ where: { supId: newUserId } }),
+            // Find unrecoverable wallets from the old user
+            tx.wallet.findMany({
+              where: {
+                userId: oldUserId,
+                canBeRecovered: false,
+                source: {
+                  path: ["type"],
+                  equals: WalletSourceType.GENERATED,
+                },
               },
-            },
-          }),
-        ]);
+              select: { id: true },
+            }),
+          ]
+        );
 
-        const oldUserProfileData = await tx.userProfile.findUnique({
-          where: {
-            supId: input.userId,
-          },
-        });
-
-        // Update the old userProfile with the deleted one's data
-        const userDetails = await tx.userProfile.update({
-          where: {
-            supId: input.userId,
-          },
-          data: {
-            ...deletedUserProfile,
-            recoveredAt: dateNow,
-          },
-        });
-
-        await Promise.all([
-          // attach a new userProfile to the old user
-          tx.userProfile.create({
-            data: { ...oldUserProfileData, supId: input.userId },
-          }),
+        const [oldUserProfile] = await Promise.all([
+          // get the old userProfile data
+          tx.userProfile.findUnique({ where: { supId: oldUserId } }),
           // Delete all WorkKeyShares
-          tx.workKeyShare.deleteMany({
-            where: {
-              userId: input.userId,
-            },
-          }),
+          tx.workKeyShare.deleteMany({ where: { userId: oldUserId } }),
           // Handle unrecoverable wallets if any exist
           unrecoverableWallets.length > 0
             ? Promise.all([
@@ -142,6 +127,24 @@ export const recoverAccount = protectedProcedure
                 }),
               ])
             : null,
+        ]);
+
+        // Update the old userProfile with the new user's data
+        const userDetails = await tx.userProfile.update({
+          where: {
+            supId: oldUserId,
+          },
+          data: {
+            ...deletedNewUserProfile,
+            recoveredAt: dateNow,
+          },
+        });
+
+        await Promise.all([
+          // attach a new userProfile to the old user
+          tx.userProfile.create({
+            data: { ...oldUserProfile, supId: oldUserId },
+          }),
           // Delete the challenge
           tx.challenge.delete({
             where: { id: challenge.id },
