@@ -1,4 +1,3 @@
-
 export const ErrorMessages = {
   // Wallets:
   WALLET_NOT_FOUND: `Wallet not found.`,
@@ -18,8 +17,9 @@ export const ErrorMessages = {
 
   // Recovery:
   RECOVERABLE_ACCOUNTS_NOT_FOUND: `No recoverable accounts found.`,
+  RECOVERABLE_ACCOUNT_NOT_FOUND: `Recoverable account not found.`,
+  RECOVERABLE_ACCOUNT_WALLETS_NOT_FOUND: `No recoverable account wallets found.`,
 
   // Generic:
-  NO_OP: "This request is a no-op."
+  NO_OP: "This request is a no-op.",
 } as const;
-

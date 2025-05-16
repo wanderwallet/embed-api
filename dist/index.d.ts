@@ -350,6 +350,19 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
             recoverableAccounts: RecoverableAccount[];
         };
     }>;
+    fetchRecoverableAccountWallets: _trpc_server.TRPCMutationProcedure<{
+        input: {
+            userId: string;
+            challengeId: string;
+            challengeSolution: string;
+        };
+        output: {
+            recoverableAccountWallets: {
+                canBeRecovered: boolean;
+                address: string;
+            }[];
+        };
+    }>;
     generateAccountRecoveryChallenge: _trpc_server.TRPCMutationProcedure<{
         input: {
             chain: "ARWEAVE" | "ETHEREUM";
@@ -375,32 +388,25 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
             challengeSolution: string;
         };
         output: {
-            userDetails: [{
-                name: string | null;
-                createdAt: Date;
-                updatedAt: Date;
-                supId: string;
-                supEmail: string | null;
-                supPhone: string | null;
-                email: string | null;
-                phone: string | null;
-                picture: string | null;
-                recoveredAt: Date | null;
-                userDetailsRecoveryPrivacy: _prisma_client.$Enums.UserDetailsPrivacySetting[];
-                notificationsSetting: _prisma_client.$Enums.NotificationSetting;
-                recoveryWalletsRequiredSetting: number;
-                ipPrivacyFilterSetting: _prisma_client.$Enums.FilterPrivacySetting | null;
-                countryPrivacySetting: _prisma_client.$Enums.FilterPrivacySetting | null;
-            }, {
-                id: string;
-                createdAt: Date;
-                userId: string;
-                value: string;
-                walletId: string;
-                type: _prisma_client.$Enums.ChallengeType;
-                purpose: _prisma_client.$Enums.ChallengePurpose;
-                version: string;
-            }];
+            userDetails: {
+                userDetails: {
+                    name: string | null;
+                    createdAt: Date;
+                    updatedAt: Date;
+                    supId: string;
+                    supEmail: string | null;
+                    supPhone: string | null;
+                    email: string | null;
+                    phone: string | null;
+                    picture: string | null;
+                    recoveredAt: Date | null;
+                    userDetailsRecoveryPrivacy: _prisma_client.$Enums.UserDetailsPrivacySetting[];
+                    notificationsSetting: _prisma_client.$Enums.NotificationSetting;
+                    recoveryWalletsRequiredSetting: number;
+                    ipPrivacyFilterSetting: _prisma_client.$Enums.FilterPrivacySetting | null;
+                    countryPrivacySetting: _prisma_client.$Enums.FilterPrivacySetting | null;
+                };
+            };
         };
     }>;
     validateApplication: _trpc_server.TRPCQueryProcedure<{
@@ -799,6 +805,19 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                 recoverableAccounts: RecoverableAccount[];
             };
         }>;
+        fetchRecoverableAccountWallets: _trpc_server.TRPCMutationProcedure<{
+            input: {
+                userId: string;
+                challengeId: string;
+                challengeSolution: string;
+            };
+            output: {
+                recoverableAccountWallets: {
+                    canBeRecovered: boolean;
+                    address: string;
+                }[];
+            };
+        }>;
         generateAccountRecoveryChallenge: _trpc_server.TRPCMutationProcedure<{
             input: {
                 chain: "ARWEAVE" | "ETHEREUM";
@@ -824,32 +843,25 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                 challengeSolution: string;
             };
             output: {
-                userDetails: [{
-                    name: string | null;
-                    createdAt: Date;
-                    updatedAt: Date;
-                    supId: string;
-                    supEmail: string | null;
-                    supPhone: string | null;
-                    email: string | null;
-                    phone: string | null;
-                    picture: string | null;
-                    recoveredAt: Date | null;
-                    userDetailsRecoveryPrivacy: _prisma_client.$Enums.UserDetailsPrivacySetting[];
-                    notificationsSetting: _prisma_client.$Enums.NotificationSetting;
-                    recoveryWalletsRequiredSetting: number;
-                    ipPrivacyFilterSetting: _prisma_client.$Enums.FilterPrivacySetting | null;
-                    countryPrivacySetting: _prisma_client.$Enums.FilterPrivacySetting | null;
-                }, {
-                    id: string;
-                    createdAt: Date;
-                    userId: string;
-                    value: string;
-                    walletId: string;
-                    type: _prisma_client.$Enums.ChallengeType;
-                    purpose: _prisma_client.$Enums.ChallengePurpose;
-                    version: string;
-                }];
+                userDetails: {
+                    userDetails: {
+                        name: string | null;
+                        createdAt: Date;
+                        updatedAt: Date;
+                        supId: string;
+                        supEmail: string | null;
+                        supPhone: string | null;
+                        email: string | null;
+                        phone: string | null;
+                        picture: string | null;
+                        recoveredAt: Date | null;
+                        userDetailsRecoveryPrivacy: _prisma_client.$Enums.UserDetailsPrivacySetting[];
+                        notificationsSetting: _prisma_client.$Enums.NotificationSetting;
+                        recoveryWalletsRequiredSetting: number;
+                        ipPrivacyFilterSetting: _prisma_client.$Enums.FilterPrivacySetting | null;
+                        countryPrivacySetting: _prisma_client.$Enums.FilterPrivacySetting | null;
+                    };
+                };
             };
         }>;
         validateApplication: _trpc_server.TRPCQueryProcedure<{
