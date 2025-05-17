@@ -1,3 +1,8 @@
+// TODO: Uncomment and run locally to generate ERD.  Will not work on Vercel.
+// generator erd {
+//   provider = "prisma-erd-generator"
+// }
+
 generator client {
   provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
@@ -121,6 +126,12 @@ enum Plan {
   PRO
 }
 
+enum PasskeyChallengePurpose {
+  REGISTRATION
+  AUTHENTICATION
+  EMAIL_VERIFICATION
+}
+
 // TODO: Document index usages.
 
 /**
@@ -196,6 +207,7 @@ model UserProfile {
   devicesAndLocations    DeviceAndLocation[]
   sessions               Session[]
   authenticationAttempts AuthenticationAttempt[]
+  passkeys               Passkey[]
 
   @@map("UserProfiles")
 }
@@ -591,6 +603,35 @@ model AuthenticationAttempt {
   @@index([userId])
   @@index([createdAt])
   @@map("LoginAttempts")
+}
+
+model Passkey {
+  id           String   @id @default(uuid())
+  credentialId String   @db.VarChar(255)
+  publicKey    String   @db.VarChar(1024)
+  signCount    Int      @default(0)
+  label        String   @db.VarChar(255)
+  createdAt    DateTime @default(now())
+  lastUsedAt   DateTime @default(now())
+
+  UserProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
+  userId      String      @db.Uuid
+
+  @@unique([userId, credentialId], name: "userPasskey")
+  @@map("Passkeys")
+}
+
+model PasskeyChallenge {
+  id        String                  @id @default(uuid())
+  userId    String                  @db.Uuid
+  value     String                  @db.VarChar(255)
+  purpose   PasskeyChallengePurpose
+  version   String                  @db.VarChar(50)
+  createdAt DateTime                @default(now())
+
+  @@unique([userId, purpose])
+  @@index([userId, purpose])
+  @@map("PasskeyChallenges")
 }
 
 model Organization {

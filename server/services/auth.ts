@@ -1,14 +1,79 @@
 import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import { TRPCError } from "@trpc/server";
+export function uint8ArrayToString(arr: Uint8Array): string {
+  return Buffer.from(arr).toString('base64');
+}
 
+export function stringToUint8Array(str: string): Uint8Array {
+  return new Uint8Array(Buffer.from(str, 'utf-8'));
+}
 export async function getUser() {
   const supabase = await createServerClient();
 
   const {
     data: { user },
   } = await supabase.auth.getUser();
-
   return user
+}
+
+export async function loginWithGoogle(authProviderType: string) {
+  if (authProviderType !== "GOOGLE") {
+    throw new TRPCError({
+      code: "BAD_REQUEST",
+      message: "Invalid auth provider type",
+    });
+  }
+
+  const supabase = await createServerClient();
+
+  const { data, error } = await supabase.auth.signInWithOAuth({
+    provider: "google",
+    options: {
+      redirectTo:
+        typeof window !== "undefined"
+          ? `${window.location.origin}/auth/callback/google`
+          : undefined,
+    },
+  });
+
+  if (error) {
+    console.error("Google sign-in error:", error);
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: error.message,
+    });
+  }
+
+  if (!data.url) {
+    throw new TRPCError({
+      code: "INTERNAL_SERVER_ERROR",
+      message: "No redirect URL returned from Supabase",
+    });
+  }
+
+  return data.url;
+}
+
+export async function handleGoogleCallback() {
+  const user = await getUser();
+  if (!user) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Google authentication failed",
+    });
+  }
+  return user;
+}
+
+export async function validateSession() {
+  const user = await getUser();
+  if (!user) {
+    throw new TRPCError({
+      code: "UNAUTHORIZED",
+      message: "Invalid or expired session",
+    });
+  }
+  return user;
 }
 
 export async function refreshSession() {
@@ -51,8 +116,8 @@ export async function logoutUser() {
   const { error } = await supabase.auth.signOut()
 
   if (error) {
-    console.error("Error during logout:", error)
-    throw error
+    console.error("Error during logout:", error);
+    throw error;
   }
 
   return { success: true }

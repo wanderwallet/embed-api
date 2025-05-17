@@ -18,6 +18,9 @@
     "sdk:build": "tsup"
   },
   "dependencies": {
+    "@simplewebauthn/browser": "^13.1.0",
+    "@simplewebauthn/server": "^13.1.0",
+    "server": "link:@types/@simplewebauthn/server",
     "@prisma/client": "6.7.0",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.4",
@@ -38,6 +41,8 @@
     "zod": "^3.24.4"
   },
   "devDependencies": {
+    "@mermaid-js/mermaid-cli": "^11.4.2",
+    "prisma-erd-generator": "^1.11.2",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^22.15.3",
     "@types/react": "19.1.2",
