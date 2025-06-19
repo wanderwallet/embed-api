@@ -78,7 +78,7 @@ export const fetchRecoverableAccounts = publicProcedure
       });
     }
 
-    const isChallengeValid = await ChallengeUtils.verifyChallenge({
+    const challengeErrorMessage = await ChallengeUtils.verifyChallenge({
       challenge: anonChallenge,
       session: ctx.session,
       shareHash: null,
@@ -87,10 +87,10 @@ export const fetchRecoverableAccounts = publicProcedure
       publicKey: recoverableAccounts[0].wallets[0].publicKey || null,
     });
 
-    if (!isChallengeValid) {
+    if (challengeErrorMessage) {
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: ErrorMessages.INVALID_CHALLENGE,
+        message: challengeErrorMessage,
       });
     }
 

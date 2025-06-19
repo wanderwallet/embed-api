@@ -13,7 +13,10 @@ export const ErrorMessages = {
 
   // Challenge:
   CHALLENGE_NOT_FOUND: `Challenge not found. It might have been resolved already, or it might have expired.`,
-  INVALID_CHALLENGE: `Invalid challenge.`,
+  CHALLENGE_INVALID: `Invalid challenge.`,
+  CHALLENGE_EXPIRED_ERROR: `Challenge expired.`,
+  CHALLENGE_MISSING_PK: `Missing public key.`,
+  CHALLENGE_UNEXPECTED_ERROR: `Unexpected error validating challenge.`,
 
   // Recovery:
   RECOVERABLE_ACCOUNTS_NOT_FOUND: `No recoverable accounts found.`,

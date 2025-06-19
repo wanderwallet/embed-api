@@ -57,7 +57,7 @@ export const registerAuthShare = protectedProcedure
       });
     }
 
-    const isChallengeValid = await ChallengeUtils.verifyChallenge({
+    const challengeErrorMessage = await ChallengeUtils.verifyChallenge({
       challenge,
       session: ctx.session,
       shareHash: null,
@@ -68,7 +68,7 @@ export const registerAuthShare = protectedProcedure
 
     // TODO: Add a wallet activation attempt limit?
 
-    if (!isChallengeValid) {
+    if (challengeErrorMessage) {
       // TODO: Register the failed attempt anyway!
 
       await ctx.prisma.challenge.delete({
@@ -77,7 +77,7 @@ export const registerAuthShare = protectedProcedure
 
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: ErrorMessages.INVALID_CHALLENGE,
+        message: challengeErrorMessage,
       });
     }
 

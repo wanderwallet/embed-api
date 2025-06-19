@@ -85,7 +85,7 @@ export const activateWallet = protectedProcedure
       });
     }
 
-    const isChallengeValid = await ChallengeUtils.verifyChallenge({
+    const challengeErrorMessage = await ChallengeUtils.verifyChallenge({
       challenge,
       session: ctx.session,
       shareHash: workKeyShare.deviceShareHash,
@@ -94,7 +94,7 @@ export const activateWallet = protectedProcedure
       publicKey: workKeyShare.deviceSharePublicKey,
     });
 
-    if (!isChallengeValid) {
+    if (challengeErrorMessage) {
       // TODO: Add a wallet activation attempt limit?
       // TODO: How to limit the # of activations per user?
 
@@ -125,7 +125,7 @@ export const activateWallet = protectedProcedure
 
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: ErrorMessages.INVALID_CHALLENGE,
+        message: challengeErrorMessage,
       });
     }
 

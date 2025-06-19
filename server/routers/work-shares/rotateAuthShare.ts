@@ -1,6 +1,6 @@
 import { protectedProcedure } from "@/server/trpc";
 import { z } from "zod";
-import { ChallengePurpose } from "@prisma/client";
+import { ChallengePurpose, WalletStatus } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
@@ -29,7 +29,7 @@ export const rotateAuthShare = protectedProcedure
     // check that condition again here. It's also `activateWallet` where shares are deleted if the rotation warnings
     // have been ignored for too long.
 
-    const challenge = await ctx.prisma.challenge.findFirst({
+    const challengePromise = ctx.prisma.challenge.findFirst({
       where: {
         userId: ctx.user.id,
         walletId: input.walletId,
@@ -40,6 +40,22 @@ export const rotateAuthShare = protectedProcedure
       },
     });
 
+    const workKeySharePromise = ctx.prisma.workKeyShare.findFirst({
+      where: {
+        userId: ctx.user.id,
+        deviceNonce: ctx.session.deviceNonce,
+        walletId: input.walletId,
+        wallet: {
+          status: WalletStatus.ENABLED,
+        },
+      },
+    });
+
+    const [challenge, workKeyShare] = await Promise.all([
+      challengePromise,
+      workKeySharePromise,
+    ]);
+
     if (!challenge) {
       // Just try again.
 
@@ -49,7 +65,14 @@ export const rotateAuthShare = protectedProcedure
       });
     }
 
-    const isChallengeValid = await ChallengeUtils.verifyChallenge({
+    if (!workKeyShare) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: ErrorMessages.WORK_SHARE_NOT_FOUND,
+      });
+    }
+
+    const challengeErrorMessage = await ChallengeUtils.verifyChallenge({
       challenge,
       session: ctx.session,
       shareHash: null,
@@ -60,16 +83,32 @@ export const rotateAuthShare = protectedProcedure
 
     // TODO: Add a wallet activation attempt limit?
 
-    if (!isChallengeValid) {
+    if (challengeErrorMessage) {
       // TODO: Register the failed attempt anyway!
 
-      await ctx.prisma.challenge.delete({
-        where: { id: challenge.id },
+      await ctx.prisma.$transaction(async (tx) => {
+        // TODO: Does this make sense? It can be exploited by intentionally making the challenge fail to avoid rotation...
+        // const updateRotationWarningPromise = tx.workKeyShare.update({
+        //   where: {
+        //     id: workKeyShare.id,
+        //   },
+        //   data: {
+        //     rotationWarnings: Math.max(0, workKeyShare.rotationWarnings - 1),
+        //   },
+        // });
+
+        const updateRotationWarningPromise = Promise.resolve();
+
+        const deleteChallengePromise = tx.challenge.delete({
+          where: { id: challenge.id },
+        });
+
+        return Promise.all([updateRotationWarningPromise, deleteChallengePromise]);
       });
 
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: ErrorMessages.INVALID_CHALLENGE,
+        message: challengeErrorMessage,
       });
     }
 
