@@ -57,8 +57,6 @@ export const rotateAuthShare = protectedProcedure
     ]);
 
     if (!challenge) {
-      // Just try again.
-
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.CHALLENGE_NOT_FOUND,
@@ -86,24 +84,8 @@ export const rotateAuthShare = protectedProcedure
     if (challengeErrorMessage) {
       // TODO: Register the failed attempt anyway!
 
-      await ctx.prisma.$transaction(async (tx) => {
-        // TODO: Does this make sense? It can be exploited by intentionally making the challenge fail to avoid rotation...
-        // const updateRotationWarningPromise = tx.workKeyShare.update({
-        //   where: {
-        //     id: workKeyShare.id,
-        //   },
-        //   data: {
-        //     rotationWarnings: Math.max(0, workKeyShare.rotationWarnings - 1),
-        //   },
-        // });
-
-        const updateRotationWarningPromise = Promise.resolve();
-
-        const deleteChallengePromise = tx.challenge.delete({
+      await ctx.prisma.challenge.delete({
           where: { id: challenge.id },
-        });
-
-        return Promise.all([updateRotationWarningPromise, deleteChallengePromise]);
       });
 
       throw new TRPCError({
