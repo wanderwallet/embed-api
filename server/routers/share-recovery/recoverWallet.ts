@@ -112,7 +112,7 @@ export const recoverWallet = protectedProcedure
       )?.publicKey ||
       null;
 
-    const isChallengeValid = await ChallengeUtils.verifyChallenge({
+    const challengeErrorMessage = await ChallengeUtils.verifyChallenge({
       challenge,
       session: ctx.session,
       shareHash: recoveryKeyShare?.recoveryBackupShareHash || null,
@@ -121,7 +121,7 @@ export const recoverWallet = protectedProcedure
       publicKey,
     });
 
-    if (!isChallengeValid) {
+    if (challengeErrorMessage) {
       // TODO: Add a wallet recovery attempt limit?
       // TODO: How to limit the # of recoveries per user?
 
@@ -153,7 +153,7 @@ export const recoverWallet = protectedProcedure
 
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: ErrorMessages.INVALID_CHALLENGE,
+        message: challengeErrorMessage,
       });
     }
 

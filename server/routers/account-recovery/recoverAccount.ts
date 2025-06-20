@@ -45,7 +45,7 @@ export const recoverAccount = protectedProcedure
       });
     }
 
-    const isChallengeValid = await ChallengeUtils.verifyChallenge({
+    const challengeErrorMessage = await ChallengeUtils.verifyChallenge({
       challenge,
       session: ctx.session,
       shareHash: null,
@@ -56,7 +56,7 @@ export const recoverAccount = protectedProcedure
 
     // TODO: Add an account recovery attempt limit?
 
-    if (!isChallengeValid) {
+    if (challengeErrorMessage) {
       // TODO: Register (update) the failed attempt anyway!
 
       await ctx.prisma.challenge.delete({
@@ -65,7 +65,7 @@ export const recoverAccount = protectedProcedure
 
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: ErrorMessages.INVALID_CHALLENGE,
+        message: challengeErrorMessage,
       });
     }
 
