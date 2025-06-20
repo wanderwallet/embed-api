@@ -65,22 +65,24 @@ export async function verifyChallenge({
       challenge.purpose === ChallengePurpose.SHARE_ROTATION
         ? Config.CHALLENGE_ROTATION_TTL_MS
         : Config.CHALLENGE_TTL_MS;
-
     const challengeAge = now - challenge.createdAt.getTime();
-
     const isChallengeAgeNearingTTL = challengeAge >= challengeTTL * 0.8;
 
     if (process.env.NODE_ENV === "development") {
       if (challengeAge > challengeTTL) {
         console.log(`❌ Challenge took ${ (challengeAge / 1000).toFixed(2) }s (> ${ (challengeTTL / 1000).toFixed(2) }s).`);
-
-        return `${ ErrorMessages.CHALLENGE_EXPIRED_ERROR } Took ${ (challengeAge / 1000).toFixed(2) }s (> ${ (challengeTTL / 1000).toFixed(2) }s).`;
       } else if (isChallengeAgeNearingTTL) {
         console.log(`⚠️ Challenge took ${ (challengeAge / 1000).toFixed(2) }s (~80% of ${ (challengeTTL / 1000).toFixed(2) }s).`);
       } else {
         console.log(`✅ Challenge took ${ (challengeAge / 1000).toFixed(2) }s (< ${ (challengeTTL / 1000).toFixed(2) }s).`);
       }
-    } else if (isChallengeAgeNearingTTL && challengeAge < challengeTTL) {
+    }
+
+    if (challengeAge > challengeTTL) {
+      return `${ ErrorMessages.CHALLENGE_EXPIRED_ERROR } Took ${ (challengeAge / 1000).toFixed(2) }s (> ${ (challengeTTL / 1000).toFixed(2) }s).`;
+    }
+
+    if (isChallengeAgeNearingTTL && process.env.NODE_ENV === "production") {
       const percent = (100 * challengeAge / challengeTTL).toFixed(2);
 
       console.log(`⚠️ Challenge for user ${ session.userId } took ${ (challengeAge / 1000).toFixed(2) }s (${ percent }% of ${ (challengeTTL / 1000).toFixed(2) }s). userAgent = ${ session.userAgent }`);
