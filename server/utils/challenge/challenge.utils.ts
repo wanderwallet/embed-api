@@ -58,8 +58,6 @@ export async function verifyChallenge({
       return ErrorMessages.CHALLENGE_INVALID;
     }
 
-    // TODO: sessionId on WorkKeyShares is empty!!!
-
     // TODO: Make TTL for hash-based challenges shorter:
 
     const challengeTTL =

@@ -127,6 +127,7 @@ export const registerAuthShare = protectedProcedure
               deviceSharePublicKey: input.deviceSharePublicKey,
               sharesRotatedAt: dateNow,
               rotationWarnings: 0,
+              sessionId: ctx.session.id,
             },
           })
           .then((workKeyShare) => {

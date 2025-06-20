@@ -172,16 +172,15 @@ export const activateWallet = protectedProcedure
           },
         });
 
-        const updateRotationWarningPromise = shouldRotate
-          ? tx.workKeyShare.update({
-              where: {
-                id: workKeyShare.id,
-              },
-              data: {
-                rotationWarnings: { increment: 1 },
-              },
-            })
-          : null;
+        const updateWorkKeyShare = tx.workKeyShare.update({
+          where: {
+            id: workKeyShare.id,
+          },
+          data: {
+            rotationWarnings: shouldRotate ? { increment: 1 } : undefined,
+            sessionId: ctx.session.id,
+          },
+        });
 
         // TODO: How to limit the # of activations per user?
         const registerWalletActivationPromise = tx.walletActivation.create({
@@ -201,7 +200,7 @@ export const activateWallet = protectedProcedure
         return Promise.all([
           rotationChallengePromise,
           updateWalletStatsPromise,
-          updateRotationWarningPromise,
+          updateWorkKeyShare,
           registerWalletActivationPromise,
           deleteChallengePromise,
         ]);

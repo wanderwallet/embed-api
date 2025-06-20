@@ -114,6 +114,7 @@ export const rotateAuthShare = protectedProcedure
           authShare: input.authShare,
           deviceShareHash: input.deviceShareHash,
           deviceSharePublicKey: input.deviceSharePublicKey,
+          sessionId: ctx.session.id,
         },
       });
 
