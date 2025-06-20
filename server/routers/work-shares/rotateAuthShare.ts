@@ -85,7 +85,7 @@ export const rotateAuthShare = protectedProcedure
       // TODO: Register the failed attempt anyway!
 
       await ctx.prisma.challenge.delete({
-          where: { id: challenge.id },
+        where: { id: challenge.id },
       });
 
       throw new TRPCError({
