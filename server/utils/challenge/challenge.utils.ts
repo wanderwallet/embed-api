@@ -71,7 +71,7 @@ export async function verifyChallenge({
     const isChallengeAgeNearingTTL = challengeAge >= challengeTTL * 0.8;
 
     if (process.env.NODE_ENV === "development") {
-      if (challengeAge >= challengeTTL) {
+      if (challengeAge > challengeTTL) {
         console.log(`❌ Challenge took ${ (challengeAge / 1000).toFixed(2) }s (> ${ (challengeTTL / 1000).toFixed(2) }s).`);
 
         return `${ ErrorMessages.CHALLENGE_EXPIRED_ERROR } Took ${ (challengeAge / 1000).toFixed(2) }s (> ${ (challengeTTL / 1000).toFixed(2) }s).`;
@@ -80,8 +80,10 @@ export async function verifyChallenge({
       } else {
         console.log(`✅ Challenge took ${ (challengeAge / 1000).toFixed(2) }s (< ${ (challengeTTL / 1000).toFixed(2) }s).`);
       }
-    } else {
-      console.log(`⚠️ Challenge for user ${ session.userId } took ${ (challengeAge / 1000).toFixed(2) }s (~80% of ${ (challengeTTL / 1000).toFixed(2) }s). userAgent = ${ session.userAgent }`);
+    } else if (isChallengeAgeNearingTTL && challengeAge < challengeTTL) {
+      const percent = (100 * challengeAge / challengeTTL).toFixed(2);
+
+      console.log(`⚠️ Challenge for user ${ session.userId } took ${ (challengeAge / 1000).toFixed(2) }s (${ percent }% of ${ (challengeTTL / 1000).toFixed(2) }s). userAgent = ${ session.userAgent }`);
     }
 
     if (
