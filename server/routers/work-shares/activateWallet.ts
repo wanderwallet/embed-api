@@ -70,6 +70,7 @@ export const activateWallet = protectedProcedure
         Config.SHARE_INACTIVE_TTL_MS
     ) {
       if (workKeyShare) {
+        // TODO: Do not do this for non-exported wallets with no or little funds.
         // If `rotationWarnings` too high, or it's been too long since the share was last rotated, delete it:
         await ctx.prisma.workKeyShare.delete({
           where: {
