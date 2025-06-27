@@ -1,11 +1,12 @@
 import { protectedProcedure } from "@/server/trpc"
 import { z } from "zod"
-import { Challenge, ChallengePurpose, WalletStatus, WalletUsageStatus } from '@prisma/client';
+import { ChallengePurpose, WalletStatus, WalletUsageStatus } from '@prisma/client';
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
+import { UpsertChallengeData } from "@/server/utils/challenge/challenge.types";
 
 export const GenerateWalletActivationChallengeInputSchema = z.object({
   walletId: z.string().uuid(),
@@ -56,11 +57,12 @@ export const generateWalletActivationChallenge = protectedProcedure
       purpose: ChallengePurpose.ACTIVATION,
       value: challengeValue,
       version: Config.CHALLENGE_VERSION,
+      createdAt: new Date(),
 
       // Relations:
       userId: ctx.user.id,
       walletId: userWallet.id,
-    } as const satisfies Partial<Challenge>;
+    } as const satisfies UpsertChallengeData;
 
     const activationChallenge = await ctx.prisma.challenge.upsert({
       where: {

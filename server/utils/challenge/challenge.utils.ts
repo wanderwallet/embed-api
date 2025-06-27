@@ -65,6 +65,7 @@ export async function verifyChallenge({
       challenge.purpose === ChallengePurpose.SHARE_ROTATION
         ? Config.CHALLENGE_ROTATION_TTL_MS
         : Config.CHALLENGE_TTL_MS;
+
     const challengeAge = now - challenge.createdAt.getTime();
     const challengePercent = (100 * challengeAge / challengeTTL).toFixed(2);
     const isChallengeAgeNearingTTL = challengeAge >= challengeTTL * 0.8;

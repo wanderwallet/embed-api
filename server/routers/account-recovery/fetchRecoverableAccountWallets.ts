@@ -84,6 +84,8 @@ export const fetchRecoverableAccountWallets = publicProcedure
       });
     }
 
+    // TODO: Include account?.email || account?.name || account?.phone
+
     const finalRecoverableAccountWallets = recoverableAccountWallets.map(
       (w) => ({
         canBeRecovered: w.canBeRecovered,

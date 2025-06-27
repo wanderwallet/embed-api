@@ -1,7 +1,6 @@
 import { protectedProcedure } from "@/server/trpc";
 import { z } from "zod";
 import {
-  Challenge,
   ChallengePurpose,
   WalletStatus,
   WalletUsageStatus,
@@ -15,6 +14,7 @@ import {
 import { Config } from "@/server/utils/config/config.constants";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 import { DbWallet } from "@/prisma/types/types";
+import { UpsertChallengeData } from "@/server/utils/challenge/challenge.types";
 
 export const ActivateWalletSchema = z.object({
   walletId: z.string().uuid(),
@@ -82,7 +82,7 @@ export const activateWallet = protectedProcedure
       // At this point it's already too late. The wallet must be recovered:
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: ErrorMessages.WORK_SHARE_NOT_FOUND,
+        message: workKeyShare ? ErrorMessages.WORK_SHARE_INVALIDATED : ErrorMessages.WORK_SHARE_NOT_FOUND,
       });
     }
 
@@ -144,11 +144,12 @@ export const activateWallet = protectedProcedure
           purpose: ChallengePurpose.SHARE_ROTATION,
           value: challengeValue,
           version: Config.CHALLENGE_VERSION,
+          createdAt: new Date(),
 
           // Relations:
           userId: ctx.user.id,
           walletId: input.walletId,
-        } as const satisfies Partial<Challenge>;
+        } as const satisfies UpsertChallengeData;
 
         const rotationChallengePromise = shouldRotate
           ? tx.challenge.upsert({

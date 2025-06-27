@@ -11,6 +11,8 @@ export interface ChallengeData {
   shareHash: null | string;
 }
 
+export type UpsertChallengeData = Omit<Challenge, "id">
+
 export interface SolveChallengeParams extends ChallengeData {
   jwk?: JWKInterface;
 }

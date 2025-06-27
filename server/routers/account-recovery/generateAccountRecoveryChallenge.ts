@@ -1,11 +1,12 @@
 import { publicProcedure } from "@/server/trpc"
 import { z } from "zod"
-import { Chain, Challenge, ChallengePurpose, WalletStatus } from '@prisma/client';
+import { Chain, ChallengePurpose, WalletStatus } from '@prisma/client';
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
 import { validateWallet } from "@/server/utils/wallet/wallet.validators";
+import { UpsertChallengeData } from "@/server/utils/challenge/challenge.types";
 
 export const GenerateAccountRecoveryChallengeInputSchema = z.object({
   chain: z.nativeEnum(Chain),
@@ -50,11 +51,12 @@ export const generateAccountRecoveryChallenge = publicProcedure
       purpose: ChallengePurpose.ACCOUNT_RECOVERY,
       value: challengeValue,
       version: Config.CHALLENGE_VERSION,
+      createdAt: new Date(),
 
       // Relations:
       userId: recoveryWallet.userId,
       walletId: recoveryWallet.id,
-    } as const satisfies Partial<Challenge>;
+    } as const satisfies UpsertChallengeData;
 
     const accountRecoveryChallenge = await ctx.prisma.challenge.upsert({
       where: {

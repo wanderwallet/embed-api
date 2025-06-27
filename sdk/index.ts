@@ -8,6 +8,7 @@ export type {
   UserProfile as DbUserProfile,
 } from "@prisma/client";
 
+
 // (DB) Enums:
 
 export {
@@ -20,11 +21,18 @@ export {
   WalletStatus,
 } from "@prisma/client";
 
+
 // Auth:
 
-export type {
-  User as SupabaseUser,
-} from "@supabase/supabase-js";
+export type { SupabaseUser, SupabaseUserMetadata } from "@/server/utils/supabase/supabase.types"
+
+export type { AuthError as SupabaseAuthError } from "@supabase/supabase-js";
+
+
+// Errors:
+
+export { ErrorMessages } from "@/server/utils/error/error.constants";
+
 
 // Clients:
 
