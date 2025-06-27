@@ -2,8 +2,8 @@ import * as _prisma_client from '@prisma/client';
 import { Wallet, WalletSourceType, WalletSourceFrom, Challenge, AnonChallenge, Session } from '@prisma/client';
 export { AuthProviderType, Chain, Challenge as DbChallenge, Session as DbSession, UserProfile as DbUserProfile, ExportType, WalletPrivacySetting, WalletSourceFrom, WalletSourceType, WalletStatus } from '@prisma/client';
 import * as _supabase_supabase_js from '@supabase/supabase-js';
-import { SupabaseClientOptions } from '@supabase/supabase-js';
-export { User as SupabaseUser } from '@supabase/supabase-js';
+import { User, SupabaseClientOptions } from '@supabase/supabase-js';
+export { AuthError as SupabaseAuthError } from '@supabase/supabase-js';
 import * as _trpc_client from '@trpc/client';
 import * as _trpc_server from '@trpc/server';
 import * as _trpc_server_unstable_core_do_not_import from '@trpc/server/unstable-core-do-not-import';
@@ -33,6 +33,34 @@ interface RecoverableAccount {
     phone: string | null;
     picture: string | null;
 }
+
+interface SupabaseUserMetadata {
+    hasPassword: boolean;
+}
+interface SupabaseUser extends User {
+    user_metadata: SupabaseUserMetadata;
+}
+
+declare const ErrorMessages: {
+    readonly WALLET_NOT_FOUND: "Wallet not found.";
+    readonly WALLET_CANNOT_BE_ENABLED: "Wallet cannot be enabled.";
+    readonly WALLET_CANNOT_BE_DISABLED: "Wallet cannot be disabled.";
+    readonly WALLET_NO_PRIVACY_SUPPORT: "Wallet does not support the privacy setting.";
+    readonly WALLET_ADDRESS_MISMATCH: "Wallet address mismatch.";
+    readonly WALLET_NOT_VALID_FOR_ACCOUNT_RECOVERY: "Wallet cannot be used for account recovery.";
+    readonly WORK_SHARE_NOT_FOUND: "Work share not found.";
+    readonly WORK_SHARE_INVALIDATED: "Work share invalidated.";
+    readonly INVALID_SHARE: "Invalid share.";
+    readonly CHALLENGE_NOT_FOUND: "Challenge not found. It might have been resolved already, or it might have expired.";
+    readonly CHALLENGE_INVALID: "Invalid challenge.";
+    readonly CHALLENGE_EXPIRED_ERROR: "Challenge expired.";
+    readonly CHALLENGE_MISSING_PK: "Missing public key.";
+    readonly CHALLENGE_UNEXPECTED_ERROR: "Unexpected error validating challenge.";
+    readonly RECOVERABLE_ACCOUNTS_NOT_FOUND: "No recoverable accounts found.";
+    readonly RECOVERABLE_ACCOUNT_NOT_FOUND: "Recoverable account not found.";
+    readonly RECOVERABLE_ACCOUNT_WALLETS_NOT_FOUND: "No recoverable account wallets found.";
+    readonly NO_OP: "This request is a no-op.";
+};
 
 declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
     ctx: {
@@ -964,4 +992,4 @@ interface ChallengeClient {
 
 declare const ChallengeClientV1: ChallengeClient;
 
-export { type AppRouter, ChallengeClientV1, type DbWallet, type RecoverableAccount, type WalletInfo, type WalletSource, createSupabaseClient, createTRPCClient };
+export { type AppRouter, ChallengeClientV1, type DbWallet, ErrorMessages, type RecoverableAccount, type SupabaseUser, type SupabaseUserMetadata, type WalletInfo, type WalletSource, createSupabaseClient, createTRPCClient };
