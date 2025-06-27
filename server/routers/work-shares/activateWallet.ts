@@ -70,6 +70,7 @@ export const activateWallet = protectedProcedure
         Config.SHARE_INACTIVE_TTL_MS
     ) {
       if (workKeyShare) {
+        // TODO: Do not do this for non-exported wallets with no or little funds.
         // If `rotationWarnings` too high, or it's been too long since the share was last rotated, delete it:
         await ctx.prisma.workKeyShare.delete({
           where: {
@@ -85,7 +86,7 @@ export const activateWallet = protectedProcedure
       });
     }
 
-    const isChallengeValid = await ChallengeUtils.verifyChallenge({
+    const challengeErrorMessage = await ChallengeUtils.verifyChallenge({
       challenge,
       session: ctx.session,
       shareHash: workKeyShare.deviceShareHash,
@@ -94,7 +95,7 @@ export const activateWallet = protectedProcedure
       publicKey: workKeyShare.deviceSharePublicKey,
     });
 
-    if (!isChallengeValid) {
+    if (challengeErrorMessage) {
       // TODO: Add a wallet activation attempt limit?
       // TODO: How to limit the # of activations per user?
 
@@ -125,7 +126,7 @@ export const activateWallet = protectedProcedure
 
       throw new TRPCError({
         code: "FORBIDDEN",
-        message: ErrorMessages.INVALID_CHALLENGE,
+        message: challengeErrorMessage,
       });
     }
 
@@ -172,16 +173,15 @@ export const activateWallet = protectedProcedure
           },
         });
 
-        const updateRotationWarningPromise = shouldRotate
-          ? tx.workKeyShare.update({
-              where: {
-                id: workKeyShare.id,
-              },
-              data: {
-                rotationWarnings: { increment: 1 },
-              },
-            })
-          : null;
+        const updateWorkKeyShare = tx.workKeyShare.update({
+          where: {
+            id: workKeyShare.id,
+          },
+          data: {
+            rotationWarnings: shouldRotate ? { increment: 1 } : undefined,
+            sessionId: ctx.session.id,
+          },
+        });
 
         // TODO: How to limit the # of activations per user?
         const registerWalletActivationPromise = tx.walletActivation.create({
@@ -201,7 +201,7 @@ export const activateWallet = protectedProcedure
         return Promise.all([
           rotationChallengePromise,
           updateWalletStatsPromise,
-          updateRotationWarningPromise,
+          updateWorkKeyShare,
           registerWalletActivationPromise,
           deleteChallengePromise,
         ]);
