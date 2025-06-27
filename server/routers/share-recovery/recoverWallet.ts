@@ -1,6 +1,6 @@
 import { protectedProcedure } from "@/server/trpc";
 import { z } from "zod";
-import { Challenge, ChallengePurpose, WalletUsageStatus } from "@prisma/client";
+import { ChallengePurpose, WalletUsageStatus } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import {
@@ -12,6 +12,7 @@ import { BackupUtils } from "@/server/utils/backup/backup.utils";
 import { Config } from "@/server/utils/config/config.constants";
 import { getShareHashValidator } from "@/server/utils/share/share.validators";
 import { DbWallet } from "@/prisma/types/types";
+import { UpsertChallengeData } from "@/server/utils/challenge/challenge.types";
 
 export const RecoverWalletSchema = z
   .object({
@@ -167,11 +168,12 @@ export const recoverWallet = protectedProcedure
           purpose: ChallengePurpose.SHARE_ROTATION,
           value: challengeValue,
           version: Config.CHALLENGE_VERSION,
+          createdAt: new Date(),
 
           // Relations:
           userId: ctx.user.id,
           walletId: input.walletId,
-        } as const satisfies Partial<Challenge>;
+        } as const satisfies UpsertChallengeData;
 
         const rotationChallengePromise = tx.challenge.upsert({
           where: {
