@@ -13,6 +13,7 @@ import { Config } from "@/server/utils/config/config.constants";
 import { getShareHashValidator } from "@/server/utils/share/share.validators";
 import { DbWallet } from "@/prisma/types/types";
 import { UpsertChallengeData } from "@/server/utils/challenge/challenge.types";
+import { getSilentErrorLoggerFor } from "@/server/utils/error/error.utils";
 
 export const RecoverWalletSchema = z
   .object({
@@ -68,13 +69,19 @@ export const recoverWallet = protectedProcedure
     ]);
 
     if (!challenge) {
-      // Just try again.
-
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.CHALLENGE_NOT_FOUND,
       });
     }
+
+    // No await, just fail silently. Regardless of whether there challenge is valid or not, it is one-time-use only, so at this point we can delete it already.
+    // We don't care if there's an error because if there is, the challenge will remain in the DB until it is upserted (updated) once the user re-tries, so it's
+    // better to just let them complete this request:
+
+    ctx.prisma.challenge.delete({
+      where: { id: challenge.id },
+    }).catch(getSilentErrorLoggerFor("recoverWallet's challenge.delete(...)"));
 
     if (
       !recoveryKeyShare &&
@@ -126,31 +133,20 @@ export const recoverWallet = protectedProcedure
       // TODO: Add a wallet recovery attempt limit?
       // TODO: How to limit the # of recoveries per user?
 
-      await ctx.prisma.$transaction(async (tx) => {
-        const deviceAndLocationId = await deviceAndLocationIdPromise;
+      const deviceAndLocationId = await deviceAndLocationIdPromise;
 
-        const deleteChallengePromise = tx.challenge.delete({
-          where: { id: challenge.id },
-        });
-
-        // Log failed recovery attempt:
-        const registerWalletActivationAttemptPromise = tx.walletRecovery.create(
-          {
-            data: {
-              status: WalletUsageStatus.FAILED,
-              userId: ctx.user.id,
-              walletId: recoveryKeyShare?.walletId || input.walletId,
-              recoveryKeyShareId: recoveryKeyShare?.id || null,
-              deviceAndLocationId,
-            },
-          }
-        );
-
-        return Promise.all([
-          deleteChallengePromise,
-          registerWalletActivationAttemptPromise,
-        ]);
-      });
+      // Log failed recovery attempt:
+      await ctx.prisma.walletRecovery.create(
+        {
+          data: {
+            status: WalletUsageStatus.FAILED,
+            userId: ctx.user.id,
+            walletId: recoveryKeyShare?.walletId || input.walletId,
+            recoveryKeyShareId: recoveryKeyShare?.id || null,
+            deviceAndLocationId,
+          },
+        }
+      );
 
       throw new TRPCError({
         code: "FORBIDDEN",
@@ -205,15 +201,10 @@ export const recoverWallet = protectedProcedure
           },
         });
 
-        const deleteChallengePromise = tx.challenge.delete({
-          where: { id: challenge.id },
-        });
-
         return Promise.all([
           rotationChallengePromise,
           updateWalletStatsPromise,
           registerWalletRecoveryPromise,
-          deleteChallengePromise,
         ]);
       }
     );

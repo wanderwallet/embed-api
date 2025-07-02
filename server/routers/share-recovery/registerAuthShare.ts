@@ -12,6 +12,7 @@ import {
 } from "@/server/utils/share/share.validators";
 import { DbWallet } from "@/prisma/types/types";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
+import { getSilentErrorLoggerFor } from "@/server/utils/error/error.utils";
 
 export const RegisterAuthShareSchema = z.object({
   walletId: z.string().uuid(),
@@ -32,10 +33,7 @@ export const registerAuthShare = protectedProcedure
     // TODO: This wallet needs to be regenerated as well and the authShare updated. If this is not done after X
     // "warnings", the Shards entry will be removed anyway.
 
-    // This `SHARE_ROTATION` challenge will only exist if `activateWallet` created it automatically when
-    // `shouldRotate = now - workKeyShare.sharesRotatedAt.getTime() >= Config.SHARE_ACTIVE_TTL_MS`, so we don't need to
-    // check that condition again here. It's also `activateWallet` where shares are deleted if the rotation warnings
-    // have been ignored for too long.
+    // This `SHARE_ROTATION` challenge will only exist if `recoverWallet` created it automatically.
 
     const challenge = await ctx.prisma.challenge.findFirst({
       where: {
@@ -49,13 +47,19 @@ export const registerAuthShare = protectedProcedure
     });
 
     if (!challenge) {
-      // Just try again.
-
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.CHALLENGE_NOT_FOUND,
       });
     }
+
+    // No await, just fail silently. Regardless of whether there challenge is valid or not, it is one-time-use only, so at this point we can delete it already.
+    // We don't care if there's an error because if there is, the challenge will remain in the DB until it is upserted (updated) once the user re-tries, so it's
+    // better to just let them complete this request:
+
+    ctx.prisma.challenge.delete({
+      where: { id: challenge.id },
+    }).catch(getSilentErrorLoggerFor("registerAuthShare's challenge.delete(...)"));
 
     const challengeErrorMessage = await ChallengeUtils.verifyChallenge({
       challenge,
@@ -70,10 +74,6 @@ export const registerAuthShare = protectedProcedure
 
     if (challengeErrorMessage) {
       // TODO: Register the failed attempt anyway!
-
-      await ctx.prisma.challenge.delete({
-        where: { id: challenge.id },
-      });
 
       throw new TRPCError({
         code: "FORBIDDEN",
@@ -143,14 +143,9 @@ export const registerAuthShare = protectedProcedure
             });
           });
 
-      const deleteChallengePromise = tx.challenge.delete({
-        where: { id: challenge.id },
-      });
-
       return Promise.all([
         updateWalletStatsPromise,
         rotateOrCreateWorkKeyShareAndRegisterWalletActivationPromise,
-        deleteChallengePromise,
       ]);
     });
 

@@ -10,6 +10,7 @@ import {
   getSharePublicKeyValidator,
   getShareValidator,
 } from "@/server/utils/share/share.validators";
+import { getSilentErrorLoggerFor } from "@/server/utils/error/error.utils";
 
 export const RotateAuthShareSchema = z.object({
   walletId: z.string().uuid(),
@@ -57,13 +58,25 @@ export const rotateAuthShare = protectedProcedure
     ]);
 
     if (!challenge) {
+      console.warn("Challenge not found during rotation.")
+
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.CHALLENGE_NOT_FOUND,
       });
     }
 
+    // No await, just fail silently. Regardless of whether there challenge is valid or not, it is one-time-use only, so at this point we can delete it already.
+    // We don't care if there's an error because if there is, the challenge will remain in the DB until it is upserted (updated) once the user re-tries, so it's
+    // better to just let them complete this request:
+
+    ctx.prisma.challenge.delete({
+      where: { id: challenge.id },
+    }).catch(getSilentErrorLoggerFor("rotateAuthShare's challenge.delete(...)"));
+
     if (!workKeyShare) {
+      console.error(ErrorMessages.WORK_SHARE_NOT_FOUND)
+
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.WORK_SHARE_NOT_FOUND,
@@ -84,9 +97,7 @@ export const rotateAuthShare = protectedProcedure
     if (challengeErrorMessage) {
       // TODO: Register the failed attempt anyway!
 
-      await ctx.prisma.challenge.delete({
-        where: { id: challenge.id },
-      });
+      console.warn(challengeErrorMessage);
 
       throw new TRPCError({
         code: "FORBIDDEN",
@@ -99,30 +110,22 @@ export const rotateAuthShare = protectedProcedure
       dateNow.getTime() + Config.SHARE_ACTIVE_TTL_MS
     );
 
-    await ctx.prisma.$transaction(async (tx) => {
-      const rotateWorkKeySharePromise = tx.workKeyShare.update({
-        where: {
-          userDeviceWorkShare: {
-            userId: ctx.user.id,
-            walletId: input.walletId,
-            deviceNonce: ctx.session.deviceNonce,
-          },
+    await ctx.prisma.workKeyShare.update({
+      where: {
+        userDeviceWorkShare: {
+          userId: ctx.user.id,
+          walletId: input.walletId,
+          deviceNonce: ctx.session.deviceNonce,
         },
-        data: {
-          sharesRotatedAt: dateNow,
-          rotationWarnings: 0,
-          authShare: input.authShare,
-          deviceShareHash: input.deviceShareHash,
-          deviceSharePublicKey: input.deviceSharePublicKey,
-          sessionId: ctx.session.id,
-        },
-      });
-
-      const deleteChallengePromise = tx.challenge.delete({
-        where: { id: challenge.id },
-      });
-
-      return Promise.all([rotateWorkKeySharePromise, deleteChallengePromise]);
+      },
+      data: {
+        sharesRotatedAt: dateNow,
+        rotationWarnings: 0,
+        authShare: input.authShare,
+        deviceShareHash: input.deviceShareHash,
+        deviceSharePublicKey: input.deviceSharePublicKey,
+        sessionId: ctx.session.id,
+      },
     });
 
     return {

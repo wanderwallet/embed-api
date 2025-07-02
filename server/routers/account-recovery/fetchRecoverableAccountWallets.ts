@@ -3,6 +3,7 @@ import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { publicProcedure } from "@/server/trpc";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
+import { getSilentErrorLoggerFor } from "@/server/utils/error/error.utils";
 
 export const FetchRecoverableAccounts = z.object({
   userId: z.string().uuid(),
@@ -24,44 +25,47 @@ export const fetchRecoverableAccountWallets = publicProcedure
     });
 
     if (!anonChallenge) {
-      // Just try again.
-
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.CHALLENGE_NOT_FOUND,
       });
     }
 
-    const [recoverableAccountWallets] = await ctx.prisma.$transaction(
-      async (tx) => {
-        const recoverableAccountWalletsPromise = tx.wallet.findMany({
-          select: {
-            publicKey: true,
-            canBeRecovered: true,
-            address: true,
-          },
-          where: {
-            userId: input.userId,
-          },
-        });
+    // No await, just fail silently. Even if we return an error, this `anonChallenge` will remain orphan, and the user will have to retry, so it's better to
+    // just let them complete this request:
 
-        const deleteChallengePromise = tx.anonChallenge.delete({
-          where: {
-            id: input.challengeId,
-          },
-        });
+    ctx.prisma.anonChallenge.delete({
+      where: {
+        id: input.challengeId,
+      },
+    }).catch(getSilentErrorLoggerFor("fetchRecoverableAccountWallets's challenge.delete(...)"));
 
-        return Promise.all([
-          recoverableAccountWalletsPromise,
-          deleteChallengePromise,
-        ]);
-      }
-    );
+    const recoverableAccountWallets = await ctx.prisma.wallet.findMany({
+      select: {
+        publicKey: true,
+        canBeRecovered: true,
+        address: true,
+      },
+      where: {
+        userId: input.userId,
+      },
+    });
 
     if (recoverableAccountWallets.length === 0) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: ErrorMessages.RECOVERABLE_ACCOUNT_WALLETS_NOT_FOUND,
+        message: ErrorMessages.RECOVERY_WALLETS_NOT_FOUND,
+      });
+    }
+
+    const publicKey = recoverableAccountWallets.find(
+      (w) => w.address === anonChallenge.address
+    )?.publicKey;
+
+    if (!publicKey) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: ErrorMessages.RECOVERY_MISSING_PUBLIC_KEY,
       });
     }
 
@@ -71,10 +75,7 @@ export const fetchRecoverableAccountWallets = publicProcedure
       shareHash: null,
       now,
       solution: input.challengeSolution,
-      publicKey:
-        recoverableAccountWallets.find(
-          (w) => w.address === anonChallenge.address
-        )?.publicKey || null,
+      publicKey,
     });
 
     if (challengeErrorMessage) {
@@ -84,7 +85,7 @@ export const fetchRecoverableAccountWallets = publicProcedure
       });
     }
 
-    // TODO: Include account?.email || account?.name || account?.phone
+    // TODO: Include alias, etc?
 
     const finalRecoverableAccountWallets = recoverableAccountWallets.map(
       (w) => ({
