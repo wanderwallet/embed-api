@@ -28,12 +28,7 @@ export const registerAuthShare = protectedProcedure
     const now = Date.now();
     const deviceAndLocationIdPromise = getDeviceAndLocationId(ctx);
 
-    // TODO: If there were any other work shares on this device for this wallet, delete them.
-
-    // TODO: This wallet needs to be regenerated as well and the authShare updated. If this is not done after X
-    // "warnings", the Shards entry will be removed anyway.
-
-    // This `SHARE_ROTATION` challenge will only exist if `recoverWallet` created it automatically.
+    // This `SHARE_ROTATION` challenge will only exist if `recoverWallet` was called before.
 
     const challenge = await ctx.prisma.challenge.findFirst({
       where: {
@@ -103,8 +98,11 @@ export const registerAuthShare = protectedProcedure
         },
       });
 
-      // When users go through recoverWallet, it means either they've lost the work share or WE lost it. If we lost it,
-      // then there's no work share to update here, so we need to do an upsert:
+      // When users go through recoverWallet, it means either they've lost the deviceShare or we actually lost the
+      // WorkShare:
+      //
+      // - If they lost it, we do an UPDATE to avoid having duplicated WorkShares for the same device.
+      // - If we lost it then there's no WorkShare to update, so we need to use upsert to do an INSERT in that case.
 
       const rotateOrCreateWorkKeyShareAndRegisterWalletActivationPromise =
         tx.workKeyShare

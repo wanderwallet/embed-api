@@ -79,6 +79,8 @@ export const fetchRecoverableAccounts = publicProcedure
     const publicKey = recoverableAccounts[0].wallets?.[0]?.publicKey;
 
     if (!publicKey) {
+      console.warn(ErrorMessages.RECOVERY_MISSING_PUBLIC_KEY);
+
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.RECOVERY_MISSING_PUBLIC_KEY,
