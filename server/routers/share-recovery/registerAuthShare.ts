@@ -47,6 +47,8 @@ export const registerAuthShare = protectedProcedure
     });
 
     if (!challenge) {
+      console.warn(ErrorMessages.CHALLENGE_NOT_FOUND);
+
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.CHALLENGE_NOT_FOUND,
@@ -73,6 +75,8 @@ export const registerAuthShare = protectedProcedure
     // TODO: Add a wallet activation attempt limit?
 
     if (challengeErrorMessage) {
+      console.error(challengeErrorMessage);
+
       // TODO: Register the failed attempt anyway!
 
       throw new TRPCError({

@@ -56,7 +56,7 @@ export const activateWallet = protectedProcedure
     ]);
 
     if (!challenge) {
-      console.warn(ErrorMessages.CHALLENGE_NOT_FOUND)
+      console.warn(ErrorMessages.CHALLENGE_NOT_FOUND);
 
       throw new TRPCError({
         code: "NOT_FOUND",
@@ -111,6 +111,8 @@ export const activateWallet = protectedProcedure
     });
 
     if (challengeErrorMessage) {
+      console.error(challengeErrorMessage);
+
       // TODO: Add a wallet activation attempt limit?
       // TODO: How to limit the # of activations per user?
 
@@ -125,8 +127,6 @@ export const activateWallet = protectedProcedure
           deviceAndLocationId,
         },
       });
-
-      console.error(challengeErrorMessage);
 
       throw new TRPCError({
         code: "FORBIDDEN",
