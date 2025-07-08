@@ -9,12 +9,13 @@ const handler = async (req: NextRequest) => {
     req,
     router: appRouter,
     createContext: () => createContext({ req }),
-    onError:
-      process.env.NODE_ENV === "development"
-        ? ({ path, error }) => {
-            console.error(`❌ tRPC failed on ${path ?? "<no-path>"}: ${error.message}`)
-          }
-        : undefined,
+    onError: ({ type, path, error, input }) => {
+      if (process.env.NODE_ENV === "development") {
+        console.error(`❌ ${ type } error on ${ path || "?" }: ${error.message}`, input);
+      } else {
+        console.error(`${ type } error on ${ path || "?" }: ${error.message}`);
+      }
+    }
   })
 
   // TODO: Remove if CORS headers not needed (or transfer to a separate config file)

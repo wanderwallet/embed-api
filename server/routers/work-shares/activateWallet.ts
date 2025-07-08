@@ -15,6 +15,7 @@ import { Config } from "@/server/utils/config/config.constants";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 import { DbWallet } from "@/prisma/types/types";
 import { UpsertChallengeData } from "@/server/utils/challenge/challenge.types";
+import { getSilentErrorLoggerFor } from "@/server/utils/error/error.utils";
 
 export const ActivateWalletSchema = z.object({
   walletId: z.string().uuid(),
@@ -55,13 +56,21 @@ export const activateWallet = protectedProcedure
     ]);
 
     if (!challenge) {
-      // Just try again.
+      console.warn(ErrorMessages.CHALLENGE_NOT_FOUND);
 
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.CHALLENGE_NOT_FOUND,
       });
     }
+
+    // No await, just fail silently. Regardless of whether there challenge is valid or not, it is one-time-use only, so at this point we can delete it already.
+    // We don't care if there's an error because if there is, the challenge will remain in the DB until it is upserted (updated) once the user re-tries, so it's
+    // better to just let them complete this request:
+
+    ctx.prisma.challenge.delete({
+      where: { id: challenge.id },
+    }).catch(getSilentErrorLoggerFor("activateWallet's challenge.delete(...)"));
 
     if (
       !workKeyShare ||
@@ -79,10 +88,16 @@ export const activateWallet = protectedProcedure
         });
       }
 
+      const message = workKeyShare
+        ? `${ErrorMessages.WORK_SHARE_INVALIDATED} sharesRotatedAt = ${ workKeyShare.sharesRotatedAt.toISOString() }, rotationWarnings = ${ workKeyShare.rotationWarnings }.`
+        : ErrorMessages.WORK_SHARE_NOT_FOUND;
+
+      console.error(message);
+
       // At this point it's already too late. The wallet must be recovered:
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: workKeyShare ? ErrorMessages.WORK_SHARE_INVALIDATED : ErrorMessages.WORK_SHARE_NOT_FOUND,
+        message,
       });
     }
 
@@ -96,32 +111,21 @@ export const activateWallet = protectedProcedure
     });
 
     if (challengeErrorMessage) {
+      console.error(challengeErrorMessage);
+
       // TODO: Add a wallet activation attempt limit?
       // TODO: How to limit the # of activations per user?
 
-      await ctx.prisma.$transaction(async (tx) => {
-        const deviceAndLocationId = await deviceAndLocationIdPromise;
+      const deviceAndLocationId = await deviceAndLocationIdPromise;
 
-        const deleteChallengePromise = tx.challenge.delete({
-          where: { id: challenge.id },
-        });
-
-        // Log failed activation attempt:
-        const registerWalletActivationAttemptPromise =
-          tx.walletActivation.create({
-            data: {
-              status: WalletUsageStatus.FAILED,
-              userId: ctx.user.id,
-              walletId: workKeyShare.walletId,
-              workKeyShareId: workKeyShare.id,
-              deviceAndLocationId,
-            },
-          });
-
-        return Promise.all([
-          deleteChallengePromise,
-          registerWalletActivationAttemptPromise,
-        ]);
+      await ctx.prisma.walletActivation.create({
+        data: {
+          status: WalletUsageStatus.FAILED,
+          userId: ctx.user.id,
+          walletId: workKeyShare.walletId,
+          workKeyShareId: workKeyShare.id,
+          deviceAndLocationId,
+        },
       });
 
       throw new TRPCError({
@@ -195,16 +199,11 @@ export const activateWallet = protectedProcedure
           },
         });
 
-        const deleteChallengePromise = tx.challenge.delete({
-          where: { id: challenge.id },
-        });
-
         return Promise.all([
           rotationChallengePromise,
           updateWalletStatsPromise,
           updateWorkKeyShare,
           registerWalletActivationPromise,
-          deleteChallengePromise,
         ]);
       }
     );

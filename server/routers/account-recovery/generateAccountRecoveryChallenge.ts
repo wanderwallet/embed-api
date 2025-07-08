@@ -41,7 +41,7 @@ export const generateAccountRecoveryChallenge = publicProcedure
     if (!recoveryWallet) {
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: ErrorMessages.RECOVERABLE_ACCOUNTS_NOT_FOUND,
+        message: ErrorMessages.RECOVERY_ACCOUNTS_NOT_FOUND,
       });
     }
 
