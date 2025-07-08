@@ -25,7 +25,7 @@ export async function createContext({ req }: { req: Request }) {
   const deviceNonce = req.headers.get("x-device-nonce") || "";
   const supabase = await createServerClient(userAgent);
 
-  // We should be retrieving the session to make sure we are not using a token from a logged out session.
+  // We retrieve the session to make sure we are not using a token from a logged out session.
   // See https://supabase.com/docs/guides/auth/sessions#how-do-i-make-sure-that-an-access-token-jwt-cannot-be-used-after-a-user-clicks-sign-out
 
   // The right method to use is `supabase.auth.getUser(token)`, not `supabase.auth.getSession`.
@@ -89,8 +89,6 @@ async function getAndUpdateSession(
   }
 
   if (Object.keys(sessionUpdates).length > 0) {
-    console.log("Updating session:", sessionUpdates);
-
     prisma.session
       .update({
         where: { id: sessionId },

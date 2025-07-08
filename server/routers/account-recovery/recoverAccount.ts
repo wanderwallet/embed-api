@@ -8,6 +8,7 @@ import {
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
+import { getSilentErrorLoggerFor } from "@/server/utils/error/error.utils";
 
 export const RecoverAccountSchema = z.object({
   userId: z.string().uuid(),
@@ -37,13 +38,19 @@ export const recoverAccount = protectedProcedure
     });
 
     if (!challenge) {
-      // Just try again.
-
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.CHALLENGE_NOT_FOUND,
       });
     }
+
+    // No await, just fail silently. Regardless of whether there challenge is valid or not, it is one-time-use only, so at this point we can delete it already.
+    // We don't care if there's an error because if there is, the challenge will remain in the DB until it is upserted (updated) once the user re-tries, so it's
+    // better to just let them complete this request:
+
+    ctx.prisma.challenge.delete({
+      where: { id: challenge.id },
+    }).catch(getSilentErrorLoggerFor("recoverAccount's challenge.delete(...)"));
 
     const challengeErrorMessage = await ChallengeUtils.verifyChallenge({
       challenge,
@@ -58,10 +65,6 @@ export const recoverAccount = protectedProcedure
 
     if (challengeErrorMessage) {
       // TODO: Register (update) the failed attempt anyway!
-
-      await ctx.prisma.challenge.delete({
-        where: { id: challenge.id },
-      });
 
       throw new TRPCError({
         code: "FORBIDDEN",
@@ -140,16 +143,10 @@ export const recoverAccount = protectedProcedure
           },
         });
 
-        await Promise.all([
-          // attach a new userProfile to the old user
-          tx.userProfile.create({
-            data: { ...oldUserProfile, supId: oldUserId },
-          }),
-          // Delete the challenge
-          tx.challenge.delete({
-            where: { id: challenge.id },
-          }),
-        ]);
+         // attach a new userProfile to the old user
+        await tx.userProfile.create({
+          data: { ...oldUserProfile, supId: oldUserId },
+        });
 
         return { userDetails };
       },
