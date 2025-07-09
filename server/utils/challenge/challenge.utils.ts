@@ -68,13 +68,13 @@ export async function verifyChallenge({
 
     const challengeAge = now - challenge.createdAt.getTime();
     const challengePercent = (100 * challengeAge / challengeTTL).toFixed(2);
-    const isChallengeAgeNearingTTL = challengeAge >= challengeTTL * 0.8;
+    const isChallengeAgeMoreThanOneMinute = challengeAge > 60000;
 
     if (process.env.NODE_ENV === "development") {
       if (challengeAge > challengeTTL) {
         console.log(`❌ Challenge took ${ (challengeAge / 1000).toFixed(2) }s (> ${ (challengeTTL / 1000).toFixed(2) }s).`);
-      } else if (isChallengeAgeNearingTTL) {
-        console.log(`⚠️ Challenge took ${ (challengeAge / 1000).toFixed(2) }s (${ challengePercent }% of ${ (challengeTTL / 1000).toFixed(2) }s).`);
+      } else if (isChallengeAgeMoreThanOneMinute) {
+        console.log(`⚠️ Challenge took more than a minute: ${ (challengeAge / 1000).toFixed(2) }s.`);
       } else {
         console.log(`✅ Challenge took ${ (challengeAge / 1000).toFixed(2) }s (< ${ (challengeTTL / 1000).toFixed(2) }s).`);
       }
@@ -84,8 +84,8 @@ export async function verifyChallenge({
       return `${ ErrorMessages.CHALLENGE_EXPIRED_ERROR } Took ${ (challengeAge / 1000).toFixed(2) }s (> ${ (challengeTTL / 1000).toFixed(2) }s).`;
     }
 
-    if (isChallengeAgeNearingTTL && process.env.NODE_ENV === "production") {
-      console.log(`⚠️ Challenge for user ${ session.userId } took ${ (challengeAge / 1000).toFixed(2) }s (${ challengePercent }% of ${ (challengeTTL / 1000).toFixed(2) }s). userAgent = ${ session.userAgent }`);
+    if (isChallengeAgeMoreThanOneMinute && process.env.NODE_ENV === "production") {
+      console.warn(`Challenge for user ${ session.userId } took more than a minute: ${ (challengeAge / 1000).toFixed(2) }s (${ challengePercent }%). userAgent = ${ session.userAgent }`);
     }
 
     if (

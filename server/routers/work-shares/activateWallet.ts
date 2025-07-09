@@ -92,7 +92,11 @@ export const activateWallet = protectedProcedure
         ? `${ErrorMessages.WORK_SHARE_INVALIDATED} sharesRotatedAt = ${ workKeyShare.sharesRotatedAt.toISOString() }, rotationWarnings = ${ workKeyShare.rotationWarnings }.`
         : ErrorMessages.WORK_SHARE_NOT_FOUND;
 
-      console.error(message);
+      console.error(message, {
+        userId: ctx.user.id,
+        deviceNonce: ctx.session.deviceNonce,
+        walletId: input.walletId,
+      });
 
       // At this point it's already too late. The wallet must be recovered:
       throw new TRPCError({

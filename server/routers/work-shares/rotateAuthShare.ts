@@ -58,7 +58,7 @@ export const rotateAuthShare = protectedProcedure
     ]);
 
     if (!challenge) {
-      console.warn("Challenge not found during rotation.")
+      console.warn(ErrorMessages.CHALLENGE_NOT_FOUND);
 
       throw new TRPCError({
         code: "NOT_FOUND",
