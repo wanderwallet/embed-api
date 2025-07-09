@@ -29,9 +29,9 @@ var ErrorMessages = {
   CHALLENGE_MISSING_PK: `Missing public key.`,
   CHALLENGE_UNEXPECTED_ERROR: `Unexpected error validating challenge.`,
   // Recovery:
-  RECOVERABLE_ACCOUNTS_NOT_FOUND: `No recoverable accounts found.`,
-  RECOVERABLE_ACCOUNT_NOT_FOUND: `Recoverable account not found.`,
-  RECOVERABLE_ACCOUNT_WALLETS_NOT_FOUND: `No recoverable account wallets found.`,
+  RECOVERY_ACCOUNTS_NOT_FOUND: `No recoverable accounts found.`,
+  RECOVERY_WALLETS_NOT_FOUND: `No recoverable account wallets found.`,
+  RECOVERY_MISSING_PUBLIC_KEY: `Missing public key.`,
   // Generic:
   NO_OP: "This request is a no-op."
 };

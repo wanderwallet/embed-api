@@ -35,7 +35,16 @@ interface RecoverableAccount {
 }
 
 interface SupabaseUserMetadata {
-    hasPassword: boolean;
+    hasPassword?: boolean;
+    email_verified?: boolean;
+    phone_verified?: boolean;
+    email?: string;
+    user_name?: string;
+    preferred_username?: string;
+    name?: string;
+    full_name?: string;
+    avatar_url?: string;
+    picture?: string;
 }
 interface SupabaseUser extends User {
     user_metadata: SupabaseUserMetadata;
@@ -56,9 +65,9 @@ declare const ErrorMessages: {
     readonly CHALLENGE_EXPIRED_ERROR: "Challenge expired.";
     readonly CHALLENGE_MISSING_PK: "Missing public key.";
     readonly CHALLENGE_UNEXPECTED_ERROR: "Unexpected error validating challenge.";
-    readonly RECOVERABLE_ACCOUNTS_NOT_FOUND: "No recoverable accounts found.";
-    readonly RECOVERABLE_ACCOUNT_NOT_FOUND: "Recoverable account not found.";
-    readonly RECOVERABLE_ACCOUNT_WALLETS_NOT_FOUND: "No recoverable account wallets found.";
+    readonly RECOVERY_ACCOUNTS_NOT_FOUND: "No recoverable accounts found.";
+    readonly RECOVERY_WALLETS_NOT_FOUND: "No recoverable account wallets found.";
+    readonly RECOVERY_MISSING_PUBLIC_KEY: "Missing public key.";
     readonly NO_OP: "This request is a no-op.";
 };
 
