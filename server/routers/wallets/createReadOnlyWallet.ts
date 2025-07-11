@@ -32,7 +32,6 @@ export const createReadOnlyWallet = protectedProcedure
           aliasSetting: input.aliasSetting,
           descriptionSetting: input.descriptionSetting,
           tagsSetting: input.tagsSetting,
-          doNotAskAgainSetting: true,
           walletPrivacySetting: WalletPrivacySetting.PUBLIC,
           canRecoverAccountSetting: false,
           canBeRecovered: false,

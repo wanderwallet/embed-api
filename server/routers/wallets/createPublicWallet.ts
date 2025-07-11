@@ -71,7 +71,6 @@ export const createPublicWallet = protectedProcedure
         aliasSetting: input.aliasSetting,
         descriptionSetting: input.descriptionSetting,
         tagsSetting: input.tagsSetting,
-        doNotAskAgainSetting: false,
         walletPrivacySetting: WalletPrivacySetting.PUBLIC,
         canRecoverAccountSetting: input.canRecoverAccountSetting,
         canBeRecovered,

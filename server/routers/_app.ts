@@ -12,7 +12,6 @@ import { createPrivateWallet } from "@/server/routers/wallets/createPrivateWalle
 import { createPublicWallet } from "@/server/routers/wallets/createPublicWallet";
 import { createReadOnlyWallet } from "@/server/routers/wallets/createReadOnlyWallet";
 import { deleteWallet } from "@/server/routers/wallets/deleteWallet";
-import { doNotAskAgainForBackup } from "@/server/routers/wallets/doNotAskAgainForBackup";
 import { fetchWallets } from "@/server/routers/wallets/fetchWallets";
 import { makeWalletPrivate } from "@/server/routers/wallets/makeWalletPrivate";
 import { makeWalletPublic } from "@/server/routers/wallets/makeWalletPublic";
@@ -33,7 +32,6 @@ export const appRouter = router({
 
   // Wallets:
   fetchWallets,
-  doNotAskAgainForBackup,
 
   // Wallets - Create wallet:
   createPublicWallet,
