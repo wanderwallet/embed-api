@@ -67,7 +67,6 @@ export const updateWalletStatus = protectedProcedure
         },
         data: {
           status: input.status,
-          doNotAskAgainSetting: deleteShares ? true : undefined,
           canRecoverAccountSetting: deleteShares ? false : undefined,
           canBeRecovered: deleteShares ? false : undefined,
           totalBackups: deleteShares ? 0 : undefined,

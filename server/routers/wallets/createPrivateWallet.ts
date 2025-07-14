@@ -66,7 +66,6 @@ export const createPrivateWallet = protectedProcedure
         aliasSetting: input.aliasSetting,
         descriptionSetting: input.descriptionSetting,
         tagsSetting: input.tagsSetting,
-        doNotAskAgainSetting: false,
         walletPrivacySetting: WalletPrivacySetting.PRIVATE,
         canRecoverAccountSetting: false,
         canBeRecovered,

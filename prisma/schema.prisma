@@ -1,13 +1,11 @@
 generator client {
   provider        = "prisma-client-js"
-  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
   provider   = "postgresql"
   url        = env("POSTGRES_PRISMA_URL") // uses connection pooling
   directUrl  = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
-  extensions = [pgcrypto]
 }
 
 enum AuthProviderType {
@@ -277,8 +275,6 @@ model Wallet {
   descriptionSetting             String?              @db.VarChar(500)
   /// Custom tags the user can attach to this wallet.
   tagsSetting                    String[]             @db.VarChar(32)
-  /// New wallets will prompt the user to backup/export it, but users can disable these reminders (per wallet).
-  doNotAskAgainSetting           Boolean              @default(false)
   /// Send the address, only last 4 characters of the address or no address at all when wallets are retrieved.
   walletPrivacySetting           WalletPrivacySetting @default(PUBLIC)
   /// Users will be able to disable wallets as recovery options. This must be set to false if publicKey is not set.
