@@ -111,14 +111,6 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
             wallets: DbWallet[];
         };
     }>;
-    doNotAskAgainForBackup: _trpc_server.TRPCMutationProcedure<{
-        input: {
-            walletId: string;
-        };
-        output: {
-            wallet: DbWallet;
-        };
-    }>;
     createPublicWallet: _trpc_server.TRPCMutationProcedure<{
         input: {
             status: "ENABLED" | "DISABLED";
@@ -564,14 +556,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
             input: void;
             output: {
                 wallets: DbWallet[];
-            };
-        }>;
-        doNotAskAgainForBackup: _trpc_server.TRPCMutationProcedure<{
-            input: {
-                walletId: string;
-            };
-            output: {
-                wallet: DbWallet;
             };
         }>;
         createPublicWallet: _trpc_server.TRPCMutationProcedure<{
