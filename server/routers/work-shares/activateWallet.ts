@@ -138,6 +138,7 @@ export const activateWallet = protectedProcedure
       });
     }
 
+    // TODO: Check if the public key we have is still RSA
     const shouldRotate =
       now - workKeyShare.sharesRotatedAt.getTime() >=
       Config.SHARE_ACTIVE_TTL_MS;

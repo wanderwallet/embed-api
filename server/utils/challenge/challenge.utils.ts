@@ -1,19 +1,16 @@
 import {
   ChallengeClient,
   ChallengeClientVersion,
-  ChallengeData,
+  VerifyChallengeParams,
 } from "@/server/utils/challenge/challenge.types";
-import { ChallengeClientV1 } from "@/server/utils/challenge/clients/challenge-client-v1";
+import { ChallengeClientV1 } from "@/server/utils/challenge/clients/challenge-client-v1-rsa";
+import { ChallengeClientV2 } from "@/server/utils/challenge/clients/challenge-client-v2-eddsa";
+import { isAnonChallenge } from "@/server/utils/challenge/clients/challenge-client.utils";
 import { Config } from "@/server/utils/config/config.constants";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
-import {
-  AnonChallenge,
-  Challenge,
-  ChallengePurpose,
-  ChallengeType,
-} from "@prisma/client";
-import { timingSafeEqual } from "node:crypto";
+import { ChallengePurpose } from "@prisma/client";
 
+/*
 export function isAnonChallenge(
   challenge: Challenge | AnonChallenge
 ): challenge is AnonChallenge {
@@ -22,6 +19,18 @@ export function isAnonChallenge(
     !!(challenge as AnonChallenge).address
   );
 }
+*/
+
+const CHALLENGE_CLIENTS = [
+  ChallengeClientV1,
+  ChallengeClientV2,
+ ].reduce((acc, client) => {
+  if (acc[client.version]) throw new Error(`Duplicate client ${ client.version }`);
+
+  acc[client.version] = client;
+
+  return acc;
+ }, {} as Record<ChallengeClientVersion, ChallengeClient<any>>);
 
 export function generateChangeValue() {
   return Buffer.from(
@@ -29,30 +38,48 @@ export function generateChangeValue() {
   ).toString("base64");
 }
 
-const CHALLENGE_CLIENTS = {
-  [ChallengeClientV1.version]: ChallengeClientV1,
-} as const satisfies Record<ChallengeClientVersion, ChallengeClient>;
-
-export interface VerifyChallengeParams extends ChallengeData {
-  now: number;
-  solution: string; // B64
-  publicKey: null | string; // JWK.n
+export interface GenerateChallengeUpsertDataParams {
+  purpose: ChallengePurpose;
+  publicKey: string;
 }
 
-export async function verifyChallenge({
-  // ChallengeData:
-  challenge,
-  session,
-  shareHash,
+export function generateChallengeUpsertData({
+  purpose,
+  publicKey,
+}: GenerateChallengeUpsertDataParams) {
+  const value = generateChangeValue();
 
-  // Verification:
-  now,
-  solution,
-  publicKey: publicKeyParam,
-}: VerifyChallengeParams): Promise<null | string> {
+  const version = isRSAPublicKey(publicKey)
+    ? CHALLENGE_CLIENTS.v1.version
+    : CHALLENGE_CLIENTS.v2.version;
+
+  return {
+    type: Config.CHALLENGE_TYPE,
+    purpose,
+    value,
+    version,
+    createdAt: new Date(),
+
+    // Relations:
+    userId: ctx.user.id,
+    walletId: userWallet.id,
+  } as const satisfies UpsertChallengeData;
+}
+
+export async function verifyChallenge(params: VerifyChallengeParams): Promise<null | string> {
   try {
-    const [solutionVersion, solutionValue] = solution.split(".");
-    const challengeClient = CHALLENGE_CLIENTS[solutionVersion];
+    const {
+      // ChallengeData:
+      challenge,
+      session,
+
+      // Verification:
+      now,
+      solution,
+    } = params;
+
+    const challengeVersion = solution.split(".")[0] as ChallengeClientVersion;
+    const challengeClient = CHALLENGE_CLIENTS[challengeVersion];
 
     if (!challengeClient) {
       return ErrorMessages.CHALLENGE_INVALID;
@@ -88,69 +115,9 @@ export async function verifyChallenge({
       console.warn(`Challenge for user ${ session.userId } took more than a minute: ${ (challengeAge / 1000).toFixed(2) }s (${ challengePercent }%). userAgent = ${ session.userAgent }`);
     }
 
-    if (
-      isAnonChallenge(challenge) ||
-      challenge.type === ChallengeType.SIGNATURE
-    ) {
-      // SIGNATURE-BASED CHALLENGE:
+    const verificationError = await challengeClient.verifyChallenge(params);
 
-      if (!publicKeyParam) {
-        return ErrorMessages.CHALLENGE_MISSING_PK;
-      }
-
-      const publicJWK: JsonWebKey = {
-        e: "AQAB",
-        ext: true,
-        kty: "RSA",
-        n: publicKeyParam,
-      };
-
-      const publicKey = await crypto.subtle.importKey(
-        "jwk",
-        publicJWK,
-        challengeClient.importKeyAlgorithm,
-        true,
-        ["verify"]
-      );
-
-      const challengeRawData = await challengeClient.getChallengeRawData({
-        challenge,
-        session,
-        shareHash,
-      });
-
-      const challengeRawDataBuffer = Buffer.from(challengeRawData);
-
-      const isSignatureValid = crypto.subtle.verify(
-        challengeClient.signAlgorithm,
-        publicKey,
-        Buffer.from(solutionValue, "base64"),
-        challengeRawDataBuffer
-      );
-
-      if (!isSignatureValid) return ErrorMessages.CHALLENGE_INVALID;
-    } else {
-      // HASH-BASED CHALLENGES:
-
-      const expectedSolution = await challengeClient.solveChallenge({
-        challenge,
-        session,
-        shareHash,
-      });
-
-      // The length of the solution, excluding the version prefix, should be:
-      //
-      // - 44 characters (String.length) when using a hash.
-      // - 512 bytes (ArrayBuffer.byteLength) when using a signature from a 4096 modulusLength RSA.
-      // - 256 bytes (ArrayBuffer.byteLength) when using a signature from a 2048 modulusLength RSA.
-      // - ...
-      //
-      // However, there's no need to validate that, as we'll be comparing the whole value anyways.
-
-      // Constant-time comparison probably not needed (as we are comparing hashes), but anyway, there's a theatrical
-      // exploit if not doing so. See https://security.stackexchange.com/questions/209807/why-should-password-hash-verification-be-time-constant
-      if (!timingSafeEqual(Buffer.from(expectedSolution, "utf16le"), Buffer.from(solution, "utf16le"))) return ErrorMessages.CHALLENGE_INVALID;
-    }
+    if (verificationError) return verificationError;
 
     return null;
   } catch (err) {

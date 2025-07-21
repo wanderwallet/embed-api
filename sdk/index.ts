@@ -40,6 +40,7 @@ export { createTRPCClient } from "@/client/utils/trpc/trpc-client.utils";
 
 export { createSupabaseClient } from "@/client/utils/supabase/supabase-client.utils";
 
-export { ChallengeClientV1 } from "@/server/utils/challenge/clients/challenge-client-v1";
+export { ChallengeClientV1 } from "@/server/utils/challenge/clients/challenge-client-v1-rsa";
+export { ChallengeClientV2 } from "@/server/utils/challenge/clients/challenge-client-v2-eddsa";
 
 export type { AppRouter } from "@/server/routers/_app";
