@@ -62,35 +62,64 @@ export const createPublicWallet = protectedProcedure
     const canBeRecovered =
       input.source.type === WalletSourceType.IMPORTED ? true : false;
 
-    const wallet = await ctx.prisma.wallet.create({
-      data: {
-        status: input.status,
-        chain: input.chain,
-        address: input.address,
-        publicKey: input.publicKey,
-        aliasSetting: input.aliasSetting,
-        descriptionSetting: input.descriptionSetting,
-        tagsSetting: input.tagsSetting,
-        walletPrivacySetting: WalletPrivacySetting.PUBLIC,
-        canRecoverAccountSetting: input.canRecoverAccountSetting,
-        canBeRecovered,
-        source: input.source as InputJsonValue,
+    const wallet = await ctx.prisma.$transaction(async (tx) => {
+      const deleteWalletsPromise = tx.wallet.deleteMany({
+        where: {
+          userId: ctx.user.id,
+        },
+      });
 
-        userProfile: getUserConnectOrCreate(ctx),
+      const deleteWorkKeySharesPromise = tx.workKeyShare.deleteMany({
+        where: {
+          userId: ctx.user.id,
+        },
+      });
 
-        deviceAndLocation: getDeviceAndLocationConnectOrCreate(ctx),
+      const deleteRecoveryKeySharesPromise = tx.recoveryKeyShare.deleteMany({
+        where: {
+          userId: ctx.user.id,
+        },
+      });
 
-        workKeyShares: {
-          create: {
-            authShare: input.authShare,
-            deviceShareHash: input.deviceShareHash,
-            deviceSharePublicKey: input.deviceSharePublicKey,
-            userId: ctx.user.id,
-            sessionId: ctx.session.id,
-            deviceNonce: ctx.session.deviceNonce,
+      // Temporarily, because users can only have one wallet (for now), we
+      // simply delete old ones if a new one is created:
+
+      await Promise.all([
+        deleteWalletsPromise,
+        deleteWorkKeySharesPromise,
+        deleteRecoveryKeySharesPromise,
+      ]);
+
+      return tx.wallet.create({
+        data: {
+          status: input.status,
+          chain: input.chain,
+          address: input.address,
+          publicKey: input.publicKey,
+          aliasSetting: input.aliasSetting,
+          descriptionSetting: input.descriptionSetting,
+          tagsSetting: input.tagsSetting,
+          walletPrivacySetting: WalletPrivacySetting.PUBLIC,
+          canRecoverAccountSetting: input.canRecoverAccountSetting,
+          canBeRecovered,
+          source: input.source as InputJsonValue,
+
+          userProfile: getUserConnectOrCreate(ctx),
+
+          deviceAndLocation: getDeviceAndLocationConnectOrCreate(ctx),
+
+          workKeyShares: {
+            create: {
+              authShare: input.authShare,
+              deviceShareHash: input.deviceShareHash,
+              deviceSharePublicKey: input.deviceSharePublicKey,
+              userId: ctx.user.id,
+              sessionId: ctx.session.id,
+              deviceNonce: ctx.session.deviceNonce,
+            },
           },
         },
-      },
+      });
     });
 
     return {
