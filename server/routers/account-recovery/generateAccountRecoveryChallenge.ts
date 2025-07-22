@@ -4,9 +4,7 @@ import { Chain, ChallengePurpose, WalletStatus } from '@prisma/client';
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
-import { Config } from "@/server/utils/config/config.constants";
 import { validateWallet } from "@/server/utils/wallet/wallet.validators";
-import { UpsertChallengeData } from "@/server/utils/challenge/challenge.types";
 
 export const GenerateAccountRecoveryChallengeInputSchema = z.object({
   chain: z.nativeEnum(Chain),
@@ -28,6 +26,7 @@ export const generateAccountRecoveryChallenge = publicProcedure
       select: {
         id: true,
         userId: true,
+        publicKey: true,
       },
       where: {
         userId: input.userId,
@@ -45,18 +44,21 @@ export const generateAccountRecoveryChallenge = publicProcedure
       });
     }
 
-    const challengeValue = ChallengeUtils.generateChangeValue();
-    const challengeUpsertData = {
-      type: Config.CHALLENGE_TYPE,
+    if (!recoveryWallet.publicKey) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: ErrorMessages.RECOVERY_MISSING_PUBLIC_KEY,
+      });
+    }
+
+    const challengeUpsertData = ChallengeUtils.generateChallengeUpsertData({
       purpose: ChallengePurpose.ACCOUNT_RECOVERY,
-      value: challengeValue,
-      version: Config.CHALLENGE_VERSION,
-      createdAt: new Date(),
+      publicKey: recoveryWallet.publicKey,
 
       // Relations:
       userId: recoveryWallet.userId,
       walletId: recoveryWallet.id,
-    } as const satisfies UpsertChallengeData;
+    });
 
     const accountRecoveryChallenge = await ctx.prisma.challenge.upsert({
       where: {

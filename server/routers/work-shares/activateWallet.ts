@@ -7,15 +7,12 @@ import {
 } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
-import {
-  ChallengeUtils,
-  generateChangeValue,
-} from "@/server/utils/challenge/challenge.utils";
+import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { Config } from "@/server/utils/config/config.constants";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 import { DbWallet } from "@/prisma/types/types";
-import { UpsertChallengeData } from "@/server/utils/challenge/challenge.types";
 import { getSilentErrorLoggerFor } from "@/server/utils/error/error.utils";
+import { isEdDSAPublicKey } from "@/server/utils/share/share.validators";
 
 export const ActivateWalletSchema = z.object({
   walletId: z.string().uuid(),
@@ -40,13 +37,25 @@ export const activateWallet = protectedProcedure
     });
 
     const workKeySharePromise = ctx.prisma.workKeyShare.findFirst({
+      select: {
+        id: true,
+        rotationWarnings: true,
+        sharesRotatedAt: true,
+        authShare: true,
+        deviceShareHash: true,
+        deviceSharePublicKey: true,
+        wallet: {
+          select: {
+            id: true,
+            status: true,
+            publicKey: true,
+          }
+        },
+      },
       where: {
         userId: ctx.user.id,
         deviceNonce: ctx.session.deviceNonce,
         walletId: input.walletId,
-        wallet: {
-          status: WalletStatus.ENABLED,
-        },
       },
     });
 
@@ -105,6 +114,23 @@ export const activateWallet = protectedProcedure
       });
     }
 
+    const userWallet = workKeyShare.wallet;
+    const walletPublicKey = userWallet.publicKey;
+
+    if (!userWallet || userWallet.status !== WalletStatus.ENABLED) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: ErrorMessages.WALLET_NOT_FOUND,
+      });
+    }
+
+    if (!walletPublicKey) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: ErrorMessages.WALLET_MISSING_PUBLIC_KEY,
+      });
+    }
+
     const challengeErrorMessage = await ChallengeUtils.verifyChallenge({
       challenge,
       session: ctx.session,
@@ -126,7 +152,7 @@ export const activateWallet = protectedProcedure
         data: {
           status: WalletUsageStatus.FAILED,
           userId: ctx.user.id,
-          walletId: workKeyShare.walletId,
+          walletId: userWallet.id,
           workKeyShareId: workKeyShare.id,
           deviceAndLocationId,
         },
@@ -138,27 +164,22 @@ export const activateWallet = protectedProcedure
       });
     }
 
-    // TODO: Check if the public key we have is still RSA
     const shouldRotate =
       now - workKeyShare.sharesRotatedAt.getTime() >=
-      Config.SHARE_ACTIVE_TTL_MS;
+      Config.SHARE_ACTIVE_TTL_MS || !isEdDSAPublicKey(workKeyShare.deviceSharePublicKey)
 
     const [rotationChallenge, wallet] = await ctx.prisma.$transaction(
       async (tx) => {
         const deviceAndLocationId = await deviceAndLocationIdPromise;
-        const dateNow = new Date();
-        const challengeValue = generateChangeValue();
-        const challengeUpsertData = {
-          type: Config.CHALLENGE_TYPE,
+
+        const challengeUpsertData = ChallengeUtils.generateChallengeUpsertData({
           purpose: ChallengePurpose.SHARE_ROTATION,
-          value: challengeValue,
-          version: Config.CHALLENGE_VERSION,
-          createdAt: new Date(),
+          publicKey: walletPublicKey,
 
           // Relations:
           userId: ctx.user.id,
           walletId: input.walletId,
-        } as const satisfies UpsertChallengeData;
+        });
 
         const rotationChallengePromise = shouldRotate
           ? tx.challenge.upsert({
@@ -175,10 +196,10 @@ export const activateWallet = protectedProcedure
 
         const updateWalletStatsPromise = tx.wallet.update({
           where: {
-            id: workKeyShare.walletId,
+            id: userWallet.id,
           },
           data: {
-            lastActivatedAt: dateNow,
+            lastActivatedAt: new Date(),
             totalActivations: { increment: 1 },
           },
         });
@@ -198,7 +219,7 @@ export const activateWallet = protectedProcedure
           data: {
             status: WalletUsageStatus.SUCCESSFUL,
             userId: ctx.user.id,
-            walletId: workKeyShare.walletId,
+            walletId: userWallet.id,
             workKeyShareId: workKeyShare.id,
             deviceAndLocationId,
           },

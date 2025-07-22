@@ -1,6 +1,7 @@
 import {
   ChallengeClient,
   ChallengeClientVersion,
+  UpsertChallengeData,
   VerifyChallengeParams,
 } from "@/server/utils/challenge/challenge.types";
 import { ChallengeClientV1 } from "@/server/utils/challenge/clients/challenge-client-v1-rsa";
@@ -8,6 +9,7 @@ import { ChallengeClientV2 } from "@/server/utils/challenge/clients/challenge-cl
 import { isAnonChallenge } from "@/server/utils/challenge/clients/challenge-client.utils";
 import { Config } from "@/server/utils/config/config.constants";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
+import { isEdDSAPublicKey } from "@/server/utils/share/share.validators";
 import { ChallengePurpose } from "@prisma/client";
 
 /*
@@ -32,7 +34,7 @@ const CHALLENGE_CLIENTS = [
   return acc;
  }, {} as Record<ChallengeClientVersion, ChallengeClient<any>>);
 
-export function generateChangeValue() {
+function generateChangeValue() {
   return Buffer.from(
     crypto.getRandomValues(new Uint8Array(Config.CHALLENGE_BUFFER_SIZE))
   ).toString("base64");
@@ -41,17 +43,25 @@ export function generateChangeValue() {
 export interface GenerateChallengeUpsertDataParams {
   purpose: ChallengePurpose;
   publicKey: string;
+
+  // Relations:
+  userId: string;
+  walletId: string;
 }
 
-export function generateChallengeUpsertData({
+function generateChallengeUpsertData({
   purpose,
   publicKey,
+  userId,
+  walletId,
 }: GenerateChallengeUpsertDataParams) {
   const value = generateChangeValue();
 
-  const version = isRSAPublicKey(publicKey)
-    ? CHALLENGE_CLIENTS.v1.version
-    : CHALLENGE_CLIENTS.v2.version;
+  const version = isEdDSAPublicKey(publicKey)
+    ? CHALLENGE_CLIENTS.v2.version
+    : CHALLENGE_CLIENTS.v1.version;
+
+  // TODO: Verify SHARE_ROTATION is performed using v1 (RSA)
 
   return {
     type: Config.CHALLENGE_TYPE,
@@ -61,12 +71,16 @@ export function generateChallengeUpsertData({
     createdAt: new Date(),
 
     // Relations:
-    userId: ctx.user.id,
-    walletId: userWallet.id,
+    userId,
+    walletId,
   } as const satisfies UpsertChallengeData;
 }
 
-export async function verifyChallenge(params: VerifyChallengeParams): Promise<null | string> {
+function generateAnonChallengeData() {
+
+}
+
+async function verifyChallenge(params: VerifyChallengeParams): Promise<null | string> {
   try {
     const {
       // ChallengeData:
@@ -128,6 +142,8 @@ export async function verifyChallenge(params: VerifyChallengeParams): Promise<nu
 }
 
 export const ChallengeUtils = {
-  generateChangeValue,
+  // generateChangeValue,
+  generateChallengeUpsertData,
+  generateAnonChallengeData,
   verifyChallenge,
 };

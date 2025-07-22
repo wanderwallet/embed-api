@@ -1,18 +1,14 @@
 import { protectedProcedure } from "@/server/trpc";
 import { z } from "zod";
-import { ChallengePurpose, WalletUsageStatus } from "@prisma/client";
+import { ChallengePurpose, WalletStatus, WalletUsageStatus } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
-import {
-  ChallengeUtils,
-  generateChangeValue,
-} from "@/server/utils/challenge/challenge.utils";
+import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
 import { BackupUtils } from "@/server/utils/backup/backup.utils";
 import { Config } from "@/server/utils/config/config.constants";
 import { getShareHashValidator } from "@/server/utils/share/share.validators";
 import { DbWallet } from "@/prisma/types/types";
-import { UpsertChallengeData } from "@/server/utils/challenge/challenge.types";
 import { getSilentErrorLoggerFor } from "@/server/utils/error/error.utils";
 
 export const RecoverWalletSchema = z
@@ -55,6 +51,19 @@ export const recoverWallet = protectedProcedure
 
     const recoveryKeySharePromise = input.recoveryBackupShareHash
       ? ctx.prisma.recoveryKeyShare.findFirst({
+          select: {
+            id: true,
+            recoveryBackupShareHash: true,
+            recoveryBackupSharePublicKey: true,
+
+            wallet: {
+              select: {
+                id: true,
+                status: true,
+                publicKey: true,
+              }
+            },
+          },
           where: {
             userId: ctx.user.id,
             walletId: input.walletId,
@@ -63,10 +72,33 @@ export const recoverWallet = protectedProcedure
         })
       : null;
 
-    const [challenge, recoveryKeyShare] = await Promise.all([
+    const walletPromise = !input.recoveryBackupShareHash
+      ? ctx.prisma.wallet.findFirst({
+          select: {
+            id: true,
+            status: true,
+            publicKey: true,
+          },
+          where: {
+            id: input.walletId,
+            userId: ctx.user.id,
+          },
+        })
+      : null;
+
+    const [
+      challenge,
+      recoveryKeyShare,
+      wallet,
+    ] = await Promise.all([
       challengePromise,
       recoveryKeySharePromise,
+      walletPromise,
     ]);
+
+    const userWallet = recoveryKeyShare?.wallet || wallet;
+    const walletPublicKey = userWallet?.publicKey;
+    const publicKey = recoveryKeyShare?.recoveryBackupSharePublicKey || userWallet?.publicKey;
 
     if (!challenge) {
       throw new TRPCError({
@@ -103,22 +135,23 @@ export const recoverWallet = protectedProcedure
 
       throw new TRPCError({
         code: "NOT_FOUND",
-        message: ErrorMessages.WORK_SHARE_NOT_FOUND,
+        message: ErrorMessages.RECOVERY_SHARE_NOT_FOUND,
       });
     }
 
-    const publicKey =
-      recoveryKeyShare?.recoveryBackupSharePublicKey ||
-      (
-        await ctx.prisma.wallet.findFirst({
-          select: { publicKey: true },
-          where: {
-            id: input.walletId,
-            userId: ctx.user.id,
-          },
-        })
-      )?.publicKey ||
-      null;
+    if (!userWallet || userWallet.status !== WalletStatus.ENABLED) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: ErrorMessages.WALLET_NOT_FOUND,
+      });
+    }
+
+    if (!walletPublicKey || !publicKey) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: ErrorMessages.WALLET_MISSING_PUBLIC_KEY,
+      });
+    }
 
     const challengeErrorMessage = await ChallengeUtils.verifyChallenge({
       challenge,
@@ -141,7 +174,7 @@ export const recoverWallet = protectedProcedure
           data: {
             status: WalletUsageStatus.FAILED,
             userId: ctx.user.id,
-            walletId: recoveryKeyShare?.walletId || input.walletId,
+            walletId: userWallet.id,
             recoveryKeyShareId: recoveryKeyShare?.id || null,
             deviceAndLocationId,
           },
@@ -154,22 +187,18 @@ export const recoverWallet = protectedProcedure
       });
     }
 
-    const [rotationChallenge, wallet] = await ctx.prisma.$transaction(
+    const [rotationChallenge, updatedWallet] = await ctx.prisma.$transaction(
       async (tx) => {
         const deviceAndLocationId = await deviceAndLocationIdPromise;
-        const dateNow = new Date();
-        const challengeValue = generateChangeValue();
-        const challengeUpsertData = {
-          type: Config.CHALLENGE_TYPE,
+
+        const challengeUpsertData = ChallengeUtils.generateChallengeUpsertData({
           purpose: ChallengePurpose.SHARE_ROTATION,
-          value: challengeValue,
-          version: Config.CHALLENGE_VERSION,
-          createdAt: new Date(),
+          publicKey: walletPublicKey,
 
           // Relations:
           userId: ctx.user.id,
           walletId: input.walletId,
-        } as const satisfies UpsertChallengeData;
+        });
 
         const rotationChallengePromise = tx.challenge.upsert({
           where: {
@@ -185,7 +214,7 @@ export const recoverWallet = protectedProcedure
         const updateWalletStatsPromise = tx.wallet.update({
           where: { id: input.walletId },
           data: {
-            lastRecoveredAt: dateNow,
+            lastRecoveredAt: new Date(),
             totalRecoveries: { increment: 1 },
           },
         });
@@ -195,7 +224,7 @@ export const recoverWallet = protectedProcedure
           data: {
             status: WalletUsageStatus.SUCCESSFUL,
             userId: ctx.user.id,
-            walletId: recoveryKeyShare?.walletId || input.walletId,
+            walletId: userWallet.id,
             recoveryKeyShareId: recoveryKeyShare?.id || null,
             deviceAndLocationId,
           },
@@ -210,7 +239,7 @@ export const recoverWallet = protectedProcedure
     );
 
     return {
-      wallet: wallet as DbWallet,
+      wallet: updatedWallet as DbWallet,
       recoveryAuthShare: recoveryKeyShare?.recoveryAuthShare,
       rotationChallenge,
     };

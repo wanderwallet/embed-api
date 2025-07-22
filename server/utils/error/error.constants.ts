@@ -6,6 +6,7 @@ export const ErrorMessages = {
   WALLET_NO_PRIVACY_SUPPORT: "Wallet does not support the privacy setting.",
   WALLET_ADDRESS_MISMATCH: "Wallet address mismatch.",
   WALLET_NOT_VALID_FOR_ACCOUNT_RECOVERY: `Wallet cannot be used for account recovery.`,
+  WALLET_MISSING_PUBLIC_KEY: `Wallet is missing public key.`,
 
   // Shares:
   WORK_SHARE_NOT_FOUND: `Work share not found.`,

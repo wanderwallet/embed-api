@@ -4,9 +4,7 @@ import { ChallengePurpose, WalletStatus, WalletUsageStatus } from '@prisma/clien
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
-import { Config } from "@/server/utils/config/config.constants";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
-import { UpsertChallengeData } from "@/server/utils/challenge/challenge.types";
 
 export const GenerateWalletActivationChallengeInputSchema = z.object({
   walletId: z.string().uuid(),
@@ -20,13 +18,24 @@ export const generateWalletActivationChallenge = protectedProcedure
     // operation will probably reuse it. Otherwise, the cleanup cronjobs will take care of it:
     const deviceAndLocationIdPromise = getDeviceAndLocationId(ctx);
 
-    const userWallet = await ctx.prisma.wallet.findFirst({
-      select: { id: true, status: true },
+    const workKeyShare = await ctx.prisma.workKeyShare.findFirst({
+      select: {
+        deviceSharePublicKey: true,
+        wallet: {
+          select: {
+            id: true,
+            status: true,
+          }
+        },
+      },
       where: {
-        id: input.walletId,
         userId: ctx.user.id,
+        deviceNonce: ctx.session.deviceNonce,
+        walletId: input.walletId,
       },
     });
+
+    const userWallet = workKeyShare?.wallet;
 
     if (!userWallet || userWallet.status !== WalletStatus.ENABLED) {
       if (userWallet) {
@@ -50,19 +59,14 @@ export const generateWalletActivationChallenge = protectedProcedure
       });
     }
 
-    const challengeValue = ChallengeUtils.generateChangeValue();
-
-    const challengeUpsertData = {
-      type: Config.CHALLENGE_TYPE,
+    const challengeUpsertData = ChallengeUtils.generateChallengeUpsertData({
       purpose: ChallengePurpose.ACTIVATION,
-      value: challengeValue,
-      version: Config.CHALLENGE_VERSION,
-      createdAt: new Date(),
+      publicKey: workKeyShare.deviceSharePublicKey,
 
       // Relations:
       userId: ctx.user.id,
       walletId: userWallet.id,
-    } as const satisfies UpsertChallengeData;
+    });
 
     const activationChallenge = await ctx.prisma.challenge.upsert({
       where: {

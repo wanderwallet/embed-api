@@ -4,12 +4,12 @@ import { ChallengePurpose, WalletStatus, WalletUsageStatus } from '@prisma/clien
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
-import { Config } from "@/server/utils/config/config.constants";
 import { getDeviceAndLocationId } from "@/server/utils/device-n-location/device-n-location.utils";
-import { UpsertChallengeData } from "@/server/utils/challenge/challenge.types";
+import { getShareHashValidator } from "@/server/utils/share/share.validators";
 
 export const GenerateWalletRecoveryChallengeInputSchema = z.object({
   walletId: z.string().uuid(),
+  recoveryBackupShareHash: getShareHashValidator().optional(),
 });
 
 export const generateWalletRecoveryChallenge = protectedProcedure
@@ -20,13 +20,51 @@ export const generateWalletRecoveryChallenge = protectedProcedure
     // operation will probably reuse it. Otherwise, the cleanup cronjobs will take care of it:
     const deviceAndLocationIdPromise = getDeviceAndLocationId(ctx);
 
-    const userWallet = await ctx.prisma.wallet.findFirst({
-      select: { id: true, status: true },
-      where: {
-        id: input.walletId,
-        userId: ctx.user.id,
-      },
-    });
+    // TODO: There might be no recovery share key and instead we need to load the wallet:
+
+    const recoveryKeySharePromise = input.recoveryBackupShareHash
+      ? ctx.prisma.recoveryKeyShare.findFirst({
+          select: {
+            recoveryBackupSharePublicKey: true,
+            wallet: {
+              select: {
+                id: true,
+                status: true,
+                publicKey: true,
+              }
+            },
+          },
+          where: {
+            userId: ctx.user.id,
+            recoveryBackupShareHash: input.recoveryBackupShareHash,
+          },
+        })
+      : null;
+
+    const walletPromise = !input.recoveryBackupShareHash
+      ? ctx.prisma.wallet.findFirst({
+          select: {
+            id: true,
+            status: true,
+            publicKey: true
+          },
+          where: {
+            id: input.walletId,
+            userId: ctx.user.id,
+          },
+        })
+      : null;
+
+    const [
+      recoveryKeyShare,
+      wallet,
+    ] = await Promise.all([
+      recoveryKeySharePromise,
+      walletPromise,
+    ]);
+
+    const userWallet = recoveryKeyShare?.wallet || wallet;
+    const publicKey = recoveryKeyShare?.recoveryBackupSharePublicKey || userWallet?.publicKey;
 
     if (!userWallet || userWallet.status !== WalletStatus.ENABLED) {
       if (userWallet) {
@@ -50,18 +88,24 @@ export const generateWalletRecoveryChallenge = protectedProcedure
       });
     }
 
-    const challengeValue = ChallengeUtils.generateChangeValue();
-    const challengeUpsertData = {
-      type: Config.CHALLENGE_TYPE,
+    if (!publicKey) {
+      throw new TRPCError({
+        code: "NOT_FOUND",
+        message: ErrorMessages.WALLET_MISSING_PUBLIC_KEY,
+      });
+    }
+
+    // Depending on the format of the public key, the `generateChallengeUpsertData()` call below will generate a v1 or
+    // v2 challenge:
+
+    const challengeUpsertData = ChallengeUtils.generateChallengeUpsertData({
       purpose: ChallengePurpose.SHARE_RECOVERY,
-      value: challengeValue,
-      version: Config.CHALLENGE_VERSION,
-      createdAt: new Date(),
+      publicKey,
 
       // Relations:
       userId: ctx.user.id,
       walletId: userWallet.id,
-    } as const satisfies UpsertChallengeData;
+    });
 
     const shareRecoveryChallenge = await ctx.prisma.challenge.upsert({
       where: {
