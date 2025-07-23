@@ -25,10 +25,17 @@ export function getShareHashValidator() {
  * = 683 characters in base64.
  */
 export function getSharePublicKeyValidator() {
+  // If we publish the new client first, we can accept only EdDSA public keys on the server, as this is not used for
+  // challenge verification, it is only used when new work or recovery shares are registered.
+
+  return z.string().length(44);
+
+  /*
   return z.union([
     z.string().length(44),
     z.string().min(683).max(685),
   ]);
+  */
 }
 
 export const SHARE_REX_EXPS: Record<Chain, RegExp> = {
