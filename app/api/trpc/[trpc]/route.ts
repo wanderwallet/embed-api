@@ -12,8 +12,8 @@ const handler = async (req: NextRequest) => {
     createContext: () => createContext({ req }),
     onError: ({ type, path, error, input }) => {
       if (process.env.NODE_ENV === "development") {
-        console.error(`❌ ${ type } error on ${ path || "?" }: ${error.message}`, input);
-      } else if (error.code === "BAD_REQUEST" && error.cause instanceof ZodError) {
+        console.error(`${ type } error on ${ path || "?" }: ${error.message}`, input);
+      } else {
         console.error(`${ type } error on ${ path || "?" }: ${error.message}`);
       }
     }

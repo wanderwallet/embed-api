@@ -17,7 +17,8 @@ export const ErrorMessages = {
   // Challenge:
   CHALLENGE_NOT_FOUND: `Challenge not found. It might have been resolved already, or it might have expired.`,
   CHALLENGE_INVALID: `Invalid challenge.`,
-  CHALLENGE_EXPIRED_ERROR: `Challenge expired.`,
+  CHALLENGE_EXPIRED: `Challenge expired.`,
+  CHALLENGE_IP_MISMATCH: `Challenge IP mismatch.`,
   CHALLENGE_MISSING_PK: `Missing public key.`,
   CHALLENGE_UNEXPECTED_ERROR: `Unexpected error validating challenge.`,
 

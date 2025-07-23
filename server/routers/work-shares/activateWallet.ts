@@ -141,8 +141,6 @@ export const activateWallet = protectedProcedure
     });
 
     if (challengeErrorMessage) {
-      console.error(challengeErrorMessage);
-
       // TODO: Add a wallet activation attempt limit?
       // TODO: How to limit the # of activations per user?
 

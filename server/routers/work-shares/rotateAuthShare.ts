@@ -95,8 +95,6 @@ export const rotateAuthShare = protectedProcedure
     // TODO: Add a wallet activation attempt limit?
 
     if (challengeErrorMessage) {
-      console.error(challengeErrorMessage);
-
       // TODO: Register the failed attempt anyway!
 
       throw new TRPCError({

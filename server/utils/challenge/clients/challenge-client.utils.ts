@@ -29,7 +29,6 @@ export function getChallengeRawData({ challenge, session, shareHash }: Challenge
     challenge.value,
     challenge.version,
     session.id,
-    session.ip,
     session.deviceNonce,
     session.userAgent,
   ].join("|");

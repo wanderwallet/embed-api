@@ -1,11 +1,8 @@
 import {
-  ChallengeClient,
   ChallengeClientVersion,
   UpsertChallengeData,
   VerifyChallengeParams,
 } from "@/server/utils/challenge/challenge.types";
-import { ChallengeClientV1 } from "@/server/utils/challenge/clients/challenge-client-v1-rsa";
-import { ChallengeClientV2 } from "@/server/utils/challenge/clients/challenge-client-v2-eddsa";
 import { CHALLENGE_CLIENTS, isAnonChallenge } from "@/server/utils/challenge/clients/challenge-client.utils";
 import { Config } from "@/server/utils/config/config.constants";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
@@ -121,9 +118,12 @@ async function verifyChallenge(params: VerifyChallengeParams): Promise<null | st
       return ErrorMessages.CHALLENGE_INVALID;
     }
 
-    // TODO: Make TTL for hash-based challenges shorter:
+    // TODO: Add ip field to challenges.
+    // TODO: Move challenge config to clients and make TTL shorter for EdDSA and hash-based.
+    // TODO: Make sure hash-based can only be used locally.
+    // TODO: Remove verification function from clients.
 
-    // TODO: Move challenge config to clients.
+    // Verify challenge age/expiration:
 
     const challengeTTL =
       isAnonChallenge(challenge) ||
@@ -146,12 +146,21 @@ async function verifyChallenge(params: VerifyChallengeParams): Promise<null | st
     }
 
     if (challengeAge > challengeTTL) {
-      return `${ ErrorMessages.CHALLENGE_EXPIRED_ERROR } Took ${ (challengeAge / 1000).toFixed(2) }s (> ${ (challengeTTL / 1000).toFixed(2) }s).`;
+      return `${ ErrorMessages.CHALLENGE_EXPIRED } Took ${ (challengeAge / 1000).toFixed(2) }s (> ${ (challengeTTL / 1000).toFixed(2) }s).`;
     }
 
     if (isChallengeAgeMoreThanOneMinute && process.env.NODE_ENV === "production") {
       console.warn(`Challenge for user ${ session.userId } took more than a minute: ${ (challengeAge / 1000).toFixed(2) }s (${ challengePercent }%). userAgent = ${ session.userAgent }`);
     }
+
+    // Verify challenge IP:
+
+    if (challenge.ip !== session.ip) {
+      console.warn(`Challenge IP mismatch: challenge.ip = ${ challenge.ip }, session.ip = ${ session.ip }`);
+      return ErrorMessages.CHALLENGE_IP_MISMATCH;
+    }
+
+    // Verify challenge signature and solution:
 
     const verificationError = await challengeClient.verifyChallenge(params);
 
