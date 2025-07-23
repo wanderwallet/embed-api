@@ -34,7 +34,6 @@ interface RecoverableAccount {
     picture: string | null;
 }
 
-type SupabaseSession = Session;
 interface SupabaseUserMetadata {
     hasPassword?: boolean;
     email_verified?: boolean;
@@ -49,6 +48,9 @@ interface SupabaseUserMetadata {
 }
 interface SupabaseUser extends User {
     user_metadata: SupabaseUserMetadata;
+}
+interface SupabaseSession extends Session {
+    user: SupabaseUser;
 }
 
 declare const ErrorMessages: {
