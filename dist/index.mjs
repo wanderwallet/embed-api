@@ -18,9 +18,11 @@ var ErrorMessages = {
   WALLET_NO_PRIVACY_SUPPORT: "Wallet does not support the privacy setting.",
   WALLET_ADDRESS_MISMATCH: "Wallet address mismatch.",
   WALLET_NOT_VALID_FOR_ACCOUNT_RECOVERY: `Wallet cannot be used for account recovery.`,
+  WALLET_MISSING_PUBLIC_KEY: `Wallet is missing public key.`,
   // Shares:
   WORK_SHARE_NOT_FOUND: `Work share not found.`,
   WORK_SHARE_INVALIDATED: `Work share invalidated.`,
+  RECOVERY_SHARE_NOT_FOUND: "Recovery share not found.",
   INVALID_SHARE: `Invalid share.`,
   // Challenge:
   CHALLENGE_NOT_FOUND: `Challenge not found. It might have been resolved already, or it might have expired.`,
@@ -159,19 +161,16 @@ function createSupabaseClient(supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   return createClient(supabaseUrl, supabaseKey, supabaseOptions);
 }
 
-// server/utils/challenge/clients/challenge-client-v1.ts
-import {
-  ChallengePurpose,
-  ChallengeType
-} from "@prisma/client";
+// server/utils/challenge/clients/challenge-client.utils.ts
+import { ChallengePurpose } from "@prisma/client";
+function isAnonChallenge(challenge) {
+  return !!challenge.chain && !!challenge.address;
+}
 var CHALLENGES_WITHOUT_SHARE_HASH = [
   ChallengePurpose.SHARE_ROTATION,
   ChallengePurpose.ACCOUNT_RECOVERY,
   ChallengePurpose.SHARE_RECOVERY
 ];
-function isAnonChallenge(challenge) {
-  return !!challenge.chain && !!challenge.address;
-}
 function getChallengeRawData({ challenge, session, shareHash }) {
   const commonChallengeData = [
     challenge.id,
@@ -197,6 +196,10 @@ function getChallengeRawData({ challenge, session, shareHash }) {
     shareHash
   ].filter(Boolean).join("|");
 }
+
+// server/utils/challenge/clients/challenge-client-v1-rsa.ts
+import { ChallengeType } from "@prisma/client";
+import { timingSafeEqual } from "node:crypto";
 var CHALLENGE_CLIENT_VERSION = "v1";
 var IMPORT_KEY_ALGORITHM = {
   name: "RSA-PSS",
@@ -210,7 +213,7 @@ async function solveChallenge({
   challenge,
   session,
   shareHash,
-  jwk
+  privateKey: jwk
 }) {
   const challengeRawData = getChallengeRawData({
     challenge,
@@ -221,7 +224,7 @@ async function solveChallenge({
   let signatureOrHashBuffer;
   if (isAnonChallenge(challenge) || challenge.type === ChallengeType.SIGNATURE) {
     if (!jwk) {
-      throw new Error("Missing `jwk` (JWK private key)");
+      throw new Error("Missing private key (jwk)");
     }
     const privateKey = await crypto.subtle.importKey(
       "jwk",
@@ -235,28 +238,157 @@ async function solveChallenge({
       privateKey,
       challengeRawDataBuffer
     );
-  } else {
+  } else if (process.env.NODE_ENV === "development") {
     signatureOrHashBuffer = await crypto.subtle.digest(
       "SHA-256",
       challengeRawDataBuffer
     );
+  } else {
+    throw new Error("Cannot solve challenge.");
   }
   const signatureOrHashString = Buffer.from(signatureOrHashBuffer).toString(
     "base64"
   );
   return `${CHALLENGE_CLIENT_VERSION}.${signatureOrHashString}`;
 }
+async function verifyChallenge({
+  // ChallengeData:
+  challenge,
+  session,
+  shareHash,
+  // Verification:
+  solution,
+  publicKey: publicKeyParam
+}) {
+  const solutionValue = solution.split(".")[1];
+  if (!solutionValue) {
+    return ErrorMessages.CHALLENGE_UNEXPECTED_ERROR;
+  }
+  if (isAnonChallenge(challenge) || challenge.type === ChallengeType.SIGNATURE) {
+    if (!publicKeyParam) {
+      return ErrorMessages.CHALLENGE_MISSING_PK;
+    }
+    const publicJWK = {
+      e: "AQAB",
+      ext: true,
+      kty: "RSA",
+      n: publicKeyParam
+    };
+    const publicKey = await crypto.subtle.importKey(
+      "jwk",
+      publicJWK,
+      IMPORT_KEY_ALGORITHM,
+      true,
+      ["verify"]
+    );
+    const challengeRawData = await getChallengeRawData({
+      challenge,
+      session,
+      shareHash
+    });
+    const challengeRawDataBuffer = Buffer.from(challengeRawData);
+    const isSignatureValid = crypto.subtle.verify(
+      SIGN_ALGORITHM,
+      publicKey,
+      Buffer.from(solutionValue, "base64"),
+      challengeRawDataBuffer
+    );
+    if (!isSignatureValid) return ErrorMessages.CHALLENGE_INVALID;
+  } else if (process.env.NODE_ENV === "development") {
+    const expectedSolution = await solveChallenge({
+      challenge,
+      session,
+      shareHash
+    });
+    if (!timingSafeEqual(Buffer.from(expectedSolution, "utf16le"), Buffer.from(solution, "utf16le"))) return ErrorMessages.CHALLENGE_INVALID;
+  } else {
+    return ErrorMessages.CHALLENGE_UNEXPECTED_ERROR;
+  }
+  return null;
+}
 var ChallengeClientV1 = {
   version: CHALLENGE_CLIENT_VERSION,
-  importKeyAlgorithm: IMPORT_KEY_ALGORITHM,
-  signAlgorithm: SIGN_ALGORITHM,
   getChallengeRawData,
-  solveChallenge
+  solveChallenge,
+  verifyChallenge
+};
+
+// server/utils/challenge/clients/challenge-client-v2-eddsa.ts
+import { ChallengeType as ChallengeType2 } from "@prisma/client";
+import { ed25519 } from "@noble/curves/ed25519.js";
+var CHALLENGE_CLIENT_VERSION2 = "v2";
+async function solveChallenge2({
+  challenge,
+  session,
+  shareHash,
+  privateKey
+}) {
+  const challengeRawData = getChallengeRawData({
+    challenge,
+    session,
+    shareHash
+  });
+  const challengeRawDataBuffer = Buffer.from(challengeRawData);
+  let signatureBuffer;
+  if (isAnonChallenge(challenge) || challenge.type === ChallengeType2.SIGNATURE) {
+    if (!privateKey) {
+      throw new Error("Missing private key");
+    }
+    signatureBuffer = ed25519.sign(challengeRawDataBuffer, privateKey);
+  } else {
+    throw new Error("Cannot solve challenge.");
+  }
+  const signatureOrHashString = Buffer.from(signatureBuffer).toString(
+    "base64"
+  );
+  return `${CHALLENGE_CLIENT_VERSION2}.${signatureOrHashString}`;
+}
+async function verifyChallenge2({
+  // ChallengeData:
+  challenge,
+  session,
+  shareHash,
+  // Verification:
+  solution,
+  publicKey: publicKeyParam
+}) {
+  const solutionValue = solution.split(".")[1];
+  if (!solutionValue) {
+    return ErrorMessages.CHALLENGE_UNEXPECTED_ERROR;
+  }
+  if (isAnonChallenge(challenge) || challenge.type === ChallengeType2.SIGNATURE) {
+    if (!publicKeyParam) {
+      return ErrorMessages.CHALLENGE_MISSING_PK;
+    }
+    const challengeRawData = await getChallengeRawData({
+      challenge,
+      session,
+      shareHash
+    });
+    const challengeRawDataBuffer = Buffer.from(challengeRawData);
+    const isSignatureValid = ed25519.verify(
+      Buffer.from(solutionValue, "base64"),
+      challengeRawDataBuffer,
+      // TODO: Make sure it is in the right encoding:
+      Buffer.from(publicKeyParam, "base64")
+    );
+    if (!isSignatureValid) return ErrorMessages.CHALLENGE_INVALID;
+  } else {
+    return ErrorMessages.CHALLENGE_UNEXPECTED_ERROR;
+  }
+  return null;
+}
+var ChallengeClientV2 = {
+  version: CHALLENGE_CLIENT_VERSION2,
+  getChallengeRawData,
+  solveChallenge: solveChallenge2,
+  verifyChallenge: verifyChallenge2
 };
 export {
   AuthProviderType,
   Chain,
   ChallengeClientV1,
+  ChallengeClientV2,
   ErrorMessages,
   ExportType,
   WalletPrivacySetting,

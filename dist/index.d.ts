@@ -57,8 +57,10 @@ declare const ErrorMessages: {
     readonly WALLET_NO_PRIVACY_SUPPORT: "Wallet does not support the privacy setting.";
     readonly WALLET_ADDRESS_MISMATCH: "Wallet address mismatch.";
     readonly WALLET_NOT_VALID_FOR_ACCOUNT_RECOVERY: "Wallet cannot be used for account recovery.";
+    readonly WALLET_MISSING_PUBLIC_KEY: "Wallet is missing public key.";
     readonly WORK_SHARE_NOT_FOUND: "Work share not found.";
     readonly WORK_SHARE_INVALIDATED: "Work share invalidated.";
+    readonly RECOVERY_SHARE_NOT_FOUND: "Recovery share not found.";
     readonly INVALID_SHARE: "Invalid share.";
     readonly CHALLENGE_NOT_FOUND: "Challenge not found. It might have been resolved already, or it might have expired.";
     readonly CHALLENGE_INVALID: "Invalid challenge.";
@@ -299,6 +301,7 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
     generateWalletRecoveryChallenge: _trpc_server.TRPCMutationProcedure<{
         input: {
             walletId: string;
+            recoveryBackupShareHash?: string | undefined;
         };
         output: {
             shareRecoveryChallenge: {
@@ -746,6 +749,7 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
         generateWalletRecoveryChallenge: _trpc_server.TRPCMutationProcedure<{
             input: {
                 walletId: string;
+                recoveryBackupShareHash?: string | undefined;
             };
             output: {
                 shareRecoveryChallenge: {
@@ -972,17 +976,23 @@ interface ChallengeData {
     session: Session;
     shareHash: null | string;
 }
-interface SolveChallengeParams extends ChallengeData {
-    jwk?: JWKInterface;
+interface SolveChallengeParams<T> extends ChallengeData {
+    privateKey?: T;
 }
-interface ChallengeClient {
+interface VerifyChallengeParams extends ChallengeData {
+    now: number;
+    solution: string;
+    publicKey: null | string;
+}
+interface ChallengeClient<T> {
     version: ChallengeClientVersion;
-    importKeyAlgorithm: RsaHashedImportParams;
-    signAlgorithm: RsaPssParams;
     getChallengeRawData: (data: ChallengeData) => string;
-    solveChallenge: (params: SolveChallengeParams) => Promise<ChallengeSolutionWithVersion>;
+    solveChallenge: (params: SolveChallengeParams<T>) => Promise<ChallengeSolutionWithVersion>;
+    verifyChallenge: (params: VerifyChallengeParams) => Promise<string | null>;
 }
 
-declare const ChallengeClientV1: ChallengeClient;
+declare const ChallengeClientV1: ChallengeClient<JWKInterface>;
 
-export { type AppRouter, ChallengeClientV1, type DbWallet, ErrorMessages, type RecoverableAccount, type SupabaseUser, type SupabaseUserMetadata, type WalletInfo, type WalletSource, createSupabaseClient, createTRPCClient };
+declare const ChallengeClientV2: ChallengeClient<Uint8Array>;
+
+export { type AppRouter, ChallengeClientV1, ChallengeClientV2, type DbWallet, ErrorMessages, type RecoverableAccount, type SupabaseUser, type SupabaseUserMetadata, type WalletInfo, type WalletSource, createSupabaseClient, createTRPCClient };
