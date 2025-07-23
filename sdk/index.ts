@@ -24,7 +24,7 @@ export {
 
 // Auth:
 
-export type { SupabaseUser, SupabaseUserMetadata } from "@/server/utils/supabase/supabase.types"
+export type { SupabaseSession, SupabaseUser, SupabaseUserMetadata } from "@/server/utils/supabase/supabase.types"
 
 export type { AuthError as SupabaseAuthError } from "@supabase/supabase-js";
 
