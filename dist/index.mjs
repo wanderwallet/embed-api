@@ -399,6 +399,7 @@ function solveChallenge3({
   privateKey
 }) {
   const challengeClient = CHALLENGE_CLIENTS[challenge.version];
+  console.log(`Solving ${challenge.version} challenge with privateKey =`, privateKey);
   if (!challengeClient) {
     throw new Error(`Unsupported challenge version: ${challenge.version}`);
   }

@@ -20,9 +20,6 @@ export function getShareHashValidator() {
 
 /**
  * v2 challenges (EdDSA) => 32 bytes public key * 4/3 characters/byte = 43.3333 => 44 characters in base64.
- *
- * v1 challenges (RSA-PSS with modulusLength = 4096) => 512 bytes public key (as JWK) => 512 * 4/3 characters/byte
- * = 683 characters in base64.
  */
 export function getSharePublicKeyValidator() {
   // If we publish the new client first, we can accept only EdDSA public keys on the server, as this is not used for
@@ -31,6 +28,8 @@ export function getSharePublicKeyValidator() {
   return z.string().length(44);
 
   /*
+  // v1 challenges (RSA-PSS with modulusLength = 4096) => 512 bytes public key (as JWK) => 512 * 4/3 characters/byte = 683 characters in base64.
+
   return z.union([
     z.string().length(44),
     z.string().min(683).max(685),
