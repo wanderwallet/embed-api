@@ -41,7 +41,8 @@ __export(index_exports, {
   WalletSourceType: () => import_client5.WalletSourceType,
   WalletStatus: () => import_client5.WalletStatus,
   createSupabaseClient: () => createSupabaseClient,
-  createTRPCClient: () => createTRPCClient
+  createTRPCClient: () => createTRPCClient,
+  solveChallenge: () => solveChallenge3
 });
 module.exports = __toCommonJS(index_exports);
 var import_client5 = require("@prisma/client");
@@ -198,44 +199,8 @@ function createSupabaseClient(supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   return (0, import_supabase_js.createClient)(supabaseUrl, supabaseKey, supabaseOptions);
 }
 
-// server/utils/challenge/clients/challenge-client.utils.ts
-var import_client2 = require("@prisma/client");
-function isAnonChallenge(challenge) {
-  return !!challenge.chain && !!challenge.address;
-}
-var CHALLENGES_WITHOUT_SHARE_HASH = [
-  import_client2.ChallengePurpose.SHARE_ROTATION,
-  import_client2.ChallengePurpose.ACCOUNT_RECOVERY,
-  import_client2.ChallengePurpose.SHARE_RECOVERY
-];
-function getChallengeRawData({ challenge, session, shareHash }) {
-  const commonChallengeData = [
-    challenge.id,
-    challenge.createdAt.toISOString(),
-    challenge.value,
-    challenge.version,
-    session.id,
-    session.ip,
-    session.deviceNonce,
-    session.userAgent
-  ].join("|");
-  if (isAnonChallenge(challenge)) {
-    return `ANON|${commonChallengeData}|${challenge.chain}|${challenge.address}`;
-  }
-  if (!shareHash && !CHALLENGES_WITHOUT_SHARE_HASH.includes(challenge.purpose)) {
-    throw new Error("Missing `shareHash`");
-  }
-  return [
-    challenge.purpose,
-    commonChallengeData,
-    challenge.userId,
-    challenge.walletId,
-    shareHash
-  ].filter(Boolean).join("|");
-}
-
 // server/utils/challenge/clients/challenge-client-v1-rsa.ts
-var import_client3 = require("@prisma/client");
+var import_client2 = require("@prisma/client");
 var import_node_crypto = require("crypto");
 var CHALLENGE_CLIENT_VERSION = "v1";
 var IMPORT_KEY_ALGORITHM = {
@@ -259,7 +224,7 @@ async function solveChallenge({
   });
   const challengeRawDataBuffer = Buffer.from(challengeRawData);
   let signatureOrHashBuffer;
-  if (isAnonChallenge(challenge) || challenge.type === import_client3.ChallengeType.SIGNATURE) {
+  if (isAnonChallenge(challenge) || challenge.type === import_client2.ChallengeType.SIGNATURE) {
     if (!jwk) {
       throw new Error("Missing private key (jwk)");
     }
@@ -301,7 +266,7 @@ async function verifyChallenge({
   if (!solutionValue) {
     return ErrorMessages.CHALLENGE_UNEXPECTED_ERROR;
   }
-  if (isAnonChallenge(challenge) || challenge.type === import_client3.ChallengeType.SIGNATURE) {
+  if (isAnonChallenge(challenge) || challenge.type === import_client2.ChallengeType.SIGNATURE) {
     if (!publicKeyParam) {
       return ErrorMessages.CHALLENGE_MISSING_PK;
     }
@@ -351,7 +316,7 @@ var ChallengeClientV1 = {
 };
 
 // server/utils/challenge/clients/challenge-client-v2-eddsa.ts
-var import_client4 = require("@prisma/client");
+var import_client3 = require("@prisma/client");
 var import_ed25519 = require("@noble/curves/ed25519.js");
 var CHALLENGE_CLIENT_VERSION2 = "v2";
 async function solveChallenge2({
@@ -367,7 +332,7 @@ async function solveChallenge2({
   });
   const challengeRawDataBuffer = Buffer.from(challengeRawData);
   let signatureBuffer;
-  if (isAnonChallenge(challenge) || challenge.type === import_client4.ChallengeType.SIGNATURE) {
+  if (isAnonChallenge(challenge) || challenge.type === import_client3.ChallengeType.SIGNATURE) {
     if (!privateKey) {
       throw new Error("Missing private key");
     }
@@ -393,7 +358,7 @@ async function verifyChallenge2({
   if (!solutionValue) {
     return ErrorMessages.CHALLENGE_UNEXPECTED_ERROR;
   }
-  if (isAnonChallenge(challenge) || challenge.type === import_client4.ChallengeType.SIGNATURE) {
+  if (isAnonChallenge(challenge) || challenge.type === import_client3.ChallengeType.SIGNATURE) {
     if (!publicKeyParam) {
       return ErrorMessages.CHALLENGE_MISSING_PK;
     }
@@ -421,6 +386,67 @@ var ChallengeClientV2 = {
   solveChallenge: solveChallenge2,
   verifyChallenge: verifyChallenge2
 };
+
+// server/utils/challenge/clients/challenge-client.utils.ts
+var import_client4 = require("@prisma/client");
+function isAnonChallenge(challenge) {
+  return !!challenge.chain && !!challenge.address;
+}
+var CHALLENGES_WITHOUT_SHARE_HASH = [
+  import_client4.ChallengePurpose.SHARE_ROTATION,
+  import_client4.ChallengePurpose.ACCOUNT_RECOVERY,
+  import_client4.ChallengePurpose.SHARE_RECOVERY
+];
+function getChallengeRawData({ challenge, session, shareHash }) {
+  const commonChallengeData = [
+    challenge.id,
+    challenge.createdAt.toISOString(),
+    challenge.value,
+    challenge.version,
+    session.id,
+    session.ip,
+    session.deviceNonce,
+    session.userAgent
+  ].join("|");
+  if (isAnonChallenge(challenge)) {
+    return `ANON|${commonChallengeData}|${challenge.chain}|${challenge.address}`;
+  }
+  if (!shareHash && !CHALLENGES_WITHOUT_SHARE_HASH.includes(challenge.purpose)) {
+    throw new Error("Missing `shareHash`");
+  }
+  return [
+    challenge.purpose,
+    commonChallengeData,
+    challenge.userId,
+    challenge.walletId,
+    shareHash
+  ].filter(Boolean).join("|");
+}
+var CHALLENGE_CLIENTS = [
+  ChallengeClientV1,
+  ChallengeClientV2
+].reduce((acc, client) => {
+  if (acc[client.version]) throw new Error(`Duplicate client ${client.version}`);
+  acc[client.version] = client;
+  return acc;
+}, {});
+function solveChallenge3({
+  challenge,
+  session,
+  shareHash = null,
+  privateKey
+}) {
+  const challengeClient = CHALLENGE_CLIENTS[challenge.version];
+  if (!challengeClient) {
+    throw new Error(`Unsupported challenge version: ${challenge.version}`);
+  }
+  return challengeClient.solveChallenge({
+    challenge,
+    session,
+    shareHash,
+    privateKey
+  });
+}
 // Annotate the CommonJS export names for ESM import in node:
 0 && (module.exports = {
   AuthProviderType,
@@ -434,6 +460,7 @@ var ChallengeClientV2 = {
   WalletSourceType,
   WalletStatus,
   createSupabaseClient,
-  createTRPCClient
+  createTRPCClient,
+  solveChallenge
 });
 //# sourceMappingURL=index.js.map

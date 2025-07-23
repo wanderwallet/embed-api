@@ -6,7 +6,7 @@ import {
 } from "@/server/utils/challenge/challenge.types";
 import { ChallengeClientV1 } from "@/server/utils/challenge/clients/challenge-client-v1-rsa";
 import { ChallengeClientV2 } from "@/server/utils/challenge/clients/challenge-client-v2-eddsa";
-import { isAnonChallenge } from "@/server/utils/challenge/clients/challenge-client.utils";
+import { CHALLENGE_CLIENTS, isAnonChallenge } from "@/server/utils/challenge/clients/challenge-client.utils";
 import { Config } from "@/server/utils/config/config.constants";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { isEdDSAPublicKey } from "@/server/utils/share/share.validators";
@@ -22,17 +22,6 @@ export function isAnonChallenge(
   );
 }
 */
-
-const CHALLENGE_CLIENTS = [
-  ChallengeClientV1,
-  ChallengeClientV2,
- ].reduce((acc, client) => {
-  if (acc[client.version]) throw new Error(`Duplicate client ${ client.version }`);
-
-  acc[client.version] = client;
-
-  return acc;
- }, {} as Record<ChallengeClientVersion, ChallengeClient<any>>);
 
 function generateChangeValue() {
   return Buffer.from(

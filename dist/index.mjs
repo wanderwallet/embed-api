@@ -161,42 +161,6 @@ function createSupabaseClient(supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   return createClient(supabaseUrl, supabaseKey, supabaseOptions);
 }
 
-// server/utils/challenge/clients/challenge-client.utils.ts
-import { ChallengePurpose } from "@prisma/client";
-function isAnonChallenge(challenge) {
-  return !!challenge.chain && !!challenge.address;
-}
-var CHALLENGES_WITHOUT_SHARE_HASH = [
-  ChallengePurpose.SHARE_ROTATION,
-  ChallengePurpose.ACCOUNT_RECOVERY,
-  ChallengePurpose.SHARE_RECOVERY
-];
-function getChallengeRawData({ challenge, session, shareHash }) {
-  const commonChallengeData = [
-    challenge.id,
-    challenge.createdAt.toISOString(),
-    challenge.value,
-    challenge.version,
-    session.id,
-    session.ip,
-    session.deviceNonce,
-    session.userAgent
-  ].join("|");
-  if (isAnonChallenge(challenge)) {
-    return `ANON|${commonChallengeData}|${challenge.chain}|${challenge.address}`;
-  }
-  if (!shareHash && !CHALLENGES_WITHOUT_SHARE_HASH.includes(challenge.purpose)) {
-    throw new Error("Missing `shareHash`");
-  }
-  return [
-    challenge.purpose,
-    commonChallengeData,
-    challenge.userId,
-    challenge.walletId,
-    shareHash
-  ].filter(Boolean).join("|");
-}
-
 // server/utils/challenge/clients/challenge-client-v1-rsa.ts
 import { ChallengeType } from "@prisma/client";
 import { timingSafeEqual } from "node:crypto";
@@ -384,6 +348,67 @@ var ChallengeClientV2 = {
   solveChallenge: solveChallenge2,
   verifyChallenge: verifyChallenge2
 };
+
+// server/utils/challenge/clients/challenge-client.utils.ts
+import { ChallengePurpose } from "@prisma/client";
+function isAnonChallenge(challenge) {
+  return !!challenge.chain && !!challenge.address;
+}
+var CHALLENGES_WITHOUT_SHARE_HASH = [
+  ChallengePurpose.SHARE_ROTATION,
+  ChallengePurpose.ACCOUNT_RECOVERY,
+  ChallengePurpose.SHARE_RECOVERY
+];
+function getChallengeRawData({ challenge, session, shareHash }) {
+  const commonChallengeData = [
+    challenge.id,
+    challenge.createdAt.toISOString(),
+    challenge.value,
+    challenge.version,
+    session.id,
+    session.ip,
+    session.deviceNonce,
+    session.userAgent
+  ].join("|");
+  if (isAnonChallenge(challenge)) {
+    return `ANON|${commonChallengeData}|${challenge.chain}|${challenge.address}`;
+  }
+  if (!shareHash && !CHALLENGES_WITHOUT_SHARE_HASH.includes(challenge.purpose)) {
+    throw new Error("Missing `shareHash`");
+  }
+  return [
+    challenge.purpose,
+    commonChallengeData,
+    challenge.userId,
+    challenge.walletId,
+    shareHash
+  ].filter(Boolean).join("|");
+}
+var CHALLENGE_CLIENTS = [
+  ChallengeClientV1,
+  ChallengeClientV2
+].reduce((acc, client) => {
+  if (acc[client.version]) throw new Error(`Duplicate client ${client.version}`);
+  acc[client.version] = client;
+  return acc;
+}, {});
+function solveChallenge3({
+  challenge,
+  session,
+  shareHash = null,
+  privateKey
+}) {
+  const challengeClient = CHALLENGE_CLIENTS[challenge.version];
+  if (!challengeClient) {
+    throw new Error(`Unsupported challenge version: ${challenge.version}`);
+  }
+  return challengeClient.solveChallenge({
+    challenge,
+    session,
+    shareHash,
+    privateKey
+  });
+}
 export {
   AuthProviderType,
   Chain,
@@ -396,6 +421,7 @@ export {
   WalletSourceType,
   WalletStatus,
   createSupabaseClient,
-  createTRPCClient
+  createTRPCClient,
+  solveChallenge3 as solveChallenge
 };
 //# sourceMappingURL=index.mjs.map

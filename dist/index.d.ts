@@ -991,8 +991,10 @@ interface ChallengeClient<T> {
     verifyChallenge: (params: VerifyChallengeParams) => Promise<string | null>;
 }
 
+declare function solveChallenge({ challenge, session, shareHash, privateKey, }: SolveChallengeParams<JWKInterface | string>): Promise<string>;
+
 declare const ChallengeClientV1: ChallengeClient<JWKInterface>;
 
 declare const ChallengeClientV2: ChallengeClient<Uint8Array>;
 
-export { type AppRouter, ChallengeClientV1, ChallengeClientV2, type DbWallet, ErrorMessages, type RecoverableAccount, type SupabaseUser, type SupabaseUserMetadata, type WalletInfo, type WalletSource, createSupabaseClient, createTRPCClient };
+export { type AppRouter, ChallengeClientV1, ChallengeClientV2, type ChallengeClientVersion, type ChallengeData, type ChallengeSolutionWithVersion, type DbWallet, ErrorMessages, type RecoverableAccount, type SolveChallengeParams, type SupabaseUser, type SupabaseUserMetadata, type WalletInfo, type WalletSource, createSupabaseClient, createTRPCClient, solveChallenge };
