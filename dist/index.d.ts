@@ -1,9 +1,10 @@
 import * as _prisma_client from '@prisma/client';
-import { Wallet, WalletSourceType, WalletSourceFrom, Challenge, AnonChallenge, Session as Session$1 } from '@prisma/client';
+import { Wallet, WalletSourceType, WalletSourceFrom, Session as Session$1, Challenge, AnonChallenge } from '@prisma/client';
 export { AuthProviderType, Chain, Challenge as DbChallenge, Session as DbSession, UserProfile as DbUserProfile, ExportType, WalletPrivacySetting, WalletSourceFrom, WalletSourceType, WalletStatus } from '@prisma/client';
 import * as _supabase_supabase_js from '@supabase/supabase-js';
-import { Session, User, SupabaseClientOptions } from '@supabase/supabase-js';
+import { Session, User, Provider, SupabaseClientOptions } from '@supabase/supabase-js';
 export { AuthError as SupabaseAuthError } from '@supabase/supabase-js';
+import { JwtPayload } from 'jwt-decode';
 import * as _trpc_client from '@trpc/client';
 import * as _trpc_server from '@trpc/server';
 import * as _trpc_server_unstable_core_do_not_import from '@trpc/server/unstable-core-do-not-import';
@@ -53,6 +54,18 @@ interface SupabaseSession extends Session {
     user: SupabaseUser;
 }
 
+type SupabaseJwtSessionData = Omit<Session$1, "id" | "userId">;
+type SupabaseJwtSessionHeaders = Pick<SupabaseJwtSessionData, "userAgent" | "deviceNonce" | "ip">;
+type SupabaseProvider = Extract<Provider, "google" | "facebook" | "twitter" | "apple">;
+interface SupabaseJwtPayload extends JwtPayload {
+    session_id: string;
+    sessionData: SupabaseJwtSessionData;
+    app_metadata: {
+        provider: SupabaseProvider | "email";
+        providers: (SupabaseProvider | "email")[];
+    };
+}
+
 declare const ErrorMessages: {
     readonly WALLET_NOT_FOUND: "Wallet not found.";
     readonly WALLET_CANNOT_BE_ENABLED: "Wallet cannot be enabled.";
@@ -67,7 +80,8 @@ declare const ErrorMessages: {
     readonly INVALID_SHARE: "Invalid share.";
     readonly CHALLENGE_NOT_FOUND: "Challenge not found. It might have been resolved already, or it might have expired.";
     readonly CHALLENGE_INVALID: "Invalid challenge.";
-    readonly CHALLENGE_EXPIRED_ERROR: "Challenge expired.";
+    readonly CHALLENGE_EXPIRED: "Challenge expired.";
+    readonly CHALLENGE_IP_MISMATCH: "Challenge IP mismatch.";
     readonly CHALLENGE_MISSING_PK: "Missing public key.";
     readonly CHALLENGE_UNEXPECTED_ERROR: "Unexpected error validating challenge.";
     readonly RECOVERY_ACCOUNTS_NOT_FOUND: "No recoverable accounts found.";
@@ -80,19 +94,10 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
     ctx: {
         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         user: null;
-        session: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            deviceNonce: string;
-            ip: string;
-            userAgent: string;
-        } & {
-            applicationId: string;
-        };
+        session: any;
     } | {
         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+        clientId: string;
         user: _supabase_supabase_js.AuthUser;
         session: {
             id: string;
@@ -102,8 +107,6 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
             deviceNonce: string;
             ip: string;
             userAgent: string;
-        } & {
-            applicationId: string;
         };
     };
     meta: object;
@@ -428,10 +431,10 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                     name: string | null;
                     createdAt: Date;
                     updatedAt: Date;
+                    email: string | null;
                     supId: string;
                     supEmail: string | null;
                     supPhone: string | null;
-                    email: string | null;
                     phone: string | null;
                     picture: string | null;
                     recoveredAt: Date | null;
@@ -464,8 +467,6 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 deviceNonce: string;
                 ip: string;
                 userAgent: string;
-            } & {
-                applicationId: string;
             };
         };
     }>;
@@ -520,7 +521,6 @@ interface CreateTRPCClientOptions {
     authToken?: string | null;
     deviceNonce?: string;
     clientId?: string;
-    applicationId?: string;
     onAuthError?: () => void;
 }
 declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: CreateTRPCClientOptions): {
@@ -528,19 +528,10 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
         ctx: {
             prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             user: null;
-            session: {
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                userId: string;
-                deviceNonce: string;
-                ip: string;
-                userAgent: string;
-            } & {
-                applicationId: string;
-            };
+            session: any;
         } | {
             prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+            clientId: string;
             user: _supabase_supabase_js.AuthUser;
             session: {
                 id: string;
@@ -550,8 +541,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                 deviceNonce: string;
                 ip: string;
                 userAgent: string;
-            } & {
-                applicationId: string;
             };
         };
         meta: object;
@@ -876,10 +865,10 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         name: string | null;
                         createdAt: Date;
                         updatedAt: Date;
+                        email: string | null;
                         supId: string;
                         supEmail: string | null;
                         supPhone: string | null;
-                        email: string | null;
                         phone: string | null;
                         picture: string | null;
                         recoveredAt: Date | null;
@@ -912,8 +901,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     deviceNonce: string;
                     ip: string;
                     userAgent: string;
-                } & {
-                    applicationId: string;
                 };
             };
         }>;
@@ -966,8 +953,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
     setDeviceNonceHeader: (nextDeviceNonce: string) => void;
     getClientIdHeader: () => string;
     setClientIdHeader: (nextClientId: string) => void;
-    getApplicationIdHeader: () => string;
-    setApplicationIdHeader: (nextApplicationId: string) => void;
 };
 
 declare function createSupabaseClient(supabaseUrl?: string, supabaseKey?: string, supabaseOptions?: SupabaseClientOptions<"public">): _supabase_supabase_js.SupabaseClient<any, "public", any>;
@@ -1000,4 +985,4 @@ declare const ChallengeClientV1: ChallengeClient<JWKInterface>;
 
 declare const ChallengeClientV2: ChallengeClient<Uint8Array>;
 
-export { type AppRouter, ChallengeClientV1, ChallengeClientV2, type ChallengeClientVersion, type ChallengeData, type ChallengeSolutionWithVersion, type DbWallet, ErrorMessages, type RecoverableAccount, type SolveChallengeParams, type SupabaseSession, type SupabaseUser, type SupabaseUserMetadata, type WalletInfo, type WalletSource, createSupabaseClient, createTRPCClient, solveChallenge };
+export { type AppRouter, ChallengeClientV1, ChallengeClientV2, type ChallengeClientVersion, type ChallengeData, type ChallengeSolutionWithVersion, type DbWallet, ErrorMessages, type RecoverableAccount, type SolveChallengeParams, type SupabaseJwtPayload, type SupabaseJwtSessionData, type SupabaseJwtSessionHeaders, type SupabaseProvider, type SupabaseSession, type SupabaseUser, type SupabaseUserMetadata, type WalletInfo, type WalletSource, createSupabaseClient, createTRPCClient, solveChallenge };

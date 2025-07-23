@@ -27,7 +27,8 @@ var ErrorMessages = {
   // Challenge:
   CHALLENGE_NOT_FOUND: `Challenge not found. It might have been resolved already, or it might have expired.`,
   CHALLENGE_INVALID: `Invalid challenge.`,
-  CHALLENGE_EXPIRED_ERROR: `Challenge expired.`,
+  CHALLENGE_EXPIRED: `Challenge expired.`,
+  CHALLENGE_IP_MISMATCH: `Challenge IP mismatch.`,
   CHALLENGE_MISSING_PK: `Missing public key.`,
   CHALLENGE_UNEXPECTED_ERROR: `Unexpected error validating challenge.`,
   // Recovery:
@@ -82,7 +83,6 @@ function createTRPCClient({
   let authToken = params.authToken || null;
   let deviceNonce = params.deviceNonce || "";
   let clientId = params.clientId || "";
-  let applicationId = params.applicationId || "";
   function getAuthTokenHeader() {
     return authToken;
   }
@@ -100,12 +100,6 @@ function createTRPCClient({
   }
   function setClientIdHeader(nextClientId) {
     clientId = nextClientId;
-  }
-  function getApplicationIdHeader() {
-    return applicationId;
-  }
-  function setApplicationIdHeader(nextApplicationId) {
-    applicationId = nextApplicationId;
   }
   const url = trpcURL || (baseURL ? `${baseURL.replace(/\/$/, "")}/api/trpc` : "");
   if (!url) throw new Error("No `baseURL` or `trpcURL` provided.");
@@ -129,8 +123,7 @@ function createTRPCClient({
           return {
             authorization: authToken ? `Bearer ${authToken}` : void 0,
             "x-device-nonce": deviceNonce,
-            "x-client-id": clientId,
-            "x-application-id": applicationId
+            "x-client-id": clientId
           };
         }
       })
@@ -143,9 +136,7 @@ function createTRPCClient({
     getDeviceNonceHeader,
     setDeviceNonceHeader,
     getClientIdHeader,
-    setClientIdHeader,
-    getApplicationIdHeader,
-    setApplicationIdHeader
+    setClientIdHeader
   };
 }
 
@@ -366,7 +357,6 @@ function getChallengeRawData({ challenge, session, shareHash }) {
     challenge.value,
     challenge.version,
     session.id,
-    session.ip,
     session.deviceNonce,
     session.userAgent
   ].join("|");
