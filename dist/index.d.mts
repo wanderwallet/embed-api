@@ -1,8 +1,8 @@
 import * as _prisma_client from '@prisma/client';
-import { Wallet, WalletSourceType, WalletSourceFrom, Challenge, AnonChallenge, Session } from '@prisma/client';
+import { Wallet, WalletSourceType, WalletSourceFrom, Challenge, AnonChallenge, Session as Session$1 } from '@prisma/client';
 export { AuthProviderType, Chain, Challenge as DbChallenge, Session as DbSession, UserProfile as DbUserProfile, ExportType, WalletPrivacySetting, WalletSourceFrom, WalletSourceType, WalletStatus } from '@prisma/client';
 import * as _supabase_supabase_js from '@supabase/supabase-js';
-import { User, SupabaseClientOptions } from '@supabase/supabase-js';
+import { Session, User, SupabaseClientOptions } from '@supabase/supabase-js';
 export { AuthError as SupabaseAuthError } from '@supabase/supabase-js';
 import * as _trpc_client from '@trpc/client';
 import * as _trpc_server from '@trpc/server';
@@ -34,6 +34,7 @@ interface RecoverableAccount {
     picture: string | null;
 }
 
+type SupabaseSession = Session;
 interface SupabaseUserMetadata {
     hasPassword?: boolean;
     email_verified?: boolean;
@@ -973,7 +974,7 @@ type ChallengeClientVersion = `v${number}`;
 type ChallengeSolutionWithVersion = `${ChallengeClientVersion}.${string}`;
 interface ChallengeData {
     challenge: Challenge | AnonChallenge;
-    session: Session;
+    session: Session$1;
     shareHash: null | string;
 }
 interface SolveChallengeParams<T> extends ChallengeData {
@@ -997,4 +998,4 @@ declare const ChallengeClientV1: ChallengeClient<JWKInterface>;
 
 declare const ChallengeClientV2: ChallengeClient<Uint8Array>;
 
-export { type AppRouter, ChallengeClientV1, ChallengeClientV2, type ChallengeClientVersion, type ChallengeData, type ChallengeSolutionWithVersion, type DbWallet, ErrorMessages, type RecoverableAccount, type SolveChallengeParams, type SupabaseUser, type SupabaseUserMetadata, type WalletInfo, type WalletSource, createSupabaseClient, createTRPCClient, solveChallenge };
+export { type AppRouter, ChallengeClientV1, ChallengeClientV2, type ChallengeClientVersion, type ChallengeData, type ChallengeSolutionWithVersion, type DbWallet, ErrorMessages, type RecoverableAccount, type SolveChallengeParams, type SupabaseSession, type SupabaseUser, type SupabaseUserMetadata, type WalletInfo, type WalletSource, createSupabaseClient, createTRPCClient, solveChallenge };
