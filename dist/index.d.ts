@@ -991,7 +991,7 @@ interface ChallengeClient<T> {
     verifyChallenge: (params: VerifyChallengeParams) => Promise<string | null>;
 }
 
-declare function solveChallenge({ challenge, session, shareHash, privateKey, }: SolveChallengeParams<JWKInterface | string>): Promise<string>;
+declare function solveChallenge({ challenge, session, shareHash, privateKey, }: SolveChallengeParams<JWKInterface | Uint8Array>): Promise<string>;
 
 declare const ChallengeClientV1: ChallengeClient<JWKInterface>;
 

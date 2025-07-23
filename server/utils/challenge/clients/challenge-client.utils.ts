@@ -72,7 +72,7 @@ export function solveChallenge({
   session,
   shareHash = null,
   privateKey,
-}: SolveChallengeParams<JWKInterface | string>): Promise<string> {
+}: SolveChallengeParams<JWKInterface | Uint8Array>): Promise<string> {
   const challengeClient = CHALLENGE_CLIENTS[challenge.version as ChallengeClientVersion];
 
   if (!challengeClient) {
