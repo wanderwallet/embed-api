@@ -20,7 +20,11 @@ export const generateWalletRecoveryChallenge = protectedProcedure
     // operation will probably reuse it. Otherwise, the cleanup cronjobs will take care of it:
     const deviceAndLocationIdPromise = getDeviceAndLocationId(ctx);
 
-    // TODO: There might be no recovery share key and instead we need to load the wallet:
+    // If both `walletId` and `recoveryBackupShareHash` are provided, AND `recoveryBackupSharePublicKey` is
+    // EdDSA, we generate a v2 challenge, otherwise a v1 challenge.
+    //
+    // Note this will temporarily break the previous version, where only `walletId` was required to load a
+    // RecoveryKeyShare.
 
     const recoveryKeySharePromise = input.recoveryBackupShareHash
       ? ctx.prisma.recoveryKeyShare.findFirst({

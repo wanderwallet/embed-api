@@ -53,6 +53,7 @@ export const recoverWallet = protectedProcedure
       ? ctx.prisma.recoveryKeyShare.findFirst({
           select: {
             id: true,
+            recoveryAuthShare: true,
             recoveryBackupShareHash: true,
             recoveryBackupSharePublicKey: true,
 
@@ -98,7 +99,14 @@ export const recoverWallet = protectedProcedure
 
     const userWallet = recoveryKeyShare?.wallet || wallet;
     const walletPublicKey = userWallet?.publicKey;
-    const publicKey = recoveryKeyShare?.recoveryBackupSharePublicKey || userWallet?.publicKey;
+
+    // If both `walletId` and `recoveryBackupShareHash` are provided, AND `recoveryBackupSharePublicKey` is
+    // EdDSA, we validate a v2 challenge, otherwise a v1 challenge.
+    //
+    // Note this will temporarily break the previous version, where only `walletId` was required to load a
+    // RecoveryKeyShare.
+
+    const verificationPublicKey = recoveryKeyShare?.recoveryBackupSharePublicKey || userWallet?.publicKey;
 
     if (!challenge) {
       throw new TRPCError({
@@ -146,7 +154,7 @@ export const recoverWallet = protectedProcedure
       });
     }
 
-    if (!walletPublicKey || !publicKey) {
+    if (!walletPublicKey || !verificationPublicKey) {
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.WALLET_MISSING_PUBLIC_KEY,
@@ -159,7 +167,7 @@ export const recoverWallet = protectedProcedure
       shareHash: recoveryKeyShare?.recoveryBackupShareHash || null,
       now,
       solution: input.challengeSolution,
-      publicKey,
+      publicKey: verificationPublicKey,
     });
 
     if (challengeErrorMessage) {

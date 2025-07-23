@@ -11,6 +11,7 @@ export const ErrorMessages = {
   // Shares:
   WORK_SHARE_NOT_FOUND: `Work share not found.`,
   WORK_SHARE_INVALIDATED: `Work share invalidated.`,
+  RECOVERY_SHARE_NOT_FOUND: "Recovery share not found.",
   INVALID_SHARE: `Invalid share.`,
 
   // Challenge:

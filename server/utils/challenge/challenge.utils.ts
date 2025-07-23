@@ -10,7 +10,7 @@ import { isAnonChallenge } from "@/server/utils/challenge/clients/challenge-clie
 import { Config } from "@/server/utils/config/config.constants";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { isEdDSAPublicKey } from "@/server/utils/share/share.validators";
-import { ChallengePurpose } from "@prisma/client";
+import { AnonChallenge, Chain, ChallengePurpose } from "@prisma/client";
 
 /*
 export function isAnonChallenge(
@@ -49,6 +49,12 @@ export interface GenerateChallengeUpsertDataParams {
   walletId: string;
 }
 
+/**
+ * Regular Challenges can use both EdDSA and RSA, depending on the format of the public key we'll be using to verify
+ * them. Therefore, we need to pass that public key at generation time.
+ *
+ * Note for `SHARE_ROTATION` we always use RSA, as that one is resolved with a wallet private key signature.
+ */
 function generateChallengeUpsertData({
   purpose,
   publicKey,
@@ -61,7 +67,9 @@ function generateChallengeUpsertData({
     ? CHALLENGE_CLIENTS.v2.version
     : CHALLENGE_CLIENTS.v1.version;
 
-  // TODO: Verify SHARE_ROTATION is performed using v1 (RSA)
+  if (purpose === ChallengePurpose.SHARE_ROTATION && version !== CHALLENGE_CLIENTS.v1.version) {
+    throw new Error(`SHARE_ROTATION challenge must use v1 client (RSA), but got ${version}`);
+  }
 
   return {
     type: Config.CHALLENGE_TYPE,
@@ -76,8 +84,29 @@ function generateChallengeUpsertData({
   } as const satisfies UpsertChallengeData;
 }
 
-function generateAnonChallengeData() {
+export interface GenerateAnonChallengeDataParams {
+  chain: Chain;
+  address: string;
+}
 
+/**
+ * AnonChallenges are resolved by signing with the wallet private key, so they use RSA. Therefore, they always use the
+ * v1 challenge client.
+ */
+function generateAnonChallengeCreateData({
+  chain,
+  address,
+}: GenerateAnonChallengeDataParams) {
+  const value = generateChangeValue();
+  const version = CHALLENGE_CLIENTS.v1.version;
+
+  return  {
+    value,
+    version,
+    createdAt: new Date(),
+    chain,
+    address,
+  } satisfies Omit<AnonChallenge, "id">;
 }
 
 async function verifyChallenge(params: VerifyChallengeParams): Promise<null | string> {
@@ -142,8 +171,7 @@ async function verifyChallenge(params: VerifyChallengeParams): Promise<null | st
 }
 
 export const ChallengeUtils = {
-  // generateChangeValue,
   generateChallengeUpsertData,
-  generateAnonChallengeData,
+  generateAnonChallengeCreateData,
   verifyChallenge,
 };
