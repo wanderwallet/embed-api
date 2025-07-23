@@ -130,6 +130,8 @@ async function verifyChallenge(params: VerifyChallengeParams): Promise<null | st
 
     // TODO: Make TTL for hash-based challenges shorter:
 
+    // TODO: Move challenge config to clients.
+
     const challengeTTL =
       isAnonChallenge(challenge) ||
       challenge.purpose === ChallengePurpose.SHARE_ROTATION

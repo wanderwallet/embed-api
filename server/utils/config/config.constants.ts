@@ -73,7 +73,6 @@ export function initConfig() {
 
   // Challenges:
   const CHALLENGE_TYPE = process.env.CHALLENGE_TYPE as ChallengeType;
-  const CHALLENGE_VERSION = process.env.CHALLENGE_VERSION;
   const CHALLENGE_BUFFER_SIZE = process.env.CHALLENGE_BUFFER_SIZE;
   const CHALLENGE_TTL_MS = process.env.CHALLENGE_TTL_MS;
   const CHALLENGE_ROTATION_TTL_MS = process.env.CHALLENGE_ROTATION_TTL_MS;
@@ -115,7 +114,6 @@ export function initConfig() {
 
     // Challenges:
     CHALLENGE_TYPE: getEnvEnumValidator("CHALLENGE_TYPE", ChallengeType),
-    CHALLENGE_VERSION: getEnvStringValidator("CHALLENGE_VERSION"),
     CHALLENGE_BUFFER_SIZE: getEnvNumberValidator("CHALLENGE_BUFFER_SIZE"),
     CHALLENGE_TTL_MS: getEnvNumberValidator("CHALLENGE_TTL_MS"),
     CHALLENGE_ROTATION_TTL_MS: getEnvNumberValidator("CHALLENGE_ROTATION_TTL_MS"),
@@ -159,7 +157,6 @@ export function initConfig() {
 
       // Challenges:
       CHALLENGE_TYPE,
-      CHALLENGE_VERSION,
       CHALLENGE_BUFFER_SIZE,
       CHALLENGE_TTL_MS,
       CHALLENGE_ROTATION_TTL_MS,
