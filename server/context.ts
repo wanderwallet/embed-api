@@ -20,7 +20,6 @@ function createEmptyContext(sessionHeaders: SupabaseJwtSessionHeaders) {
     prisma,
     clientId: null,
     user: null as unknown as User,
-    // TODO: Add ip and headers anyway so that public procedures can validate challenges.
     session: {
       id: "",
       createdAt: dateNow,
