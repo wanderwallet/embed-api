@@ -98,6 +98,18 @@ async function verifyChallenge({
   return null;
 }
 
+
+/**
+ * IMPORTANT NOTE: Cryptographically relevant quantum computer, if built, will allow to break elliptic curve
+ * cryptography (both ECDSA / EdDSA & ECDH) using Shor's algorithm.
+ *
+ * Consider switching to newer / hybrid algorithms, such as SPHINCS+. They are available in noble-post-quantum.
+ *
+ * NIST prohibits classical cryptography (RSA, DSA, ECDSA, ECDH) after 2035. Australian ASD prohibits it after 2030.
+ *
+ * @see https://github.com/paulmillr/noble-curves?tab=readme-ov-file#quantum-computers
+ * @see https://github.com/paulmillr/noble-post-quantum
+ */
 export const ChallengeClientV2: ChallengeClient<Uint8Array> = {
   version: CHALLENGE_CLIENT_VERSION,
   ttlMs: 30000, // 30 seconds
