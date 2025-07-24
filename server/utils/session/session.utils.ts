@@ -37,7 +37,7 @@ export function parseAccessTokenAndHeaders(
     createdAt: sessionData.createdAt,
     updatedAt: Object.keys(sessionUpdates).length > 0 ? new Date() : sessionData.updatedAt,
     deviceNonce: sessionHeaders.deviceNonce || sessionData.deviceNonce,
-    ip: sessionData.ip,
+    ip: sessionHeaders.ip || sessionData.ip,
     userAgent: sessionHeaders.userAgent || sessionData.userAgent,
     userId,
   } satisfies Session;
