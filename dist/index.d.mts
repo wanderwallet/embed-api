@@ -93,8 +93,9 @@ declare const ErrorMessages: {
 declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
     ctx: {
         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
-        user: null;
-        session: any;
+        clientId: null;
+        user: _supabase_supabase_js.AuthUser;
+        session: _prisma_client.Session;
     } | {
         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         clientId: string;
@@ -243,6 +244,7 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 id: string;
                 createdAt: Date;
                 userId: string;
+                ip: string;
                 value: string;
                 walletId: string;
                 type: _prisma_client.$Enums.ChallengeType;
@@ -263,6 +265,7 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 id: string;
                 createdAt: Date;
                 userId: string;
+                ip: string;
                 value: string;
                 walletId: string;
                 type: _prisma_client.$Enums.ChallengeType;
@@ -314,6 +317,7 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 id: string;
                 createdAt: Date;
                 userId: string;
+                ip: string;
                 value: string;
                 walletId: string;
                 type: _prisma_client.$Enums.ChallengeType;
@@ -341,6 +345,7 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 id: string;
                 createdAt: Date;
                 userId: string;
+                ip: string;
                 value: string;
                 walletId: string;
                 type: _prisma_client.$Enums.ChallengeType;
@@ -374,6 +379,7 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 createdAt: Date;
                 chain: _prisma_client.$Enums.Chain;
                 address: string;
+                ip: string;
                 value: string;
                 version: string;
             };
@@ -412,6 +418,7 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 id: string;
                 createdAt: Date;
                 userId: string;
+                ip: string;
                 value: string;
                 walletId: string;
                 type: _prisma_client.$Enums.ChallengeType;
@@ -527,8 +534,9 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
     client: _trpc_client.TRPCClient<_trpc_server_unstable_core_do_not_import.BuiltRouter<{
         ctx: {
             prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
-            user: null;
-            session: any;
+            clientId: null;
+            user: _supabase_supabase_js.AuthUser;
+            session: _prisma_client.Session;
         } | {
             prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             clientId: string;
@@ -677,6 +685,7 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     id: string;
                     createdAt: Date;
                     userId: string;
+                    ip: string;
                     value: string;
                     walletId: string;
                     type: _prisma_client.$Enums.ChallengeType;
@@ -697,6 +706,7 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     id: string;
                     createdAt: Date;
                     userId: string;
+                    ip: string;
                     value: string;
                     walletId: string;
                     type: _prisma_client.$Enums.ChallengeType;
@@ -748,6 +758,7 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     id: string;
                     createdAt: Date;
                     userId: string;
+                    ip: string;
                     value: string;
                     walletId: string;
                     type: _prisma_client.$Enums.ChallengeType;
@@ -775,6 +786,7 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     id: string;
                     createdAt: Date;
                     userId: string;
+                    ip: string;
                     value: string;
                     walletId: string;
                     type: _prisma_client.$Enums.ChallengeType;
@@ -808,6 +820,7 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     createdAt: Date;
                     chain: _prisma_client.$Enums.Chain;
                     address: string;
+                    ip: string;
                     value: string;
                     version: string;
                 };
@@ -846,6 +859,7 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     id: string;
                     createdAt: Date;
                     userId: string;
+                    ip: string;
                     value: string;
                     walletId: string;
                     type: _prisma_client.$Enums.ChallengeType;

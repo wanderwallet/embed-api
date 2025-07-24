@@ -244,66 +244,11 @@ async function solveChallenge({
   );
   return `${CHALLENGE_CLIENT_VERSION}.${signatureOrHashString}`;
 }
-async function verifyChallenge({
-  // ChallengeData:
-  challenge,
-  session,
-  shareHash,
-  // Verification:
-  solution,
-  publicKey: publicKeyParam
-}) {
-  const solutionValue = solution.split(".")[1];
-  if (!solutionValue) {
-    return ErrorMessages.CHALLENGE_UNEXPECTED_ERROR;
-  }
-  if (isAnonChallenge(challenge) || challenge.type === import_client2.ChallengeType.SIGNATURE) {
-    if (!publicKeyParam) {
-      return ErrorMessages.CHALLENGE_MISSING_PK;
-    }
-    const publicJWK = {
-      e: "AQAB",
-      ext: true,
-      kty: "RSA",
-      n: publicKeyParam
-    };
-    const publicKey = await crypto.subtle.importKey(
-      "jwk",
-      publicJWK,
-      IMPORT_KEY_ALGORITHM,
-      true,
-      ["verify"]
-    );
-    const challengeRawData = await getChallengeRawData({
-      challenge,
-      session,
-      shareHash
-    });
-    const challengeRawDataBuffer = Buffer.from(challengeRawData);
-    const isSignatureValid = crypto.subtle.verify(
-      SIGN_ALGORITHM,
-      publicKey,
-      Buffer.from(solutionValue, "base64"),
-      challengeRawDataBuffer
-    );
-    if (!isSignatureValid) return ErrorMessages.CHALLENGE_INVALID;
-  } else if (process.env.NODE_ENV === "development") {
-    const expectedSolution = await solveChallenge({
-      challenge,
-      session,
-      shareHash
-    });
-    if (!(0, import_node_crypto.timingSafeEqual)(Buffer.from(expectedSolution, "utf16le"), Buffer.from(solution, "utf16le"))) return ErrorMessages.CHALLENGE_INVALID;
-  } else {
-    return ErrorMessages.CHALLENGE_UNEXPECTED_ERROR;
-  }
-  return null;
-}
 var ChallengeClientV1 = {
   version: CHALLENGE_CLIENT_VERSION,
   getChallengeRawData,
   solveChallenge,
-  verifyChallenge
+  verifyChallenge: true ? void 0 : verifyChallenge
 };
 
 // server/utils/challenge/clients/challenge-client-v2-eddsa.ts
@@ -336,47 +281,13 @@ async function solveChallenge2({
   );
   return `${CHALLENGE_CLIENT_VERSION2}.${signatureOrHashString}`;
 }
-async function verifyChallenge2({
-  // ChallengeData:
-  challenge,
-  session,
-  shareHash,
-  // Verification:
-  solution,
-  publicKey: publicKeyParam
-}) {
-  const solutionValue = solution.split(".")[1];
-  if (!solutionValue) {
-    return ErrorMessages.CHALLENGE_UNEXPECTED_ERROR;
-  }
-  if (isAnonChallenge(challenge) || challenge.type === import_client3.ChallengeType.SIGNATURE) {
-    if (!publicKeyParam) {
-      return ErrorMessages.CHALLENGE_MISSING_PK;
-    }
-    const challengeRawData = await getChallengeRawData({
-      challenge,
-      session,
-      shareHash
-    });
-    const challengeRawDataBuffer = Buffer.from(challengeRawData);
-    const isSignatureValid = import_ed25519.ed25519.verify(
-      Buffer.from(solutionValue, "base64"),
-      challengeRawDataBuffer,
-      // TODO: Make sure it is in the right encoding:
-      Buffer.from(publicKeyParam, "base64")
-    );
-    if (!isSignatureValid) return ErrorMessages.CHALLENGE_INVALID;
-  } else {
-    return ErrorMessages.CHALLENGE_UNEXPECTED_ERROR;
-  }
-  return null;
-}
 var ChallengeClientV2 = {
   version: CHALLENGE_CLIENT_VERSION2,
   getChallengeRawData,
   solveChallenge: solveChallenge2,
-  verifyChallenge: verifyChallenge2
+  verifyChallenge: true ? void 0 : verifyChallenge
 };
+console.log("process.env.BUILD_TYPE", "SDK");
 
 // server/utils/challenge/clients/challenge-client.utils.ts
 var import_client4 = require("@prisma/client");

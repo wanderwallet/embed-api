@@ -126,7 +126,6 @@ async function verifyChallenge(params: VerifyChallengeParams): Promise<null | st
 
     // TODO: Move challenge config to clients and make TTL shorter for EdDSA and hash-based.
     // TODO: Make sure hash-based can only be used locally.
-    // TODO: Remove verification function from clients.
 
     // Verify challenge age/expiration:
 

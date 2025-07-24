@@ -162,12 +162,9 @@ async function verifyChallenge({
 
 }
 
-// This module should also be used on the client as-is.
-// TODO: Remove verifyChallenge function for client use.
-
 export const ChallengeClientV1: ChallengeClient<JWKInterface> = {
   version: CHALLENGE_CLIENT_VERSION,
   getChallengeRawData,
   solveChallenge,
-  verifyChallenge,
+  verifyChallenge: process.env.BUILD_TYPE === "SDK" ? undefined as any : verifyChallenge,
 };

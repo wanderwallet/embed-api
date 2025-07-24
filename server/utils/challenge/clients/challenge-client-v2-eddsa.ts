@@ -91,23 +91,6 @@ async function verifyChallenge({
       return ErrorMessages.CHALLENGE_MISSING_PK;
     }
 
-    /*
-    const publicJWK: JsonWebKey = {
-      e: "AQAB",
-      ext: true,
-      kty: "RSA",
-      n: publicKeyParam,
-    };
-
-    const publicKey = await crypto.subtle.importKey(
-      "jwk",
-      publicJWK,
-      ChallengeClientV1.importKeyAlgorithm,
-      true,
-      ["verify"]
-    );
-    */
-
     const challengeRawData = await getChallengeRawData({
       challenge,
       session,
@@ -115,15 +98,6 @@ async function verifyChallenge({
     });
 
     const challengeRawDataBuffer = Buffer.from(challengeRawData);
-
-    /*
-    const isSignatureValid = crypto.subtle.verify(
-      ChallengeClientV1.signAlgorithm,
-      publicKey,
-      Buffer.from(solutionValue, "base64"),
-      challengeRawDataBuffer
-    );
-    */
 
     const isSignatureValid = ed25519.verify(
       Buffer.from(solutionValue, "base64"),
@@ -138,15 +112,11 @@ async function verifyChallenge({
   }
 
   return null;
-
 }
-
-// This module should also be used on the client as-is.
-// TODO: Remove verifyChallenge function for client use.
 
 export const ChallengeClientV2: ChallengeClient<Uint8Array> = {
   version: CHALLENGE_CLIENT_VERSION,
   getChallengeRawData,
   solveChallenge,
-  verifyChallenge,
+  verifyChallenge: process.env.BUILD_TYPE === "SDK" ? undefined as any : verifyChallenge,
 };
