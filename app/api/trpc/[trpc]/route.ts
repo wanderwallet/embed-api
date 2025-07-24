@@ -2,7 +2,6 @@ import { fetchRequestHandler } from "@trpc/server/adapters/fetch"
 import { appRouter } from "@/server/routers/_app"
 import { createContext } from "@/server/context"
 import type { NextRequest } from "next/server"
-import { ZodError } from "zod"
 
 const handler = async (req: NextRequest) => {
   const response = await fetchRequestHandler({
