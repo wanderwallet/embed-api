@@ -10,8 +10,6 @@ export function getDeviceAndLocationId(
     throw new Error("Missing `ctx.user`");
   }
 
-  // TODO: Get ip, userAgent, applicationId...
-
   return prismaClient.deviceAndLocation
     .upsert({
       select: {
@@ -41,8 +39,6 @@ export function getDeviceAndLocationConnectOrCreate(ctx: Context) {
   if (!ctx.user) {
     throw new Error("Missing `ctx.user`");
   }
-
-  // TODO: Get ip, userAgent, applicationId...
 
   return {
     connectOrCreate: {
