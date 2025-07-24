@@ -26,9 +26,8 @@ We can probably remove/reset those records every month and only keep aggregated 
 - ✅ `CHALLENGE_TYPE`
 - ❌ `CHALLENGE_VERSION` - Moved to the individual clients.
 - ✅ `CHALLENGE_BUFFER_SIZE`
-- ✅ `CHALLENGE_TTL_MS`: Max. elapsed time between `Challenge.createdAt` and its resolution. Because both operations
-  are called sequentially, this TTL should be relatively short (e.g. 5-30 seconds).
-- ✅ `CHALLENGE_ROTATION_TTL_MS`
+- ❌ `CHALLENGE_TTL_MS` - Moved to the individual clients.
+- ❌ `CHALLENGE_ROTATION_TTL_MS` - Move to the individual clients.
 
 **Shares:**
 

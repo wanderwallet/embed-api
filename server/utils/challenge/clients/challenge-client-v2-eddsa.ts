@@ -116,6 +116,8 @@ async function verifyChallenge({
 
 export const ChallengeClientV2: ChallengeClient<Uint8Array> = {
   version: CHALLENGE_CLIENT_VERSION,
+  ttlMs: 30000, // 30 seconds
+  ttlRotationMs: 60000, // 60 seconds - Longer because the shares need to be regenerated, which can take some time.
   getChallengeRawData,
   solveChallenge,
   verifyChallenge: process.env.BUILD_TYPE === "SDK" ? undefined as any : verifyChallenge,

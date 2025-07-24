@@ -74,8 +74,6 @@ export function initConfig() {
   // Challenges:
   const CHALLENGE_TYPE = process.env.CHALLENGE_TYPE as ChallengeType;
   const CHALLENGE_BUFFER_SIZE = process.env.CHALLENGE_BUFFER_SIZE;
-  const CHALLENGE_TTL_MS = process.env.CHALLENGE_TTL_MS;
-  const CHALLENGE_ROTATION_TTL_MS = process.env.CHALLENGE_ROTATION_TTL_MS;
 
   // Shares:
   const SHARE_ACTIVE_TTL_MS = process.env.SHARE_ACTIVE_TTL_MS;
@@ -115,8 +113,6 @@ export function initConfig() {
     // Challenges:
     CHALLENGE_TYPE: getEnvEnumValidator("CHALLENGE_TYPE", ChallengeType),
     CHALLENGE_BUFFER_SIZE: getEnvNumberValidator("CHALLENGE_BUFFER_SIZE"),
-    CHALLENGE_TTL_MS: getEnvNumberValidator("CHALLENGE_TTL_MS"),
-    CHALLENGE_ROTATION_TTL_MS: getEnvNumberValidator("CHALLENGE_ROTATION_TTL_MS"),
 
     // Shares:
     SHARE_ACTIVE_TTL_MS: getEnvNumberValidator("SHARE_ACTIVE_TTL_MS"),
@@ -158,8 +154,6 @@ export function initConfig() {
       // Challenges:
       CHALLENGE_TYPE,
       CHALLENGE_BUFFER_SIZE,
-      CHALLENGE_TTL_MS,
-      CHALLENGE_ROTATION_TTL_MS,
 
       // Shares:
       SHARE_ACTIVE_TTL_MS,

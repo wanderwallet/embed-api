@@ -24,6 +24,8 @@ export interface VerifyChallengeParams extends ChallengeData {
 
 export interface ChallengeClient<T> {
   version: ChallengeClientVersion;
+  ttlMs: number;
+  ttlRotationMs: number;
   getChallengeRawData: (data: ChallengeData) => string;
   solveChallenge: (params: SolveChallengeParams<T>) => Promise<ChallengeSolutionWithVersion>;
   verifyChallenge: (params: VerifyChallengeParams) => Promise<string | null>;

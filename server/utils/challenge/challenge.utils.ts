@@ -124,26 +124,24 @@ async function verifyChallenge(params: VerifyChallengeParams): Promise<null | st
       return ErrorMessages.CHALLENGE_INVALID;
     }
 
-    // TODO: Move challenge config to clients and make TTL shorter for EdDSA and hash-based.
-    // TODO: Make sure hash-based can only be used locally.
-
     // Verify challenge age/expiration:
 
     const challengeTTL =
       isAnonChallenge(challenge) ||
       challenge.purpose === ChallengePurpose.SHARE_ROTATION
-        ? Config.CHALLENGE_ROTATION_TTL_MS
-        : Config.CHALLENGE_TTL_MS;
+        ? challengeClient.ttlRotationMs
+        : challengeClient.ttlMs;
 
     const challengeAge = now - challenge.createdAt.getTime();
-    const challengePercent = (100 * challengeAge / challengeTTL).toFixed(2);
-    const isChallengeAgeMoreThanOneMinute = challengeAge > 60000;
+    const challengePercent = 100 * challengeAge / challengeTTL;
+    const challengePercentStr = challengePercent.toFixed(2);
+    const isChallengeAgeNearingExpiration = challengePercent > 80;
 
     if (process.env.NODE_ENV === "development") {
       if (challengeAge > challengeTTL) {
         console.log(`❌ Challenge took ${ (challengeAge / 1000).toFixed(2) }s (> ${ (challengeTTL / 1000).toFixed(2) }s).`);
-      } else if (isChallengeAgeMoreThanOneMinute) {
-        console.log(`⚠️ Challenge took more than a minute: ${ (challengeAge / 1000).toFixed(2) }s.`);
+      } else if (isChallengeAgeNearingExpiration) {
+        console.log(`⚠️ Challenge took ${ (challengeAge / 1000).toFixed(2) }s (${ challengePercentStr }% of ${ (challengeTTL / 1000).toFixed(2) }s).`);
       } else {
         console.log(`✅ Challenge took ${ (challengeAge / 1000).toFixed(2) }s (< ${ (challengeTTL / 1000).toFixed(2) }s).`);
       }
@@ -153,8 +151,8 @@ async function verifyChallenge(params: VerifyChallengeParams): Promise<null | st
       return `${ ErrorMessages.CHALLENGE_EXPIRED } Took ${ (challengeAge / 1000).toFixed(2) }s (> ${ (challengeTTL / 1000).toFixed(2) }s).`;
     }
 
-    if (isChallengeAgeMoreThanOneMinute && process.env.NODE_ENV === "production") {
-      console.warn(`Challenge for user ${ session.userId } took more than a minute: ${ (challengeAge / 1000).toFixed(2) }s (${ challengePercent }%). userAgent = ${ session.userAgent }`);
+    if (isChallengeAgeNearingExpiration && process.env.NODE_ENV === "production") {
+      console.warn(`Challenge for user ${ session.userId } took ${ (challengeAge / 1000).toFixed(2) }s (${ challengePercentStr }% of ${ (challengeTTL / 1000).toFixed(2) }s). userAgent = ${ session.userAgent }`);
     }
 
     // Verify challenge IP:
