@@ -48,14 +48,11 @@ export function parseAccessTokenAndHeaders(
         data: sessionUpdates,
       })
       .catch(async (error) => {
-        console.error("Error updating session:", error);
-
-        const currentSessions = await prisma.session.findMany({
-          where: { id },
+        console.error("Error updating session:", error, {
+          sessionId: id,
+          userId,
+          ...sessionHeaders
         });
-
-        console.log("currentSession =", currentSessions);
-        console.log("attempted update =", sessionUpdates);
       });
   }
 
