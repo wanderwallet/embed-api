@@ -30,8 +30,6 @@ export function getChallengeRawData({ challenge, session, shareHash }: Challenge
     session.userAgent,
   ].join("|");
 
-  console.log("commonChallengeData =", commonChallengeData)
-
   if (isAnonChallenge(challenge)) {
     return `ANON|${commonChallengeData}|${challenge.chain}|${challenge.address}`;
   }

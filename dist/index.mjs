@@ -301,7 +301,6 @@ function getChallengeRawData({ challenge, session, shareHash }) {
     session.deviceNonce,
     session.userAgent
   ].join("|");
-  console.log("commonChallengeData =", commonChallengeData);
   if (isAnonChallenge(challenge)) {
     return `ANON|${commonChallengeData}|${challenge.chain}|${challenge.address}`;
   }

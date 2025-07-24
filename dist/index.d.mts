@@ -320,7 +320,7 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
     generateWalletRecoveryChallenge: _trpc_server.TRPCMutationProcedure<{
         input: {
             walletId: string;
-            recoveryBackupShareHash?: string | undefined;
+            recoveryBackupShareHash?: string | null | undefined;
         };
         output: {
             shareRecoveryChallenge: {
@@ -769,7 +769,7 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
         generateWalletRecoveryChallenge: _trpc_server.TRPCMutationProcedure<{
             input: {
                 walletId: string;
-                recoveryBackupShareHash?: string | undefined;
+                recoveryBackupShareHash?: string | null | undefined;
             };
             output: {
                 shareRecoveryChallenge: {

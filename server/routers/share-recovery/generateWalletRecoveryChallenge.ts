@@ -9,7 +9,7 @@ import { getShareHashValidator } from "@/server/utils/share/share.validators";
 
 export const GenerateWalletRecoveryChallengeInputSchema = z.object({
   walletId: z.string().uuid(),
-  recoveryBackupShareHash: getShareHashValidator().optional(),
+  recoveryBackupShareHash: getShareHashValidator().optional().nullable(),
 });
 
 export const generateWalletRecoveryChallenge = protectedProcedure
