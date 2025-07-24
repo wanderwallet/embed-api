@@ -246,6 +246,10 @@ async function solveChallenge({
 }
 var ChallengeClientV1 = {
   version: CHALLENGE_CLIENT_VERSION,
+  ttlMs: 12e4,
+  // 120 seconds
+  ttlRotationMs: 24e4,
+  // 240 seconds - Longer because the shares need to be regenerated, which can take some time.
   getChallengeRawData,
   solveChallenge,
   verifyChallenge: true ? void 0 : verifyChallenge
@@ -283,11 +287,14 @@ async function solveChallenge2({
 }
 var ChallengeClientV2 = {
   version: CHALLENGE_CLIENT_VERSION2,
+  ttlMs: 3e4,
+  // 30 seconds
+  ttlRotationMs: 6e4,
+  // 60 seconds - Longer because the shares need to be regenerated, which can take some time.
   getChallengeRawData,
   solveChallenge: solveChallenge2,
   verifyChallenge: true ? void 0 : verifyChallenge
 };
-console.log("process.env.BUILD_TYPE", "SDK");
 
 // server/utils/challenge/clients/challenge-client.utils.ts
 var import_client4 = require("@prisma/client");
