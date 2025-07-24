@@ -22,6 +22,10 @@ export function parseAccessTokenAndHeaders(
   }, {} as Partial<SupabaseJwtSessionHeaders>);
 
   if (Object.keys(sessionUpdates).length > 0) {
+    // Note this is not awaited. It's not a mistake, as this runs in `context.ts` and we don't want all requests  to
+    // wait some additional time for the session to update. Also, we don't care too much if this fails, so we just
+    // log the error.
+
     prisma.session
       .update({
         where: { id },
