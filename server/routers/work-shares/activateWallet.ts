@@ -65,8 +65,6 @@ export const activateWallet = protectedProcedure
     ]);
 
     if (!challenge) {
-      console.warn(ErrorMessages.CHALLENGE_NOT_FOUND);
-
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.CHALLENGE_NOT_FOUND,
