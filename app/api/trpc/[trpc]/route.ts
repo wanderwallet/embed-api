@@ -9,11 +9,13 @@ const handler = async (req: NextRequest) => {
     req,
     router: appRouter,
     createContext: () => createContext({ req }),
-    onError: ({ type, path, error, input }) => {
+    onError: ({ type, path, error, input, ctx }) => {
+      const { deviceNonce, userId, ip } = ctx?.session || {};
+
       if (process.env.NODE_ENV === "development") {
         console.warn(`${ type } error on ${ path || "?" }: ${error.message}`, input);
       } else {
-        console.warn(`${ type } error on ${ path || "?" }: ${error.message}`);
+        console.warn(`${ type } error on ${ path || "?" }: ${error.message}`, { deviceNonce, userId, ip });
       }
     }
   });
