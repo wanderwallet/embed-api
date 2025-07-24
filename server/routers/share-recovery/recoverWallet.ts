@@ -202,6 +202,7 @@ export const recoverWallet = protectedProcedure
         const challengeUpsertData = ChallengeUtils.generateChallengeUpsertData({
           purpose: ChallengePurpose.SHARE_ROTATION,
           publicKey: walletPublicKey,
+          ip: ctx.session.ip,
 
           // Relations:
           userId: ctx.user.id,

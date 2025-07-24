@@ -62,6 +62,7 @@ export const generateWalletActivationChallenge = protectedProcedure
     const challengeUpsertData = ChallengeUtils.generateChallengeUpsertData({
       purpose: ChallengePurpose.ACTIVATION,
       publicKey: workKeyShare.deviceSharePublicKey,
+      ip: ctx.session.ip,
 
       // Relations:
       userId: ctx.user.id,

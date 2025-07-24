@@ -105,6 +105,7 @@ export const generateWalletRecoveryChallenge = protectedProcedure
     const challengeUpsertData = ChallengeUtils.generateChallengeUpsertData({
       purpose: ChallengePurpose.SHARE_RECOVERY,
       publicKey,
+      ip: ctx.session.ip,
 
       // Relations:
       userId: ctx.user.id,

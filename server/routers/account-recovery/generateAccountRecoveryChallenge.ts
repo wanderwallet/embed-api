@@ -54,6 +54,7 @@ export const generateAccountRecoveryChallenge = publicProcedure
     const challengeUpsertData = ChallengeUtils.generateChallengeUpsertData({
       purpose: ChallengePurpose.ACCOUNT_RECOVERY,
       publicKey: recoveryWallet.publicKey,
+      ip: ctx.session.ip,
 
       // Relations:
       userId: recoveryWallet.userId,

@@ -29,6 +29,7 @@ function generateChangeValue() {
 export interface GenerateChallengeUpsertDataParams {
   purpose: ChallengePurpose;
   publicKey: string;
+  ip: string;
 
   // Relations:
   userId: string;
@@ -44,6 +45,7 @@ export interface GenerateChallengeUpsertDataParams {
 function generateChallengeUpsertData({
   purpose,
   publicKey,
+  ip,
   userId,
   walletId,
 }: GenerateChallengeUpsertDataParams) {
@@ -65,6 +67,7 @@ function generateChallengeUpsertData({
     value,
     version,
     createdAt: new Date(),
+    ip,
 
     // Relations:
     userId,
@@ -73,6 +76,7 @@ function generateChallengeUpsertData({
 }
 
 export interface GenerateAnonChallengeDataParams {
+  ip: string;
   chain: Chain;
   address: string;
 }
@@ -82,6 +86,7 @@ export interface GenerateAnonChallengeDataParams {
  * v1 challenge client.
  */
 function generateAnonChallengeCreateData({
+  ip,
   chain,
   address,
 }: GenerateAnonChallengeDataParams) {
@@ -92,6 +97,7 @@ function generateAnonChallengeCreateData({
     value,
     version,
     createdAt: new Date(),
+    ip,
     chain,
     address,
   } satisfies Omit<AnonChallenge, "id">;
@@ -118,7 +124,6 @@ async function verifyChallenge(params: VerifyChallengeParams): Promise<null | st
       return ErrorMessages.CHALLENGE_INVALID;
     }
 
-    // TODO: Add ip field to challenges.
     // TODO: Move challenge config to clients and make TTL shorter for EdDSA and hash-based.
     // TODO: Make sure hash-based can only be used locally.
     // TODO: Remove verification function from clients.
