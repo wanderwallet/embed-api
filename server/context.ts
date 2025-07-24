@@ -1,12 +1,11 @@
-import { Session } from "@prisma/client";
 import { createServerClient } from "@/server/utils/supabase/supabase-server-client";
 import { prisma } from "./utils/prisma/prisma-client";
 import {  getClientIp, getIpInfo } from "./utils/ip/ip.utils";
-import { parseAccessTokenAndHeaders } from "@/server/utils/session/session.utils";
+import { createAnonSession, parseAccessTokenAndHeaders } from "@/server/utils/session/session.utils";
 import { User } from "@supabase/supabase-js";
 import { SupabaseJwtSessionHeaders } from "@/server/utils/session/session.types";
 
-function createEmptyContext(sessionHeaders: SupabaseJwtSessionHeaders) {
+function createAnonContext(sessionHeaders: SupabaseJwtSessionHeaders) {
   // We force the types here so that we don't get an error when accessing ctx.user inside the different
   // procedures. `protectedProcedure` takes care of returning an error if `ctx.user` is null for those procedures that
   // require it.
@@ -14,21 +13,11 @@ function createEmptyContext(sessionHeaders: SupabaseJwtSessionHeaders) {
   // The session, however, is populated with some data, as `publicProcedure`s might still want to access properties such
   // as `deviceNonce`, `ip` or `userAgent`.
 
-  const dateNow = new Date();
-
   return {
     prisma,
     clientId: null,
     user: null as unknown as User,
-    session: {
-      id: "",
-      createdAt: dateNow,
-      updatedAt: dateNow,
-      deviceNonce: sessionHeaders.deviceNonce,
-      ip: sessionHeaders.ip,
-      userAgent: sessionHeaders.userAgent,
-      userId: "",
-    } as Session,
+    session: createAnonSession(sessionHeaders),
   };
 }
 
@@ -53,7 +42,7 @@ export async function createContext({ req }: { req: Request }) {
   };
 
   if (!accessToken || !clientId) {
-    return createEmptyContext(sessionHeaders);
+    return createAnonContext(sessionHeaders);
   }
 
   const supabase = await createServerClient(userAgent);
@@ -72,7 +61,7 @@ export async function createContext({ req }: { req: Request }) {
     // Note that we don't throw an error from here as tRPC will not automatically send a reply to the user. Instead,
     // it is `protectedProcedure` who checks if `user` is set (it is not if there was an error), and send an
     // error back to the user.
-    return createEmptyContext(sessionHeaders);
+    return createAnonContext(sessionHeaders);
   }
 
   const user = data.user;
@@ -97,7 +86,7 @@ export async function createContext({ req }: { req: Request }) {
     // Note that we don't throw an error from here as tRPC will not automatically send a reply to the user. Instead,
     // it is `protectedProcedure` who checks if `user` is set (it is not if there was an error), and send an
     // error back to the user.
-    return createEmptyContext(sessionHeaders);
+    return createAnonContext(sessionHeaders);
   }
 }
 

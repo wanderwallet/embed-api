@@ -9,17 +9,6 @@ import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { isEdDSAPublicKey } from "@/server/utils/share/share.validators";
 import { AnonChallenge, Chain, ChallengePurpose } from "@prisma/client";
 
-/*
-export function isAnonChallenge(
-  challenge: Challenge | AnonChallenge
-): challenge is AnonChallenge {
-  return (
-    !!(challenge as AnonChallenge).chain &&
-    !!(challenge as AnonChallenge).address
-  );
-}
-*/
-
 function generateChangeValue() {
   return Buffer.from(
     crypto.getRandomValues(new Uint8Array(Config.CHALLENGE_BUFFER_SIZE))

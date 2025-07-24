@@ -66,6 +66,8 @@ interface SupabaseJwtPayload extends JwtPayload {
     };
 }
 
+declare function createAnonSession(sessionHeaders: SupabaseJwtSessionHeaders): Session$1;
+
 declare const ErrorMessages: {
     readonly WALLET_NOT_FOUND: "Wallet not found.";
     readonly WALLET_CANNOT_BE_ENABLED: "Wallet cannot be enabled.";
@@ -95,7 +97,15 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         clientId: null;
         user: _supabase_supabase_js.AuthUser;
-        session: _prisma_client.Session;
+        session: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
+            deviceNonce: string;
+            ip: string;
+            userAgent: string;
+        };
     } | {
         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
         clientId: string;
@@ -245,10 +255,10 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 createdAt: Date;
                 userId: string;
                 ip: string;
-                value: string;
                 walletId: string;
                 type: _prisma_client.$Enums.ChallengeType;
                 purpose: _prisma_client.$Enums.ChallengePurpose;
+                value: string;
                 version: string;
             };
         };
@@ -266,10 +276,10 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 createdAt: Date;
                 userId: string;
                 ip: string;
-                value: string;
                 walletId: string;
                 type: _prisma_client.$Enums.ChallengeType;
                 purpose: _prisma_client.$Enums.ChallengePurpose;
+                value: string;
                 version: string;
             } | null;
         };
@@ -318,10 +328,10 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 createdAt: Date;
                 userId: string;
                 ip: string;
-                value: string;
                 walletId: string;
                 type: _prisma_client.$Enums.ChallengeType;
                 purpose: _prisma_client.$Enums.ChallengePurpose;
+                value: string;
                 version: string;
             };
         };
@@ -346,10 +356,10 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 createdAt: Date;
                 userId: string;
                 ip: string;
-                value: string;
                 walletId: string;
                 type: _prisma_client.$Enums.ChallengeType;
                 purpose: _prisma_client.$Enums.ChallengePurpose;
+                value: string;
                 version: string;
             };
             recoveryBackupServerPublicKey?: undefined;
@@ -419,10 +429,10 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 createdAt: Date;
                 userId: string;
                 ip: string;
-                value: string;
                 walletId: string;
                 type: _prisma_client.$Enums.ChallengeType;
                 purpose: _prisma_client.$Enums.ChallengePurpose;
+                value: string;
                 version: string;
             };
         };
@@ -536,7 +546,15 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
             prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             clientId: null;
             user: _supabase_supabase_js.AuthUser;
-            session: _prisma_client.Session;
+            session: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                userId: string;
+                deviceNonce: string;
+                ip: string;
+                userAgent: string;
+            };
         } | {
             prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
             clientId: string;
@@ -686,10 +704,10 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     createdAt: Date;
                     userId: string;
                     ip: string;
-                    value: string;
                     walletId: string;
                     type: _prisma_client.$Enums.ChallengeType;
                     purpose: _prisma_client.$Enums.ChallengePurpose;
+                    value: string;
                     version: string;
                 };
             };
@@ -707,10 +725,10 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     createdAt: Date;
                     userId: string;
                     ip: string;
-                    value: string;
                     walletId: string;
                     type: _prisma_client.$Enums.ChallengeType;
                     purpose: _prisma_client.$Enums.ChallengePurpose;
+                    value: string;
                     version: string;
                 } | null;
             };
@@ -759,10 +777,10 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     createdAt: Date;
                     userId: string;
                     ip: string;
-                    value: string;
                     walletId: string;
                     type: _prisma_client.$Enums.ChallengeType;
                     purpose: _prisma_client.$Enums.ChallengePurpose;
+                    value: string;
                     version: string;
                 };
             };
@@ -787,10 +805,10 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     createdAt: Date;
                     userId: string;
                     ip: string;
-                    value: string;
                     walletId: string;
                     type: _prisma_client.$Enums.ChallengeType;
                     purpose: _prisma_client.$Enums.ChallengePurpose;
+                    value: string;
                     version: string;
                 };
                 recoveryBackupServerPublicKey?: undefined;
@@ -860,10 +878,10 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     createdAt: Date;
                     userId: string;
                     ip: string;
-                    value: string;
                     walletId: string;
                     type: _prisma_client.$Enums.ChallengeType;
                     purpose: _prisma_client.$Enums.ChallengePurpose;
+                    value: string;
                     version: string;
                 };
             };
@@ -999,6 +1017,17 @@ declare function solveChallenge({ challenge, session, shareHash, privateKey, }: 
 
 declare const ChallengeClientV1: ChallengeClient<JWKInterface>;
 
+/**
+ * IMPORTANT NOTE: Cryptographically relevant quantum computer, if built, will allow to break elliptic curve
+ * cryptography (both ECDSA / EdDSA & ECDH) using Shor's algorithm.
+ *
+ * Consider switching to newer / hybrid algorithms, such as SPHINCS+. They are available in noble-post-quantum.
+ *
+ * NIST prohibits classical cryptography (RSA, DSA, ECDSA, ECDH) after 2035. Australian ASD prohibits it after 2030.
+ *
+ * @see https://github.com/paulmillr/noble-curves?tab=readme-ov-file#quantum-computers
+ * @see https://github.com/paulmillr/noble-post-quantum
+ */
 declare const ChallengeClientV2: ChallengeClient<Uint8Array>;
 
-export { type AppRouter, ChallengeClientV1, ChallengeClientV2, type ChallengeClientVersion, type ChallengeData, type ChallengeSolutionWithVersion, type DbWallet, ErrorMessages, type RecoverableAccount, type SolveChallengeParams, type SupabaseJwtPayload, type SupabaseJwtSessionData, type SupabaseJwtSessionHeaders, type SupabaseProvider, type SupabaseSession, type SupabaseUser, type SupabaseUserMetadata, type WalletInfo, type WalletSource, createSupabaseClient, createTRPCClient, solveChallenge };
+export { type AppRouter, ChallengeClientV1, ChallengeClientV2, type ChallengeClientVersion, type ChallengeData, type ChallengeSolutionWithVersion, type DbWallet, ErrorMessages, type RecoverableAccount, type SolveChallengeParams, type SupabaseJwtPayload, type SupabaseJwtSessionData, type SupabaseJwtSessionHeaders, type SupabaseProvider, type SupabaseSession, type SupabaseUser, type SupabaseUserMetadata, type WalletInfo, type WalletSource, createAnonSession, createSupabaseClient, createTRPCClient, solveChallenge };

@@ -4,6 +4,22 @@ import { prisma } from "../prisma/prisma-client";
 import { Session } from "@prisma/client";
 import { SupabaseJwtPayload, SupabaseJwtSessionHeaders } from "@/server/utils/session/session.types";
 
+const SESSION_ANON_ID = "ANON";
+
+export function createAnonSession(sessionHeaders: SupabaseJwtSessionHeaders): Session {
+  const dateNow = new Date();
+
+  return {
+    id: SESSION_ANON_ID,
+    createdAt: dateNow,
+    updatedAt: dateNow,
+    deviceNonce: sessionHeaders.deviceNonce,
+    ip: sessionHeaders.ip,
+    userAgent: sessionHeaders.userAgent,
+    userId: "",
+  };
+}
+
 export function parseAccessTokenAndHeaders(
   accessToken: string,
   sessionHeaders: SupabaseJwtSessionHeaders,
@@ -31,8 +47,15 @@ export function parseAccessTokenAndHeaders(
         where: { id },
         data: sessionUpdates,
       })
-      .catch((error) => {
+      .catch(async (error) => {
         console.error("Error updating session:", error);
+
+        const currentSessions = await prisma.session.findMany({
+          where: { id },
+        });
+
+        console.log("currentSession =", currentSessions);
+        console.log("attempted update =", sessionUpdates);
       });
   }
 

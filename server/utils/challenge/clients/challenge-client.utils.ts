@@ -4,9 +4,6 @@ import { ChallengeClientV2 } from "@/server/utils/challenge/clients/challenge-cl
 import { AnonChallenge, Challenge, ChallengePurpose } from "@prisma/client";
 import { JWKInterface } from "arweave/node/lib/wallet";
 
-// We duplicate this function instead of importing it to as `challenge.utils.ts` imports `Config`, which throws an error
-// when imported in the browser:
-
 export function isAnonChallenge(
   challenge: Challenge | AnonChallenge
 ): challenge is AnonChallenge {
@@ -32,6 +29,8 @@ export function getChallengeRawData({ challenge, session, shareHash }: Challenge
     session.deviceNonce,
     session.userAgent,
   ].join("|");
+
+  console.log("commonChallengeData =", commonChallengeData)
 
   if (isAnonChallenge(challenge)) {
     return `ANON|${commonChallengeData}|${challenge.chain}|${challenge.address}`;
