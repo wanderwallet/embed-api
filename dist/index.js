@@ -30,22 +30,47 @@ var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: tru
 // sdk/index.ts
 var index_exports = {};
 __export(index_exports, {
-  AuthProviderType: () => import_client5.AuthProviderType,
-  Chain: () => import_client5.Chain,
+  AuthProviderType: () => import_client6.AuthProviderType,
+  Chain: () => import_client6.Chain,
   ChallengeClientV1: () => ChallengeClientV1,
   ChallengeClientV2: () => ChallengeClientV2,
   ErrorMessages: () => ErrorMessages,
-  ExportType: () => import_client5.ExportType,
-  WalletPrivacySetting: () => import_client5.WalletPrivacySetting,
-  WalletSourceFrom: () => import_client5.WalletSourceFrom,
-  WalletSourceType: () => import_client5.WalletSourceType,
-  WalletStatus: () => import_client5.WalletStatus,
+  ExportType: () => import_client6.ExportType,
+  WalletPrivacySetting: () => import_client6.WalletPrivacySetting,
+  WalletSourceFrom: () => import_client6.WalletSourceFrom,
+  WalletSourceType: () => import_client6.WalletSourceType,
+  WalletStatus: () => import_client6.WalletStatus,
+  createAnonSession: () => createAnonSession,
   createSupabaseClient: () => createSupabaseClient,
   createTRPCClient: () => createTRPCClient,
   solveChallenge: () => solveChallenge3
 });
 module.exports = __toCommonJS(index_exports);
-var import_client5 = require("@prisma/client");
+var import_client6 = require("@prisma/client");
+
+// server/utils/session/session.utils.ts
+var import_jwt_decode = require("jwt-decode");
+
+// server/utils/prisma/prisma-client.ts
+var import_client = require("@prisma/client");
+var globalForPrisma = global;
+var prisma = globalForPrisma.prisma || new import_client.PrismaClient();
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+
+// server/utils/session/session.utils.ts
+var SESSION_ANON_ID = "ANON";
+function createAnonSession(sessionHeaders) {
+  const dateNow = /* @__PURE__ */ new Date();
+  return {
+    id: SESSION_ANON_ID,
+    createdAt: dateNow,
+    updatedAt: dateNow,
+    deviceNonce: sessionHeaders.deviceNonce,
+    ip: sessionHeaders.ip,
+    userAgent: sessionHeaders.userAgent,
+    userId: ""
+  };
+}
 
 // server/utils/error/error.constants.ts
 var ErrorMessages = {
@@ -78,7 +103,7 @@ var ErrorMessages = {
 };
 
 // client/utils/trpc/trpc-client.utils.ts
-var import_client = require("@trpc/client");
+var import_client2 = require("@trpc/client");
 var import_superjson = __toESM(require("superjson"));
 var import_observable = require("@trpc/server/observable");
 var authErrorLink = (opts) => {
@@ -141,14 +166,14 @@ function createTRPCClient({
   }
   const url = trpcURL || (baseURL ? `${baseURL.replace(/\/$/, "")}/api/trpc` : "");
   if (!url) throw new Error("No `baseURL` or `trpcURL` provided.");
-  const client = (0, import_client.createTRPCClient)({
+  const client = (0, import_client2.createTRPCClient)({
     links: [
       authErrorLink({
         onAuthError,
         getAuthTokenHeader,
         setAuthTokenHeader
       }),
-      (0, import_client.httpBatchLink)({
+      (0, import_client2.httpBatchLink)({
         url,
         transformer: import_superjson.default,
         headers() {
@@ -191,7 +216,7 @@ function createSupabaseClient(supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
 }
 
 // server/utils/challenge/clients/challenge-client-v1-rsa.ts
-var import_client2 = require("@prisma/client");
+var import_client3 = require("@prisma/client");
 var import_node_crypto = require("crypto");
 var CHALLENGE_CLIENT_VERSION = "v1";
 var IMPORT_KEY_ALGORITHM = {
@@ -215,7 +240,7 @@ async function solveChallenge({
   });
   const challengeRawDataBuffer = Buffer.from(challengeRawData);
   let signatureOrHashBuffer;
-  if (isAnonChallenge(challenge) || challenge.type === import_client2.ChallengeType.SIGNATURE) {
+  if (isAnonChallenge(challenge) || challenge.type === import_client3.ChallengeType.SIGNATURE) {
     if (!jwk) {
       throw new Error("Missing private key (jwk)");
     }
@@ -256,7 +281,7 @@ var ChallengeClientV1 = {
 };
 
 // server/utils/challenge/clients/challenge-client-v2-eddsa.ts
-var import_client3 = require("@prisma/client");
+var import_client4 = require("@prisma/client");
 var import_ed25519 = require("@noble/curves/ed25519.js");
 var CHALLENGE_CLIENT_VERSION2 = "v2";
 async function solveChallenge2({
@@ -272,7 +297,7 @@ async function solveChallenge2({
   });
   const challengeRawDataBuffer = Buffer.from(challengeRawData);
   let signatureBuffer;
-  if (isAnonChallenge(challenge) || challenge.type === import_client3.ChallengeType.SIGNATURE) {
+  if (isAnonChallenge(challenge) || challenge.type === import_client4.ChallengeType.SIGNATURE) {
     if (!privateKey) {
       throw new Error("Missing private key");
     }
@@ -297,14 +322,14 @@ var ChallengeClientV2 = {
 };
 
 // server/utils/challenge/clients/challenge-client.utils.ts
-var import_client4 = require("@prisma/client");
+var import_client5 = require("@prisma/client");
 function isAnonChallenge(challenge) {
   return !!challenge.chain && !!challenge.address;
 }
 var CHALLENGES_WITHOUT_SHARE_HASH = [
-  import_client4.ChallengePurpose.SHARE_ROTATION,
-  import_client4.ChallengePurpose.ACCOUNT_RECOVERY,
-  import_client4.ChallengePurpose.SHARE_RECOVERY
+  import_client5.ChallengePurpose.SHARE_ROTATION,
+  import_client5.ChallengePurpose.ACCOUNT_RECOVERY,
+  import_client5.ChallengePurpose.SHARE_RECOVERY
 ];
 function getChallengeRawData({ challenge, session, shareHash }) {
   const commonChallengeData = [
@@ -369,6 +394,7 @@ function solveChallenge3({
   WalletSourceFrom,
   WalletSourceType,
   WalletStatus,
+  createAnonSession,
   createSupabaseClient,
   createTRPCClient,
   solveChallenge

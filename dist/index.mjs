@@ -9,6 +9,30 @@ import {
   WalletStatus
 } from "@prisma/client";
 
+// server/utils/session/session.utils.ts
+import { jwtDecode } from "jwt-decode";
+
+// server/utils/prisma/prisma-client.ts
+import { PrismaClient } from "@prisma/client";
+var globalForPrisma = global;
+var prisma = globalForPrisma.prisma || new PrismaClient();
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+
+// server/utils/session/session.utils.ts
+var SESSION_ANON_ID = "ANON";
+function createAnonSession(sessionHeaders) {
+  const dateNow = /* @__PURE__ */ new Date();
+  return {
+    id: SESSION_ANON_ID,
+    createdAt: dateNow,
+    updatedAt: dateNow,
+    deviceNonce: sessionHeaders.deviceNonce,
+    ip: sessionHeaders.ip,
+    userAgent: sessionHeaders.userAgent,
+    userId: ""
+  };
+}
+
 // server/utils/error/error.constants.ts
 var ErrorMessages = {
   // Wallets:
@@ -329,6 +353,7 @@ export {
   WalletSourceFrom,
   WalletSourceType,
   WalletStatus,
+  createAnonSession,
   createSupabaseClient,
   createTRPCClient,
   solveChallenge3 as solveChallenge

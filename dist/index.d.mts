@@ -5,10 +5,10 @@ import * as _supabase_supabase_js from '@supabase/supabase-js';
 import { Session, User, Provider, SupabaseClientOptions } from '@supabase/supabase-js';
 export { AuthError as SupabaseAuthError } from '@supabase/supabase-js';
 import { JwtPayload } from 'jwt-decode';
-import * as _trpc_client from '@trpc/client';
 import * as _trpc_server from '@trpc/server';
 import * as _trpc_server_unstable_core_do_not_import from '@trpc/server/unstable-core-do-not-import';
 import * as _prisma_client_runtime_library from '@prisma/client/runtime/library';
+import * as _trpc_client from '@trpc/client';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 
 interface WalletSource {
