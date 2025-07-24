@@ -36,24 +36,8 @@ async function solveChallenge({
       throw new Error("Missing private key");
     }
 
-    /*
-    const privateKey = await crypto.subtle.importKey(
-      "jwk",
-      jwk,
-      IMPORT_KEY_ALGORITHM,
-      true,
-      ["sign"]
-    );
-
-    signatureOrHashBuffer = await crypto.subtle.sign(
-      SIGN_ALGORITHM,
-      privateKey,
-      challengeRawDataBuffer
-    );
-    */
-
-    // const msg = new Uint8Array(32).fill(1); // message hash (not message) in ecdsa
-    signatureBuffer = ed25519.sign(challengeRawDataBuffer, privateKey); // `{prehash: true}` option is available
+    // The message is hashed automatically by the library. Otherwise, use `ed25519ph` instead.
+    signatureBuffer = ed25519.sign(challengeRawDataBuffer, privateKey);
   } else {
     throw new Error("Cannot solve challenge.");
   }
