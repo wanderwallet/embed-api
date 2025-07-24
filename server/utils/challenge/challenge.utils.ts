@@ -159,7 +159,7 @@ async function verifyChallenge(params: VerifyChallengeParams): Promise<null | st
 
     return null;
   } catch (err) {
-    console.warn(`Unexpected challenge validation error =`, err);
+    console.error(`Unexpected challenge validation error =`, err);
 
     return ErrorMessages.CHALLENGE_UNEXPECTED_ERROR;
   }

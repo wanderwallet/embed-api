@@ -73,8 +73,6 @@ export const rotateAuthShare = protectedProcedure
     }).catch(getSilentErrorLoggerFor("rotateAuthShare's challenge.delete(...)"));
 
     if (!workKeyShare) {
-      console.error(ErrorMessages.WORK_SHARE_NOT_FOUND)
-
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.WORK_SHARE_NOT_FOUND,
