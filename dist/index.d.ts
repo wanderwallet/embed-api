@@ -3,7 +3,7 @@ import { Wallet, WalletSourceType, WalletSourceFrom, Challenge, AnonChallenge, S
 export { AuthProviderType, Chain, Challenge as DbChallenge, Session as DbSession, UserProfile as DbUserProfile, ExportType, WalletPrivacySetting, WalletSourceFrom, WalletSourceType, WalletStatus } from '@prisma/client';
 import * as _supabase_supabase_js from '@supabase/supabase-js';
 import { User, SupabaseClientOptions } from '@supabase/supabase-js';
-export { AuthError as SupabaseAuthError } from '@supabase/supabase-js';
+export { AuthChangeEvent as SupabaseAuthChangeEvent, AuthError as SupabaseAuthError, Session as SupabaseSession } from '@supabase/supabase-js';
 import * as _trpc_client from '@trpc/client';
 import * as _trpc_server from '@trpc/server';
 import * as _trpc_server_unstable_core_do_not_import from '@trpc/server/unstable-core-do-not-import';
