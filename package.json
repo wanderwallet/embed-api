@@ -8,6 +8,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "vercel-build": "prisma generate && prisma migrate deploy && next build",
     "start": "next start",
     "db:migrate": "prisma migrate dev",
     "seed": "node -r ts-node/register --env-file=.env prisma/seed.ts",
