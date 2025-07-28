@@ -24,7 +24,7 @@ export {
 
 // Auth:
 
-export type { AuthError as SupabaseAuthError } from "@supabase/supabase-js";
+export type { AuthError as SupabaseAuthError, AuthChangeEvent as SupabaseAuthChangeEvent } from "@supabase/supabase-js";
 export type { SupabaseSession, SupabaseUser, SupabaseUserMetadata } from "@/server/utils/supabase/supabase.types"
 export type { SupabaseJwtSessionData, SupabaseJwtSessionHeaders, SupabaseProvider, SupabaseJwtPayload } from "@/server/utils/session/session.types";
 export { createAnonSession } from "@/server/utils/session/session.utils";

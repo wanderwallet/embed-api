@@ -35,16 +35,19 @@ export const appRouter = router({
 
   // Wallets - Create wallet:
   createPublicWallet,
-  createPrivateWallet,
-  createReadOnlyWallet,
+
+  // Temporarily disabled:
+  // createPrivateWallet,
+  // createReadOnlyWallet,
 
   // Wallets - Update wallet:
-  makeWalletPrivate,
-  makeWalletPublic,
-  updateWalletInfo,
-  updateWalletRecovery,
-  updateWalletStatus,
-  deleteWallet,
+  // Temporarily disabled:
+  // makeWalletPrivate,
+  // makeWalletPublic,
+  // updateWalletInfo,
+  // updateWalletRecovery,
+  // updateWalletStatus,
+  // deleteWallet,
 
   // Work Shares:
   generateWalletActivationChallenge,

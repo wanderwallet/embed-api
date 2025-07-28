@@ -3,7 +3,7 @@ import { Wallet, WalletSourceType, WalletSourceFrom, Session as Session$1, Chall
 export { AuthProviderType, Chain, Challenge as DbChallenge, Session as DbSession, UserProfile as DbUserProfile, ExportType, WalletPrivacySetting, WalletSourceFrom, WalletSourceType, WalletStatus } from '@prisma/client';
 import * as _supabase_supabase_js from '@supabase/supabase-js';
 import { Session, User, Provider, SupabaseClientOptions } from '@supabase/supabase-js';
-export { AuthError as SupabaseAuthError } from '@supabase/supabase-js';
+export { AuthChangeEvent as SupabaseAuthChangeEvent, AuthError as SupabaseAuthError } from '@supabase/supabase-js';
 import { JwtPayload } from 'jwt-decode';
 import * as _trpc_server from '@trpc/server';
 import * as _trpc_server_unstable_core_do_not_import from '@trpc/server/unstable-core-do-not-import';
@@ -152,98 +152,6 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
         output: {
             wallet: DbWallet;
         };
-    }>;
-    createPrivateWallet: _trpc_server.TRPCMutationProcedure<{
-        input: {
-            status: "ENABLED" | "DISABLED";
-            chain: "ARWEAVE" | "ETHEREUM";
-            address: string;
-            walletPrivacySetting: "PRIVATE";
-            source: {
-                type: "IMPORTED" | "GENERATED";
-                from: "SEEDPHRASE" | "KEYFILE" | "BINARY";
-            };
-            authShare: string;
-            deviceShareHash: string;
-            deviceSharePublicKey: string;
-            aliasSetting?: string | undefined;
-            descriptionSetting?: string | undefined;
-            tagsSetting?: string[] | undefined;
-        };
-        output: {
-            wallet: DbWallet;
-        };
-    }>;
-    createReadOnlyWallet: _trpc_server.TRPCMutationProcedure<{
-        input: {
-            status: "READONLY" | "LOST";
-            chain: "ARWEAVE" | "ETHEREUM";
-            address: string;
-            publicKey?: string | undefined;
-            aliasSetting?: string | undefined;
-            descriptionSetting?: string | undefined;
-            tagsSetting?: string[] | undefined;
-        };
-        output: {
-            wallet: DbWallet;
-        };
-    }>;
-    makeWalletPrivate: _trpc_server.TRPCMutationProcedure<{
-        input: {
-            walletPrivacySetting: "PRIVATE";
-            walletId: string;
-        };
-        output: {
-            wallet: DbWallet;
-        };
-    }>;
-    makeWalletPublic: _trpc_server.TRPCMutationProcedure<{
-        input: {
-            chain: "ARWEAVE" | "ETHEREUM";
-            address: string;
-            publicKey: string;
-            walletPrivacySetting: "PUBLIC";
-            walletId: string;
-        };
-        output: {
-            wallet: DbWallet;
-        };
-    }>;
-    updateWalletInfo: _trpc_server.TRPCMutationProcedure<{
-        input: {
-            walletId: string;
-            identifierTypeSetting?: "ALIAS" | "ANS" | "PNS" | undefined;
-            aliasSetting?: string | undefined;
-            descriptionSetting?: string | undefined;
-            tagsSetting?: string[] | undefined;
-        };
-        output: {
-            wallet: DbWallet;
-        };
-    }>;
-    updateWalletRecovery: _trpc_server.TRPCMutationProcedure<{
-        input: {
-            canRecoverAccountSetting: boolean;
-            walletId: string;
-        };
-        output: {
-            wallet: DbWallet;
-        };
-    }>;
-    updateWalletStatus: _trpc_server.TRPCMutationProcedure<{
-        input: {
-            status: "ENABLED" | "DISABLED" | "READONLY" | "LOST";
-            walletId: string;
-        };
-        output: {
-            wallet: DbWallet;
-        };
-    }>;
-    deleteWallet: _trpc_server.TRPCMutationProcedure<{
-        input: {
-            walletId: string;
-        };
-        output: {};
     }>;
     generateWalletActivationChallenge: _trpc_server.TRPCMutationProcedure<{
         input: {
@@ -401,7 +309,13 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
             challengeSolution: string;
         };
         output: {
-            recoverableAccounts: RecoverableAccount[];
+            recoverableAccounts: {
+                userId: string;
+                name: string | null;
+                email: string | null;
+                phone: string | null;
+                picture: string | null;
+            }[];
         };
     }>;
     fetchRecoverableAccountWallets: _trpc_server.TRPCMutationProcedure<{
@@ -602,98 +516,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                 wallet: DbWallet;
             };
         }>;
-        createPrivateWallet: _trpc_server.TRPCMutationProcedure<{
-            input: {
-                status: "ENABLED" | "DISABLED";
-                chain: "ARWEAVE" | "ETHEREUM";
-                address: string;
-                walletPrivacySetting: "PRIVATE";
-                source: {
-                    type: "IMPORTED" | "GENERATED";
-                    from: "SEEDPHRASE" | "KEYFILE" | "BINARY";
-                };
-                authShare: string;
-                deviceShareHash: string;
-                deviceSharePublicKey: string;
-                aliasSetting?: string | undefined;
-                descriptionSetting?: string | undefined;
-                tagsSetting?: string[] | undefined;
-            };
-            output: {
-                wallet: DbWallet;
-            };
-        }>;
-        createReadOnlyWallet: _trpc_server.TRPCMutationProcedure<{
-            input: {
-                status: "READONLY" | "LOST";
-                chain: "ARWEAVE" | "ETHEREUM";
-                address: string;
-                publicKey?: string | undefined;
-                aliasSetting?: string | undefined;
-                descriptionSetting?: string | undefined;
-                tagsSetting?: string[] | undefined;
-            };
-            output: {
-                wallet: DbWallet;
-            };
-        }>;
-        makeWalletPrivate: _trpc_server.TRPCMutationProcedure<{
-            input: {
-                walletPrivacySetting: "PRIVATE";
-                walletId: string;
-            };
-            output: {
-                wallet: DbWallet;
-            };
-        }>;
-        makeWalletPublic: _trpc_server.TRPCMutationProcedure<{
-            input: {
-                chain: "ARWEAVE" | "ETHEREUM";
-                address: string;
-                publicKey: string;
-                walletPrivacySetting: "PUBLIC";
-                walletId: string;
-            };
-            output: {
-                wallet: DbWallet;
-            };
-        }>;
-        updateWalletInfo: _trpc_server.TRPCMutationProcedure<{
-            input: {
-                walletId: string;
-                identifierTypeSetting?: "ALIAS" | "ANS" | "PNS" | undefined;
-                aliasSetting?: string | undefined;
-                descriptionSetting?: string | undefined;
-                tagsSetting?: string[] | undefined;
-            };
-            output: {
-                wallet: DbWallet;
-            };
-        }>;
-        updateWalletRecovery: _trpc_server.TRPCMutationProcedure<{
-            input: {
-                canRecoverAccountSetting: boolean;
-                walletId: string;
-            };
-            output: {
-                wallet: DbWallet;
-            };
-        }>;
-        updateWalletStatus: _trpc_server.TRPCMutationProcedure<{
-            input: {
-                status: "ENABLED" | "DISABLED" | "READONLY" | "LOST";
-                walletId: string;
-            };
-            output: {
-                wallet: DbWallet;
-            };
-        }>;
-        deleteWallet: _trpc_server.TRPCMutationProcedure<{
-            input: {
-                walletId: string;
-            };
-            output: {};
-        }>;
         generateWalletActivationChallenge: _trpc_server.TRPCMutationProcedure<{
             input: {
                 walletId: string;
@@ -850,7 +672,13 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                 challengeSolution: string;
             };
             output: {
-                recoverableAccounts: RecoverableAccount[];
+                recoverableAccounts: {
+                    userId: string;
+                    name: string | null;
+                    email: string | null;
+                    phone: string | null;
+                    picture: string | null;
+                }[];
             };
         }>;
         fetchRecoverableAccountWallets: _trpc_server.TRPCMutationProcedure<{
