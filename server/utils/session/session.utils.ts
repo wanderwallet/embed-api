@@ -57,7 +57,7 @@ export function parseAccessTokenAndHeaders(
           console.log("error.code =", error.code);
           console.log("error.name =", error.name);
         }
-          */
+        */
 
         console.error("Error updating session:", error, {
           sessionId: id,
