@@ -49,10 +49,15 @@ export function parseAccessTokenAndHeaders(
         data: sessionUpdates,
       })
       .catch(async (error) => {
+        // Sometimes we might see a PrismaClientKnownRequestError error here complaining a unique key violation when updating the session. That seems to occur
+        // only in development, but we should investigate further if we notice the issue in production:
+
+        /*
         if (error instanceof PrismaClientKnownRequestError) {
           console.log("error.code =", error.code);
           console.log("error.name =", error.name);
         }
+          */
 
         console.error("Error updating session:", error, {
           sessionId: id,

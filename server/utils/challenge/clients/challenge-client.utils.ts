@@ -71,8 +71,6 @@ export function solveChallenge({
 }: SolveChallengeParams<JWKInterface | Uint8Array>): Promise<string> {
   const challengeClient = CHALLENGE_CLIENTS[challenge.version as ChallengeClientVersion];
 
-  console.log(`Solving ${challenge.version} challenge with privateKey =`, privateKey);
-
   if (!challengeClient) {
     throw new Error(`Unsupported challenge version: ${challenge.version}`);
   }

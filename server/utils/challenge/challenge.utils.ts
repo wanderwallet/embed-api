@@ -44,8 +44,6 @@ function generateChallengeUpsertData({
     ? CHALLENGE_CLIENTS.v2.version
     : CHALLENGE_CLIENTS.v1.version;
 
-  console.log(`Generating challenge ${version} for ${purpose}...`);
-
   if (purpose === ChallengePurpose.SHARE_ROTATION && version !== CHALLENGE_CLIENTS.v1.version) {
     throw new Error(`SHARE_ROTATION challenge must use v1 client (RSA), but got ${version}`);
   }
@@ -106,8 +104,6 @@ async function verifyChallenge(params: VerifyChallengeParams): Promise<null | st
 
     const challengeVersion = solution.split(".")[0] as ChallengeClientVersion;
     const challengeClient = CHALLENGE_CLIENTS[challengeVersion];
-
-    console.log(`Verifying challenge ${challengeVersion}...`);
 
     if (!challengeClient) {
       return ErrorMessages.CHALLENGE_INVALID;
