@@ -62,6 +62,8 @@ async function verifyChallenge({
   const solutionValue = solution.split(".")[1];
 
   if (!solutionValue) {
+    console.warn("Missing EdDSA challenge solution.");
+
     return ErrorMessages.CHALLENGE_UNEXPECTED_ERROR;
   }
 
@@ -92,6 +94,8 @@ async function verifyChallenge({
 
     if (!isSignatureValid) return ErrorMessages.CHALLENGE_INVALID;
   } else {
+    console.warn(`Unexpected EdDSA ${ isAnonChallenge(challenge) ? "anon challenge" : "challenge" } type (${ challenge.type }).`);
+
     return ErrorMessages.CHALLENGE_UNEXPECTED_ERROR;
   }
 

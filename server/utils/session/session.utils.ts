@@ -3,6 +3,7 @@ import { jwtDecode } from "jwt-decode";
 import { prisma } from "../prisma/prisma-client";
 import { Session } from "@prisma/client";
 import { SupabaseJwtPayload, SupabaseJwtSessionHeaders } from "@/server/utils/session/session.types";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 const SESSION_ANON_ID = "ANON";
 
@@ -48,10 +49,15 @@ export function parseAccessTokenAndHeaders(
         data: sessionUpdates,
       })
       .catch(async (error) => {
+        if (error instanceof PrismaClientKnownRequestError) {
+          console.log("error.code =", error.code);
+          console.log("error.name =", error.name);
+        }
+
         console.error("Error updating session:", error, {
           sessionId: id,
           userId,
-          ...sessionHeaders
+          ...sessionUpdates
         });
       });
   }

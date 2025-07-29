@@ -89,6 +89,8 @@ async function verifyChallenge({
   const solutionValue = solution.split(".")[1];
 
   if (!solutionValue) {
+    console.warn("Missing RSA challenge solution.");
+
     return ErrorMessages.CHALLENGE_UNEXPECTED_ERROR;
   }
 
@@ -155,6 +157,8 @@ async function verifyChallenge({
     // exploit if not doing so. See https://security.stackexchange.com/questions/209807/why-should-password-hash-verification-be-time-constant
     if (!timingSafeEqual(Buffer.from(expectedSolution, "utf16le"), Buffer.from(solution, "utf16le"))) return ErrorMessages.CHALLENGE_INVALID;
   } else {
+    console.warn(`Unexpected RSA ${ isAnonChallenge(challenge) ? "anon challenge" : "challenge" } type (${ challenge.type }).`);
+
     return ErrorMessages.CHALLENGE_UNEXPECTED_ERROR;
   }
 
