@@ -2,7 +2,6 @@ import { z } from "zod"
 import { Chain } from '@prisma/client';
 import { publicProcedure } from "@/server/trpc";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
-import { Config } from "@/server/utils/config/config.constants";
 import { validateWallet } from "@/server/utils/wallet/wallet.validators";
 
 export const GenerateFetchRecoverableAccountsChallenge = z.object({
@@ -25,15 +24,14 @@ export const generateFetchRecoverableAccountsChallenge = publicProcedure
     // will know, from fetchRecoverableAccounts(), if there are recoverable accounts or not
     // linked to that wallet, but only after they prove they have access to such wallet (with the challenge).
 
-    const challengeValue = ChallengeUtils.generateChangeValue();
+    const data = ChallengeUtils.generateAnonChallengeCreateData({
+      ip: ctx.session.ip,
+      chain: input.chain,
+      address: input.address,
+    });
 
     const fetchRecoverableWalletsChallenge = await ctx.prisma.anonChallenge.create({
-      data: {
-        value: challengeValue,
-        version: Config.CHALLENGE_VERSION,
-        chain: input.chain,
-        address: input.address,
-      },
+      data,
     });
 
     return {

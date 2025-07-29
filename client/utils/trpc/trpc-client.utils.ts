@@ -9,7 +9,6 @@ export interface CreateTRPCClientOptions {
   authToken?: string | null;
   deviceNonce?: string;
   clientId?: string;
-  applicationId?: string;
   onAuthError?: () => void;
 }
 
@@ -72,7 +71,6 @@ export function createTRPCClient({
   let authToken = params.authToken || null;
   let deviceNonce = params.deviceNonce || "";
   let clientId = params.clientId || "";
-  let applicationId = params.applicationId || "";
 
   function getAuthTokenHeader() {
     return authToken;
@@ -96,14 +94,6 @@ export function createTRPCClient({
 
   function setClientIdHeader(nextClientId: string) {
     clientId = nextClientId;
-  }
-
-  function getApplicationIdHeader() {
-    return applicationId;
-  }
-
-  function setApplicationIdHeader(nextApplicationId: string) {
-    applicationId = nextApplicationId;
   }
 
   const url = trpcURL || (baseURL ? `${baseURL.replace(/\/$/, "")}/api/trpc` : "");
@@ -133,7 +123,6 @@ export function createTRPCClient({
             authorization: authToken ? `Bearer ${authToken}` : undefined,
             "x-device-nonce": deviceNonce,
             "x-client-id": clientId,
-            "x-application-id": applicationId,
           };
         },
       }),
@@ -148,7 +137,5 @@ export function createTRPCClient({
     setDeviceNonceHeader,
     getClientIdHeader,
     setClientIdHeader,
-    getApplicationIdHeader,
-    setApplicationIdHeader,
   };
 }

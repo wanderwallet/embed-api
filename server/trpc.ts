@@ -12,7 +12,7 @@ export const publicProcedure = t.procedure
 export const protectedProcedure = t.procedure.use(async (opts) => {
   const { ctx } = opts;
 
-  if (!ctx.user) {
+  if (!ctx.user || !ctx.session) {
     throw new TRPCError({ code: "UNAUTHORIZED" })
   }
 

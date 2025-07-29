@@ -1,5 +1,5 @@
 
-import type { User } from "@supabase/supabase-js";
+import type { Session, User } from "@supabase/supabase-js";
 
 export interface SupabaseUserMetadata {
   hasPassword?: boolean;
@@ -16,4 +16,8 @@ export interface SupabaseUserMetadata {
 
 export interface SupabaseUser extends User {
   user_metadata: SupabaseUserMetadata;
+}
+
+export interface SupabaseSession extends Session {
+  user: SupabaseUser;
 }

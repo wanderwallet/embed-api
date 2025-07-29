@@ -1,10 +1,9 @@
 import { z } from "zod";
-import { UserDetailsPrivacySetting, WalletStatus } from "@prisma/client";
+import { WalletStatus } from "@prisma/client";
 import { TRPCError } from "@trpc/server";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { publicProcedure } from "@/server/trpc";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
-import { RecoverableAccount } from "@/prisma/types/types";
 import { getSilentErrorLoggerFor } from "@/server/utils/error/error.utils";
 
 export const FetchRecoverableAccounts = z.object({
@@ -79,8 +78,6 @@ export const fetchRecoverableAccounts = publicProcedure
     const publicKey = recoverableAccounts[0].wallets?.[0]?.publicKey;
 
     if (!publicKey) {
-      console.warn(ErrorMessages.RECOVERY_MISSING_PUBLIC_KEY);
-
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.RECOVERY_MISSING_PUBLIC_KEY,
@@ -113,9 +110,20 @@ export const fetchRecoverableAccounts = publicProcedure
           email,
           phone,
           picture,
-          userDetailsRecoveryPrivacy,
+          // userDetailsRecoveryPrivacy,
         } = recoverableAccount;
 
+        return {
+          userId: supId,
+          name,
+          email: email || supEmail,
+          phone: phone || supPhone,
+          picture,
+        }
+
+        // Ignore the privacy settings as those are not public yet:
+
+        /*
         const filteredRecoverableAccount: RecoverableAccount = {
           userId: supId,
           name: userDetailsRecoveryPrivacy.includes(
@@ -141,6 +149,7 @@ export const fetchRecoverableAccounts = publicProcedure
         };
 
         return filteredRecoverableAccount;
+        */
       }
     );
 

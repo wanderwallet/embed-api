@@ -11,4 +11,7 @@ export default defineConfig({
   entry: ["./sdk/index.ts"],
   ignoreWatch: ["./dist"],
   tsconfig: path.resolve(__dirname, "./tsconfig-sdk.json"),
+  env: {
+    BUILD_TYPE: "SDK"
+  }
 })

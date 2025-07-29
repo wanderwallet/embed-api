@@ -1,166 +1,168 @@
 import {
-  ChallengeClient,
   ChallengeClientVersion,
-  ChallengeData,
+  UpsertChallengeData,
+  VerifyChallengeParams,
 } from "@/server/utils/challenge/challenge.types";
-import { ChallengeClientV1 } from "@/server/utils/challenge/clients/challenge-client-v1";
+import { CHALLENGE_CLIENTS, isAnonChallenge } from "@/server/utils/challenge/clients/challenge-client.utils";
 import { Config } from "@/server/utils/config/config.constants";
 import { ErrorMessages } from "@/server/utils/error/error.constants";
-import {
-  AnonChallenge,
-  Challenge,
-  ChallengePurpose,
-  ChallengeType,
-} from "@prisma/client";
-import { timingSafeEqual } from "node:crypto";
+import { isEdDSAPublicKey } from "@/server/utils/share/share.validators";
+import { AnonChallenge, Chain, ChallengePurpose } from "@prisma/client";
 
-export function isAnonChallenge(
-  challenge: Challenge | AnonChallenge
-): challenge is AnonChallenge {
-  return (
-    !!(challenge as AnonChallenge).chain &&
-    !!(challenge as AnonChallenge).address
-  );
-}
-
-export function generateChangeValue() {
+function generateChangeValue() {
   return Buffer.from(
     crypto.getRandomValues(new Uint8Array(Config.CHALLENGE_BUFFER_SIZE))
   ).toString("base64");
 }
 
-const CHALLENGE_CLIENTS = {
-  [ChallengeClientV1.version]: ChallengeClientV1,
-} as const satisfies Record<ChallengeClientVersion, ChallengeClient>;
+export interface GenerateChallengeUpsertDataParams {
+  purpose: ChallengePurpose;
+  publicKey: string;
+  ip: string;
 
-export interface VerifyChallengeParams extends ChallengeData {
-  now: number;
-  solution: string; // B64
-  publicKey: null | string; // JWK.n
+  // Relations:
+  userId: string;
+  walletId: string;
 }
 
-export async function verifyChallenge({
-  // ChallengeData:
-  challenge,
-  session,
-  shareHash,
+/**
+ * Regular Challenges can use both EdDSA and RSA, depending on the format of the public key we'll be using to verify
+ * them. Therefore, we need to pass that public key at generation time.
+ *
+ * Note for `SHARE_ROTATION` we always use RSA, as that one is resolved with a wallet private key signature.
+ */
+function generateChallengeUpsertData({
+  purpose,
+  publicKey,
+  ip,
+  userId,
+  walletId,
+}: GenerateChallengeUpsertDataParams) {
+  const value = generateChangeValue();
 
-  // Verification:
-  now,
-  solution,
-  publicKey: publicKeyParam,
-}: VerifyChallengeParams): Promise<null | string> {
+  const version = isEdDSAPublicKey(publicKey)
+    ? CHALLENGE_CLIENTS.v2.version
+    : CHALLENGE_CLIENTS.v1.version;
+
+  if (purpose === ChallengePurpose.SHARE_ROTATION && version !== CHALLENGE_CLIENTS.v1.version) {
+    throw new Error(`SHARE_ROTATION challenge must use v1 client (RSA), but got ${version}`);
+  }
+
+  return {
+    type: Config.CHALLENGE_TYPE,
+    purpose,
+    value,
+    version,
+    createdAt: new Date(),
+    ip,
+
+    // Relations:
+    userId,
+    walletId,
+  } as const satisfies UpsertChallengeData;
+}
+
+export interface GenerateAnonChallengeDataParams {
+  ip: string;
+  chain: Chain;
+  address: string;
+}
+
+/**
+ * AnonChallenges are resolved by signing with the wallet private key, so they use RSA. Therefore, they always use the
+ * v1 challenge client.
+ */
+function generateAnonChallengeCreateData({
+  ip,
+  chain,
+  address,
+}: GenerateAnonChallengeDataParams) {
+  const value = generateChangeValue();
+  const version = CHALLENGE_CLIENTS.v1.version;
+
+  return  {
+    value,
+    version,
+    createdAt: new Date(),
+    ip,
+    chain,
+    address,
+  } satisfies Omit<AnonChallenge, "id">;
+}
+
+async function verifyChallenge(params: VerifyChallengeParams): Promise<null | string> {
   try {
-    const [solutionVersion, solutionValue] = solution.split(".");
-    const challengeClient = CHALLENGE_CLIENTS[solutionVersion];
+    const {
+      // ChallengeData:
+      challenge,
+      session,
+
+      // Verification:
+      now,
+      solution,
+    } = params;
+
+    const challengeVersion = solution.split(".")[0] as ChallengeClientVersion;
+    const challengeClient = CHALLENGE_CLIENTS[challengeVersion];
 
     if (!challengeClient) {
       return ErrorMessages.CHALLENGE_INVALID;
     }
 
-    // TODO: Make TTL for hash-based challenges shorter:
+    // Verify challenge age/expiration:
 
     const challengeTTL =
       isAnonChallenge(challenge) ||
       challenge.purpose === ChallengePurpose.SHARE_ROTATION
-        ? Config.CHALLENGE_ROTATION_TTL_MS
-        : Config.CHALLENGE_TTL_MS;
+        ? challengeClient.ttlRotationMs
+        : challengeClient.ttlMs;
 
     const challengeAge = now - challenge.createdAt.getTime();
-    const challengePercent = (100 * challengeAge / challengeTTL).toFixed(2);
-    const isChallengeAgeMoreThanOneMinute = challengeAge > 60000;
+    const challengePercent = 100 * challengeAge / challengeTTL;
+    const challengePercentStr = challengePercent.toFixed(2);
+    const isChallengeAgeNearingExpiration = challengePercent > 80;
 
     if (process.env.NODE_ENV === "development") {
       if (challengeAge > challengeTTL) {
         console.log(`❌ Challenge took ${ (challengeAge / 1000).toFixed(2) }s (> ${ (challengeTTL / 1000).toFixed(2) }s).`);
-      } else if (isChallengeAgeMoreThanOneMinute) {
-        console.log(`⚠️ Challenge took more than a minute: ${ (challengeAge / 1000).toFixed(2) }s.`);
+      } else if (isChallengeAgeNearingExpiration) {
+        console.log(`⚠️ Challenge took ${ (challengeAge / 1000).toFixed(2) }s (${ challengePercentStr }% of ${ (challengeTTL / 1000).toFixed(2) }s).`);
       } else {
         console.log(`✅ Challenge took ${ (challengeAge / 1000).toFixed(2) }s (< ${ (challengeTTL / 1000).toFixed(2) }s).`);
       }
     }
 
     if (challengeAge > challengeTTL) {
-      return `${ ErrorMessages.CHALLENGE_EXPIRED_ERROR } Took ${ (challengeAge / 1000).toFixed(2) }s (> ${ (challengeTTL / 1000).toFixed(2) }s).`;
+      return `${ ErrorMessages.CHALLENGE_EXPIRED } Took ${ (challengeAge / 1000).toFixed(2) }s (> ${ (challengeTTL / 1000).toFixed(2) }s).`;
     }
 
-    if (isChallengeAgeMoreThanOneMinute && process.env.NODE_ENV === "production") {
-      console.warn(`Challenge for user ${ session.userId } took more than a minute: ${ (challengeAge / 1000).toFixed(2) }s (${ challengePercent }%). userAgent = ${ session.userAgent }`);
+    if (isChallengeAgeNearingExpiration && process.env.NODE_ENV === "production") {
+      console.warn(`Challenge for user ${ session.userId } took ${ (challengeAge / 1000).toFixed(2) }s (${ challengePercentStr }% of ${ (challengeTTL / 1000).toFixed(2) }s). userAgent = ${ session.userAgent }`);
     }
 
-    if (
-      isAnonChallenge(challenge) ||
-      challenge.type === ChallengeType.SIGNATURE
-    ) {
-      // SIGNATURE-BASED CHALLENGE:
+    // Verify challenge IP:
 
-      if (!publicKeyParam) {
-        return ErrorMessages.CHALLENGE_MISSING_PK;
-      }
-
-      const publicJWK: JsonWebKey = {
-        e: "AQAB",
-        ext: true,
-        kty: "RSA",
-        n: publicKeyParam,
-      };
-
-      const publicKey = await crypto.subtle.importKey(
-        "jwk",
-        publicJWK,
-        challengeClient.importKeyAlgorithm,
-        true,
-        ["verify"]
-      );
-
-      const challengeRawData = await challengeClient.getChallengeRawData({
-        challenge,
-        session,
-        shareHash,
-      });
-
-      const challengeRawDataBuffer = Buffer.from(challengeRawData);
-
-      const isSignatureValid = crypto.subtle.verify(
-        challengeClient.signAlgorithm,
-        publicKey,
-        Buffer.from(solutionValue, "base64"),
-        challengeRawDataBuffer
-      );
-
-      if (!isSignatureValid) return ErrorMessages.CHALLENGE_INVALID;
-    } else {
-      // HASH-BASED CHALLENGES:
-
-      const expectedSolution = await challengeClient.solveChallenge({
-        challenge,
-        session,
-        shareHash,
-      });
-
-      // The length of the solution, excluding the version prefix, should be:
-      //
-      // - 44 characters (String.length) when using a hash.
-      // - 512 bytes (ArrayBuffer.byteLength) when using a signature from a 4096 modulusLength RSA.
-      // - 256 bytes (ArrayBuffer.byteLength) when using a signature from a 2048 modulusLength RSA.
-      // - ...
-      //
-      // However, there's no need to validate that, as we'll be comparing the whole value anyways.
-
-      // Constant-time comparison probably not needed (as we are comparing hashes), but anyway, there's a theatrical
-      // exploit if not doing so. See https://security.stackexchange.com/questions/209807/why-should-password-hash-verification-be-time-constant
-      if (!timingSafeEqual(Buffer.from(expectedSolution, "utf16le"), Buffer.from(solution, "utf16le"))) return ErrorMessages.CHALLENGE_INVALID;
+    if (challenge.ip !== session.ip) {
+      console.warn(`Challenge IP mismatch: challenge.ip = ${ challenge.ip }, session.ip = ${ session.ip }`);
+      return ErrorMessages.CHALLENGE_IP_MISMATCH;
     }
+
+    // Verify challenge signature and solution:
+
+    const verificationError = await challengeClient.verifyChallenge(params);
+
+    if (verificationError) return verificationError;
 
     return null;
   } catch (err) {
-    console.warn(`Unexpected challenge validation error =`, err);
+    console.error(`Unexpected challenge validation error =`, err);
 
     return ErrorMessages.CHALLENGE_UNEXPECTED_ERROR;
   }
 }
 
 export const ChallengeUtils = {
-  generateChangeValue,
+  generateChallengeUpsertData,
+  generateAnonChallengeCreateData,
   verifyChallenge,
 };

@@ -24,13 +24,11 @@ export {
 
 // Auth:
 
-export type { SupabaseUser, SupabaseUserMetadata } from "@/server/utils/supabase/supabase.types"
+export type { AuthError as SupabaseAuthError, AuthChangeEvent as SupabaseAuthChangeEvent } from "@supabase/supabase-js";
+export type { SupabaseSession, SupabaseUser, SupabaseUserMetadata } from "@/server/utils/supabase/supabase.types"
+export type { SupabaseJwtSessionData, SupabaseJwtSessionHeaders, SupabaseProvider, SupabaseJwtPayload } from "@/server/utils/session/session.types";
+export { createAnonSession } from "@/server/utils/session/session.utils";
 
-export type {
-  AuthError as SupabaseAuthError,
-  AuthChangeEvent as SupabaseAuthChangeEvent,
-  Session as SupabaseSession,
-} from "@supabase/supabase-js";
 
 // Errors:
 
@@ -39,10 +37,14 @@ export { ErrorMessages } from "@/server/utils/error/error.constants";
 
 // Clients:
 
+export type { AppRouter } from "@/server/routers/_app";
 export { createTRPCClient } from "@/client/utils/trpc/trpc-client.utils";
-
 export { createSupabaseClient } from "@/client/utils/supabase/supabase-client.utils";
 
-export { ChallengeClientV1 } from "@/server/utils/challenge/clients/challenge-client-v1";
 
-export type { AppRouter } from "@/server/routers/_app";
+// Challenges:
+
+export type { ChallengeClientVersion, ChallengeSolutionWithVersion, ChallengeData, SolveChallengeParams } from "@/server/utils/challenge/challenge.types";
+export { solveChallenge } from "@/server/utils/challenge/clients/challenge-client.utils";
+export { ChallengeClientV1 } from "@/server/utils/challenge/clients/challenge-client-v1-rsa";
+export { ChallengeClientV2 } from "@/server/utils/challenge/clients/challenge-client-v2-eddsa";
