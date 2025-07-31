@@ -18,6 +18,7 @@
     "sdk:build": "tsup"
   },
   "dependencies": {
+    "@noble/curves": "^1.9.4",
     "@prisma/client": "6.11.1",
     "@supabase/ssr": "^0.6.1",
     "@supabase/supabase-js": "^2.49.4",

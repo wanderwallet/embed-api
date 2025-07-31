@@ -474,6 +474,8 @@ model Challenge {
   value     String           @db.VarChar(255)
   version   String           @db.VarChar(50)
   createdAt DateTime         @default(now())
+  /// IPv6 or IPv4-mapped address
+  ip          String   @db.Inet
 
   userProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId      String      @db.Uuid
@@ -493,6 +495,8 @@ model AnonChallenge {
   value     String   @db.VarChar(255)
   version   String   @db.VarChar(50)
   createdAt DateTime @default(now())
+  /// IPv6 or IPv4-mapped address
+  ip          String   @db.Inet
   chain     Chain
   address   String   @db.VarChar(255)
 

@@ -1,13 +1,14 @@
 import * as _prisma_client from '@prisma/client';
-import { Wallet, WalletSourceType, WalletSourceFrom, Challenge, AnonChallenge, Session } from '@prisma/client';
+import { Wallet, WalletSourceType, WalletSourceFrom, Session as Session$1, Challenge, AnonChallenge } from '@prisma/client';
 export { AuthProviderType, Chain, Challenge as DbChallenge, Session as DbSession, UserProfile as DbUserProfile, ExportType, WalletPrivacySetting, WalletSourceFrom, WalletSourceType, WalletStatus } from '@prisma/client';
 import * as _supabase_supabase_js from '@supabase/supabase-js';
-import { User, SupabaseClientOptions } from '@supabase/supabase-js';
-export { AuthError as SupabaseAuthError } from '@supabase/supabase-js';
-import * as _trpc_client from '@trpc/client';
+import { Session, User, Provider, SupabaseClientOptions } from '@supabase/supabase-js';
+export { AuthChangeEvent as SupabaseAuthChangeEvent, AuthError as SupabaseAuthError } from '@supabase/supabase-js';
+import { JwtPayload } from 'jwt-decode';
 import * as _trpc_server from '@trpc/server';
 import * as _trpc_server_unstable_core_do_not_import from '@trpc/server/unstable-core-do-not-import';
 import * as _prisma_client_runtime_library from '@prisma/client/runtime/library';
+import * as _trpc_client from '@trpc/client';
 import { JWKInterface } from 'arweave/node/lib/wallet';
 
 interface WalletSource {
@@ -49,6 +50,23 @@ interface SupabaseUserMetadata {
 interface SupabaseUser extends User {
     user_metadata: SupabaseUserMetadata;
 }
+interface SupabaseSession extends Session {
+    user: SupabaseUser;
+}
+
+type SupabaseJwtSessionData = Omit<Session$1, "id" | "userId">;
+type SupabaseJwtSessionHeaders = Pick<SupabaseJwtSessionData, "userAgent" | "deviceNonce" | "ip">;
+type SupabaseProvider = Extract<Provider, "google" | "facebook" | "twitter" | "apple">;
+interface SupabaseJwtPayload extends JwtPayload {
+    session_id: string;
+    sessionData: SupabaseJwtSessionData;
+    app_metadata: {
+        provider: SupabaseProvider | "email";
+        providers: (SupabaseProvider | "email")[];
+    };
+}
+
+declare function createAnonSession(sessionHeaders: SupabaseJwtSessionHeaders): Session$1;
 
 declare const ErrorMessages: {
     readonly WALLET_NOT_FOUND: "Wallet not found.";
@@ -57,12 +75,15 @@ declare const ErrorMessages: {
     readonly WALLET_NO_PRIVACY_SUPPORT: "Wallet does not support the privacy setting.";
     readonly WALLET_ADDRESS_MISMATCH: "Wallet address mismatch.";
     readonly WALLET_NOT_VALID_FOR_ACCOUNT_RECOVERY: "Wallet cannot be used for account recovery.";
+    readonly WALLET_MISSING_PUBLIC_KEY: "Wallet is missing public key.";
     readonly WORK_SHARE_NOT_FOUND: "Work share not found.";
     readonly WORK_SHARE_INVALIDATED: "Work share invalidated.";
+    readonly RECOVERY_SHARE_NOT_FOUND: "Recovery share not found.";
     readonly INVALID_SHARE: "Invalid share.";
     readonly CHALLENGE_NOT_FOUND: "Challenge not found. It might have been resolved already, or it might have expired.";
     readonly CHALLENGE_INVALID: "Invalid challenge.";
-    readonly CHALLENGE_EXPIRED_ERROR: "Challenge expired.";
+    readonly CHALLENGE_EXPIRED: "Challenge expired.";
+    readonly CHALLENGE_IP_MISMATCH: "Challenge IP mismatch.";
     readonly CHALLENGE_MISSING_PK: "Missing public key.";
     readonly CHALLENGE_UNEXPECTED_ERROR: "Unexpected error validating challenge.";
     readonly RECOVERY_ACCOUNTS_NOT_FOUND: "No recoverable accounts found.";
@@ -74,20 +95,7 @@ declare const ErrorMessages: {
 declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
     ctx: {
         prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
-        user: null;
-        session: {
-            id: string;
-            createdAt: Date;
-            updatedAt: Date;
-            userId: string;
-            deviceNonce: string;
-            ip: string;
-            userAgent: string;
-        } & {
-            applicationId: string;
-        };
-    } | {
-        prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+        clientId: null;
         user: _supabase_supabase_js.AuthUser;
         session: {
             id: string;
@@ -97,8 +105,19 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
             deviceNonce: string;
             ip: string;
             userAgent: string;
-        } & {
-            applicationId: string;
+        };
+    } | {
+        prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+        clientId: string;
+        user: _supabase_supabase_js.AuthUser;
+        session: {
+            id: string;
+            createdAt: Date;
+            updatedAt: Date;
+            userId: string;
+            deviceNonce: string;
+            ip: string;
+            userAgent: string;
         };
     };
     meta: object;
@@ -143,10 +162,11 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 id: string;
                 createdAt: Date;
                 userId: string;
-                value: string;
+                ip: string;
                 walletId: string;
                 type: _prisma_client.$Enums.ChallengeType;
                 purpose: _prisma_client.$Enums.ChallengePurpose;
+                value: string;
                 version: string;
             };
         };
@@ -163,10 +183,11 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 id: string;
                 createdAt: Date;
                 userId: string;
-                value: string;
+                ip: string;
                 walletId: string;
                 type: _prisma_client.$Enums.ChallengeType;
                 purpose: _prisma_client.$Enums.ChallengePurpose;
+                value: string;
                 version: string;
             } | null;
         };
@@ -207,16 +228,18 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
     generateWalletRecoveryChallenge: _trpc_server.TRPCMutationProcedure<{
         input: {
             walletId: string;
+            recoveryBackupShareHash?: string | null | undefined;
         };
         output: {
             shareRecoveryChallenge: {
                 id: string;
                 createdAt: Date;
                 userId: string;
-                value: string;
+                ip: string;
                 walletId: string;
                 type: _prisma_client.$Enums.ChallengeType;
                 purpose: _prisma_client.$Enums.ChallengePurpose;
+                value: string;
                 version: string;
             };
         };
@@ -240,10 +263,11 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 id: string;
                 createdAt: Date;
                 userId: string;
-                value: string;
+                ip: string;
                 walletId: string;
                 type: _prisma_client.$Enums.ChallengeType;
                 purpose: _prisma_client.$Enums.ChallengePurpose;
+                value: string;
                 version: string;
             };
             recoveryBackupServerPublicKey?: undefined;
@@ -273,6 +297,7 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 createdAt: Date;
                 chain: _prisma_client.$Enums.Chain;
                 address: string;
+                ip: string;
                 value: string;
                 version: string;
             };
@@ -284,7 +309,13 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
             challengeSolution: string;
         };
         output: {
-            recoverableAccounts: RecoverableAccount[];
+            recoverableAccounts: {
+                userId: string;
+                name: string | null;
+                email: string | null;
+                phone: string | null;
+                picture: string | null;
+            }[];
         };
     }>;
     fetchRecoverableAccountWallets: _trpc_server.TRPCMutationProcedure<{
@@ -311,10 +342,11 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 id: string;
                 createdAt: Date;
                 userId: string;
-                value: string;
+                ip: string;
                 walletId: string;
                 type: _prisma_client.$Enums.ChallengeType;
                 purpose: _prisma_client.$Enums.ChallengePurpose;
+                value: string;
                 version: string;
             };
         };
@@ -330,10 +362,10 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                     name: string | null;
                     createdAt: Date;
                     updatedAt: Date;
+                    email: string | null;
                     supId: string;
                     supEmail: string | null;
                     supPhone: string | null;
-                    email: string | null;
                     phone: string | null;
                     picture: string | null;
                     recoveredAt: Date | null;
@@ -366,8 +398,6 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
                 deviceNonce: string;
                 ip: string;
                 userAgent: string;
-            } & {
-                applicationId: string;
             };
         };
     }>;
@@ -422,27 +452,13 @@ interface CreateTRPCClientOptions {
     authToken?: string | null;
     deviceNonce?: string;
     clientId?: string;
-    applicationId?: string;
     onAuthError?: () => void;
 }
 declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: CreateTRPCClientOptions): {
     client: _trpc_client.TRPCClient<_trpc_server_unstable_core_do_not_import.BuiltRouter<{
         ctx: {
             prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
-            user: null;
-            session: {
-                id: string;
-                createdAt: Date;
-                updatedAt: Date;
-                userId: string;
-                deviceNonce: string;
-                ip: string;
-                userAgent: string;
-            } & {
-                applicationId: string;
-            };
-        } | {
-            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+            clientId: null;
             user: _supabase_supabase_js.AuthUser;
             session: {
                 id: string;
@@ -452,8 +468,19 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                 deviceNonce: string;
                 ip: string;
                 userAgent: string;
-            } & {
-                applicationId: string;
+            };
+        } | {
+            prisma: _prisma_client.PrismaClient<_prisma_client.Prisma.PrismaClientOptions, never, _prisma_client_runtime_library.DefaultArgs>;
+            clientId: string;
+            user: _supabase_supabase_js.AuthUser;
+            session: {
+                id: string;
+                createdAt: Date;
+                updatedAt: Date;
+                userId: string;
+                deviceNonce: string;
+                ip: string;
+                userAgent: string;
             };
         };
         meta: object;
@@ -498,10 +525,11 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     id: string;
                     createdAt: Date;
                     userId: string;
-                    value: string;
+                    ip: string;
                     walletId: string;
                     type: _prisma_client.$Enums.ChallengeType;
                     purpose: _prisma_client.$Enums.ChallengePurpose;
+                    value: string;
                     version: string;
                 };
             };
@@ -518,10 +546,11 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     id: string;
                     createdAt: Date;
                     userId: string;
-                    value: string;
+                    ip: string;
                     walletId: string;
                     type: _prisma_client.$Enums.ChallengeType;
                     purpose: _prisma_client.$Enums.ChallengePurpose;
+                    value: string;
                     version: string;
                 } | null;
             };
@@ -562,16 +591,18 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
         generateWalletRecoveryChallenge: _trpc_server.TRPCMutationProcedure<{
             input: {
                 walletId: string;
+                recoveryBackupShareHash?: string | null | undefined;
             };
             output: {
                 shareRecoveryChallenge: {
                     id: string;
                     createdAt: Date;
                     userId: string;
-                    value: string;
+                    ip: string;
                     walletId: string;
                     type: _prisma_client.$Enums.ChallengeType;
                     purpose: _prisma_client.$Enums.ChallengePurpose;
+                    value: string;
                     version: string;
                 };
             };
@@ -595,10 +626,11 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     id: string;
                     createdAt: Date;
                     userId: string;
-                    value: string;
+                    ip: string;
                     walletId: string;
                     type: _prisma_client.$Enums.ChallengeType;
                     purpose: _prisma_client.$Enums.ChallengePurpose;
+                    value: string;
                     version: string;
                 };
                 recoveryBackupServerPublicKey?: undefined;
@@ -628,6 +660,7 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     createdAt: Date;
                     chain: _prisma_client.$Enums.Chain;
                     address: string;
+                    ip: string;
                     value: string;
                     version: string;
                 };
@@ -639,7 +672,13 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                 challengeSolution: string;
             };
             output: {
-                recoverableAccounts: RecoverableAccount[];
+                recoverableAccounts: {
+                    userId: string;
+                    name: string | null;
+                    email: string | null;
+                    phone: string | null;
+                    picture: string | null;
+                }[];
             };
         }>;
         fetchRecoverableAccountWallets: _trpc_server.TRPCMutationProcedure<{
@@ -666,10 +705,11 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     id: string;
                     createdAt: Date;
                     userId: string;
-                    value: string;
+                    ip: string;
                     walletId: string;
                     type: _prisma_client.$Enums.ChallengeType;
                     purpose: _prisma_client.$Enums.ChallengePurpose;
+                    value: string;
                     version: string;
                 };
             };
@@ -685,10 +725,10 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                         name: string | null;
                         createdAt: Date;
                         updatedAt: Date;
+                        email: string | null;
                         supId: string;
                         supEmail: string | null;
                         supPhone: string | null;
-                        email: string | null;
                         phone: string | null;
                         picture: string | null;
                         recoveredAt: Date | null;
@@ -721,8 +761,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                     deviceNonce: string;
                     ip: string;
                     userAgent: string;
-                } & {
-                    applicationId: string;
                 };
             };
         }>;
@@ -775,8 +813,6 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
     setDeviceNonceHeader: (nextDeviceNonce: string) => void;
     getClientIdHeader: () => string;
     setClientIdHeader: (nextClientId: string) => void;
-    getApplicationIdHeader: () => string;
-    setApplicationIdHeader: (nextApplicationId: string) => void;
 };
 
 declare function createSupabaseClient(supabaseUrl?: string, supabaseKey?: string, supabaseOptions?: SupabaseClientOptions<"public">): _supabase_supabase_js.SupabaseClient<any, "public", any>;
@@ -785,20 +821,41 @@ type ChallengeClientVersion = `v${number}`;
 type ChallengeSolutionWithVersion = `${ChallengeClientVersion}.${string}`;
 interface ChallengeData {
     challenge: Challenge | AnonChallenge;
-    session: Session;
+    session: Session$1;
     shareHash: null | string;
 }
-interface SolveChallengeParams extends ChallengeData {
-    jwk?: JWKInterface;
+interface SolveChallengeParams<T> extends ChallengeData {
+    privateKey?: T;
 }
-interface ChallengeClient {
+interface VerifyChallengeParams extends ChallengeData {
+    now: number;
+    solution: string;
+    publicKey: null | string;
+}
+interface ChallengeClient<T> {
     version: ChallengeClientVersion;
-    importKeyAlgorithm: RsaHashedImportParams;
-    signAlgorithm: RsaPssParams;
+    ttlMs: number;
+    ttlRotationMs: number;
     getChallengeRawData: (data: ChallengeData) => string;
-    solveChallenge: (params: SolveChallengeParams) => Promise<ChallengeSolutionWithVersion>;
+    solveChallenge: (params: SolveChallengeParams<T>) => Promise<ChallengeSolutionWithVersion>;
+    verifyChallenge: (params: VerifyChallengeParams) => Promise<string | null>;
 }
 
-declare const ChallengeClientV1: ChallengeClient;
+declare function solveChallenge({ challenge, session, shareHash, privateKey, }: SolveChallengeParams<JWKInterface | Uint8Array>): Promise<string>;
 
-export { type AppRouter, ChallengeClientV1, type DbWallet, ErrorMessages, type RecoverableAccount, type SupabaseUser, type SupabaseUserMetadata, type WalletInfo, type WalletSource, createSupabaseClient, createTRPCClient };
+declare const ChallengeClientV1: ChallengeClient<JWKInterface>;
+
+/**
+ * IMPORTANT NOTE: Cryptographically relevant quantum computer, if built, will allow to break elliptic curve
+ * cryptography (both ECDSA / EdDSA & ECDH) using Shor's algorithm.
+ *
+ * Consider switching to newer / hybrid algorithms, such as SPHINCS+. They are available in noble-post-quantum.
+ *
+ * NIST prohibits classical cryptography (RSA, DSA, ECDSA, ECDH) after 2035. Australian ASD prohibits it after 2030.
+ *
+ * @see https://github.com/paulmillr/noble-curves?tab=readme-ov-file#quantum-computers
+ * @see https://github.com/paulmillr/noble-post-quantum
+ */
+declare const ChallengeClientV2: ChallengeClient<Uint8Array>;
+
+export { type AppRouter, ChallengeClientV1, ChallengeClientV2, type ChallengeClientVersion, type ChallengeData, type ChallengeSolutionWithVersion, type DbWallet, ErrorMessages, type RecoverableAccount, type SolveChallengeParams, type SupabaseJwtPayload, type SupabaseJwtSessionData, type SupabaseJwtSessionHeaders, type SupabaseProvider, type SupabaseSession, type SupabaseUser, type SupabaseUserMetadata, type WalletInfo, type WalletSource, createAnonSession, createSupabaseClient, createTRPCClient, solveChallenge };

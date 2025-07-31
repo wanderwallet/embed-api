@@ -19,11 +19,22 @@ export function getShareHashValidator() {
 }
 
 /**
- * We generate RSA-PSS key pair with a 4096 modulusLength, which gives as a 512 bytes public key if the format is
- * JWK. So, 512 * 4/3 characters/byte = 683 characters in base64.
+ * v2 challenges (EdDSA) => 32 bytes public key * 4/3 characters/byte = 43.3333 => 44 characters in base64.
  */
 export function getSharePublicKeyValidator() {
-  return z.string().min(683).max(685);
+  // If we publish the new client first, we can accept only EdDSA public keys on the server, as this is not used for
+  // challenge verification, it is only used when new work or recovery shares are registered.
+
+  return z.string().length(44);
+
+  /*
+  // v1 challenges (RSA-PSS with modulusLength = 4096) => 512 bytes public key (as JWK) => 512 * 4/3 characters/byte = 683 characters in base64.
+
+  return z.union([
+    z.string().length(44),
+    z.string().min(683).max(685),
+  ]);
+  */
 }
 
 export const SHARE_REX_EXPS: Record<Chain, RegExp> = {
@@ -80,4 +91,8 @@ export function validateShare(
   }
 
   return issues;
+}
+
+export function isEdDSAPublicKey(publicKey: string): boolean {
+  return publicKey.length === 44;
 }

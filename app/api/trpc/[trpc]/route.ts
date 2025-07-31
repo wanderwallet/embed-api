@@ -2,7 +2,6 @@ import { fetchRequestHandler } from "@trpc/server/adapters/fetch"
 import { appRouter } from "@/server/routers/_app"
 import { createContext } from "@/server/context"
 import type { NextRequest } from "next/server"
-import { ZodError } from "zod"
 
 const handler = async (req: NextRequest) => {
   const response = await fetchRequestHandler({
@@ -10,11 +9,13 @@ const handler = async (req: NextRequest) => {
     req,
     router: appRouter,
     createContext: () => createContext({ req }),
-    onError: ({ type, path, error, input }) => {
+    onError: ({ type, path, error, input, ctx }) => {
+      const { deviceNonce, userId, ip } = ctx?.session || {};
+
       if (process.env.NODE_ENV === "development") {
-        console.error(`❌ ${ type } error on ${ path || "?" }: ${error.message}`, input);
-      } else if (error.code === "BAD_REQUEST" && error.cause instanceof ZodError) {
-        console.error(`${ type } error on ${ path || "?" }: ${error.message}`);
+        console.warn(`${ type } error on ${ path || "?" }: ${error.message}`, input);
+      } else {
+        console.warn(`${ type } error on ${ path || "?" }: ${error.message}`, { deviceNonce, userId, ip });
       }
     }
   });

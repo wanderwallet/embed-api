@@ -9,6 +9,30 @@ import {
   WalletStatus
 } from "@prisma/client";
 
+// server/utils/session/session.utils.ts
+import { jwtDecode } from "jwt-decode";
+
+// server/utils/prisma/prisma-client.ts
+import { PrismaClient } from "@prisma/client";
+var globalForPrisma = global;
+var prisma = globalForPrisma.prisma || new PrismaClient();
+if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+
+// server/utils/session/session.utils.ts
+var SESSION_ANON_ID = "ANON";
+function createAnonSession(sessionHeaders) {
+  const dateNow = /* @__PURE__ */ new Date();
+  return {
+    id: SESSION_ANON_ID,
+    createdAt: dateNow,
+    updatedAt: dateNow,
+    deviceNonce: sessionHeaders.deviceNonce,
+    ip: sessionHeaders.ip,
+    userAgent: sessionHeaders.userAgent,
+    userId: ""
+  };
+}
+
 // server/utils/error/error.constants.ts
 var ErrorMessages = {
   // Wallets:
@@ -18,14 +42,17 @@ var ErrorMessages = {
   WALLET_NO_PRIVACY_SUPPORT: "Wallet does not support the privacy setting.",
   WALLET_ADDRESS_MISMATCH: "Wallet address mismatch.",
   WALLET_NOT_VALID_FOR_ACCOUNT_RECOVERY: `Wallet cannot be used for account recovery.`,
+  WALLET_MISSING_PUBLIC_KEY: `Wallet is missing public key.`,
   // Shares:
   WORK_SHARE_NOT_FOUND: `Work share not found.`,
   WORK_SHARE_INVALIDATED: `Work share invalidated.`,
+  RECOVERY_SHARE_NOT_FOUND: "Recovery share not found.",
   INVALID_SHARE: `Invalid share.`,
   // Challenge:
   CHALLENGE_NOT_FOUND: `Challenge not found. It might have been resolved already, or it might have expired.`,
   CHALLENGE_INVALID: `Invalid challenge.`,
-  CHALLENGE_EXPIRED_ERROR: `Challenge expired.`,
+  CHALLENGE_EXPIRED: `Challenge expired.`,
+  CHALLENGE_IP_MISMATCH: `Challenge IP mismatch.`,
   CHALLENGE_MISSING_PK: `Missing public key.`,
   CHALLENGE_UNEXPECTED_ERROR: `Unexpected error validating challenge.`,
   // Recovery:
@@ -80,7 +107,6 @@ function createTRPCClient({
   let authToken = params.authToken || null;
   let deviceNonce = params.deviceNonce || "";
   let clientId = params.clientId || "";
-  let applicationId = params.applicationId || "";
   function getAuthTokenHeader() {
     return authToken;
   }
@@ -98,12 +124,6 @@ function createTRPCClient({
   }
   function setClientIdHeader(nextClientId) {
     clientId = nextClientId;
-  }
-  function getApplicationIdHeader() {
-    return applicationId;
-  }
-  function setApplicationIdHeader(nextApplicationId) {
-    applicationId = nextApplicationId;
   }
   const url = trpcURL || (baseURL ? `${baseURL.replace(/\/$/, "")}/api/trpc` : "");
   if (!url) throw new Error("No `baseURL` or `trpcURL` provided.");
@@ -127,8 +147,7 @@ function createTRPCClient({
           return {
             authorization: authToken ? `Bearer ${authToken}` : void 0,
             "x-device-nonce": deviceNonce,
-            "x-client-id": clientId,
-            "x-application-id": applicationId
+            "x-client-id": clientId
           };
         }
       })
@@ -141,9 +160,7 @@ function createTRPCClient({
     getDeviceNonceHeader,
     setDeviceNonceHeader,
     getClientIdHeader,
-    setClientIdHeader,
-    getApplicationIdHeader,
-    setApplicationIdHeader
+    setClientIdHeader
   };
 }
 
@@ -159,19 +176,121 @@ function createSupabaseClient(supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   return createClient(supabaseUrl, supabaseKey, supabaseOptions);
 }
 
-// server/utils/challenge/clients/challenge-client-v1.ts
-import {
-  ChallengePurpose,
-  ChallengeType
-} from "@prisma/client";
+// server/utils/challenge/clients/challenge-client-v1-rsa.ts
+import { ChallengeType } from "@prisma/client";
+var CHALLENGE_CLIENT_VERSION = "v1";
+var IMPORT_KEY_ALGORITHM = {
+  name: "RSA-PSS",
+  hash: "SHA-256"
+};
+var SIGN_ALGORITHM = {
+  name: "RSA-PSS",
+  saltLength: 32
+};
+async function solveChallenge({
+  challenge,
+  session,
+  shareHash,
+  privateKey: jwk
+}) {
+  const challengeRawData = getChallengeRawData({
+    challenge,
+    session,
+    shareHash
+  });
+  const challengeRawDataBuffer = Buffer.from(challengeRawData);
+  let signatureOrHashBuffer;
+  if (isAnonChallenge(challenge) || challenge.type === ChallengeType.SIGNATURE) {
+    if (!jwk) {
+      throw new Error("Missing private key (jwk)");
+    }
+    const privateKey = await crypto.subtle.importKey(
+      "jwk",
+      jwk,
+      IMPORT_KEY_ALGORITHM,
+      true,
+      ["sign"]
+    );
+    signatureOrHashBuffer = await crypto.subtle.sign(
+      SIGN_ALGORITHM,
+      privateKey,
+      challengeRawDataBuffer
+    );
+  } else if (process.env.NODE_ENV === "development") {
+    signatureOrHashBuffer = await crypto.subtle.digest(
+      "SHA-256",
+      challengeRawDataBuffer
+    );
+  } else {
+    throw new Error("Cannot solve challenge.");
+  }
+  const signatureOrHashString = Buffer.from(signatureOrHashBuffer).toString(
+    "base64"
+  );
+  return `${CHALLENGE_CLIENT_VERSION}.${signatureOrHashString}`;
+}
+var ChallengeClientV1 = {
+  version: CHALLENGE_CLIENT_VERSION,
+  ttlMs: 12e4,
+  // 120 seconds
+  ttlRotationMs: 24e4,
+  // 240 seconds - Longer because the shares need to be regenerated, which can take some time.
+  getChallengeRawData,
+  solveChallenge,
+  verifyChallenge: true ? void 0 : verifyChallenge
+};
+
+// server/utils/challenge/clients/challenge-client-v2-eddsa.ts
+import { ChallengeType as ChallengeType2 } from "@prisma/client";
+import { ed25519 } from "@noble/curves/ed25519.js";
+var CHALLENGE_CLIENT_VERSION2 = "v2";
+async function solveChallenge2({
+  challenge,
+  session,
+  shareHash,
+  privateKey
+}) {
+  const challengeRawData = getChallengeRawData({
+    challenge,
+    session,
+    shareHash
+  });
+  const challengeRawDataBuffer = Buffer.from(challengeRawData);
+  let signatureBuffer;
+  if (isAnonChallenge(challenge) || challenge.type === ChallengeType2.SIGNATURE) {
+    if (!privateKey) {
+      throw new Error("Missing private key");
+    }
+    signatureBuffer = ed25519.sign(challengeRawDataBuffer, privateKey);
+  } else {
+    throw new Error("Cannot solve challenge.");
+  }
+  const signatureOrHashString = Buffer.from(signatureBuffer).toString(
+    "base64"
+  );
+  return `${CHALLENGE_CLIENT_VERSION2}.${signatureOrHashString}`;
+}
+var ChallengeClientV2 = {
+  version: CHALLENGE_CLIENT_VERSION2,
+  ttlMs: 3e4,
+  // 30 seconds
+  ttlRotationMs: 6e4,
+  // 60 seconds - Longer because the shares need to be regenerated, which can take some time.
+  getChallengeRawData,
+  solveChallenge: solveChallenge2,
+  verifyChallenge: true ? void 0 : verifyChallenge
+};
+
+// server/utils/challenge/clients/challenge-client.utils.ts
+import { ChallengePurpose } from "@prisma/client";
+function isAnonChallenge(challenge) {
+  return !!challenge.chain && !!challenge.address;
+}
 var CHALLENGES_WITHOUT_SHARE_HASH = [
   ChallengePurpose.SHARE_ROTATION,
   ChallengePurpose.ACCOUNT_RECOVERY,
   ChallengePurpose.SHARE_RECOVERY
 ];
-function isAnonChallenge(challenge) {
-  return !!challenge.chain && !!challenge.address;
-}
 function getChallengeRawData({ challenge, session, shareHash }) {
   const commonChallengeData = [
     challenge.id,
@@ -179,7 +298,6 @@ function getChallengeRawData({ challenge, session, shareHash }) {
     challenge.value,
     challenge.version,
     session.id,
-    session.ip,
     session.deviceNonce,
     session.userAgent
   ].join("|");
@@ -197,73 +315,45 @@ function getChallengeRawData({ challenge, session, shareHash }) {
     shareHash
   ].filter(Boolean).join("|");
 }
-var CHALLENGE_CLIENT_VERSION = "v1";
-var IMPORT_KEY_ALGORITHM = {
-  name: "RSA-PSS",
-  hash: "SHA-256"
-};
-var SIGN_ALGORITHM = {
-  name: "RSA-PSS",
-  saltLength: 32
-};
-async function solveChallenge({
+var CHALLENGE_CLIENTS = [
+  ChallengeClientV1,
+  ChallengeClientV2
+].reduce((acc, client) => {
+  if (acc[client.version]) throw new Error(`Duplicate client ${client.version}`);
+  acc[client.version] = client;
+  return acc;
+}, {});
+function solveChallenge3({
   challenge,
   session,
-  shareHash,
-  jwk
+  shareHash = null,
+  privateKey
 }) {
-  const challengeRawData = getChallengeRawData({
+  const challengeClient = CHALLENGE_CLIENTS[challenge.version];
+  if (!challengeClient) {
+    throw new Error(`Unsupported challenge version: ${challenge.version}`);
+  }
+  return challengeClient.solveChallenge({
     challenge,
     session,
-    shareHash
+    shareHash,
+    privateKey
   });
-  const challengeRawDataBuffer = Buffer.from(challengeRawData);
-  let signatureOrHashBuffer;
-  if (isAnonChallenge(challenge) || challenge.type === ChallengeType.SIGNATURE) {
-    if (!jwk) {
-      throw new Error("Missing `jwk` (JWK private key)");
-    }
-    const privateKey = await crypto.subtle.importKey(
-      "jwk",
-      jwk,
-      IMPORT_KEY_ALGORITHM,
-      true,
-      ["sign"]
-    );
-    signatureOrHashBuffer = await crypto.subtle.sign(
-      SIGN_ALGORITHM,
-      privateKey,
-      challengeRawDataBuffer
-    );
-  } else {
-    signatureOrHashBuffer = await crypto.subtle.digest(
-      "SHA-256",
-      challengeRawDataBuffer
-    );
-  }
-  const signatureOrHashString = Buffer.from(signatureOrHashBuffer).toString(
-    "base64"
-  );
-  return `${CHALLENGE_CLIENT_VERSION}.${signatureOrHashString}`;
 }
-var ChallengeClientV1 = {
-  version: CHALLENGE_CLIENT_VERSION,
-  importKeyAlgorithm: IMPORT_KEY_ALGORITHM,
-  signAlgorithm: SIGN_ALGORITHM,
-  getChallengeRawData,
-  solveChallenge
-};
 export {
   AuthProviderType,
   Chain,
   ChallengeClientV1,
+  ChallengeClientV2,
   ErrorMessages,
   ExportType,
   WalletPrivacySetting,
   WalletSourceFrom,
   WalletSourceType,
   WalletStatus,
+  createAnonSession,
   createSupabaseClient,
-  createTRPCClient
+  createTRPCClient,
+  solveChallenge3 as solveChallenge
 };
 //# sourceMappingURL=index.mjs.map

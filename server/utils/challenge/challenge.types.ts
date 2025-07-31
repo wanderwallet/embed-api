@@ -1,5 +1,4 @@
 import { Challenge, AnonChallenge, Session } from "@prisma/client";
-import { JWKInterface } from "arweave/node/lib/wallet";
 
 export type ChallengeClientVersion = `v${number}`;
 
@@ -13,18 +12,22 @@ export interface ChallengeData {
 
 export type UpsertChallengeData = Omit<Challenge, "id">
 
-export interface SolveChallengeParams extends ChallengeData {
-  jwk?: JWKInterface;
+export interface SolveChallengeParams<T> extends ChallengeData {
+  privateKey?: T;
 }
 
-// TODO: The type of `importKeyAlgorithm` and `signAlgorithm` might have to be changed (extended) if we want to support other
-// types of signatures or chains:
+export interface VerifyChallengeParams extends ChallengeData {
+  now: number;
+  solution: string; // B64
+  publicKey: null | string; // B64 (JWK.n)
+}
 
-export interface ChallengeClient {
+export interface ChallengeClient<T> {
   version: ChallengeClientVersion;
-  importKeyAlgorithm: RsaHashedImportParams;
-  signAlgorithm: RsaPssParams;
+  ttlMs: number;
+  ttlRotationMs: number;
   getChallengeRawData: (data: ChallengeData) => string;
-  solveChallenge: (params: SolveChallengeParams) => Promise<ChallengeSolutionWithVersion>;
+  solveChallenge: (params: SolveChallengeParams<T>) => Promise<ChallengeSolutionWithVersion>;
+  verifyChallenge: (params: VerifyChallengeParams) => Promise<string | null>;
 }
 

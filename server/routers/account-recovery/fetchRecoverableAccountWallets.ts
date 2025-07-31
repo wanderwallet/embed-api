@@ -4,6 +4,7 @@ import { ErrorMessages } from "@/server/utils/error/error.constants";
 import { publicProcedure } from "@/server/trpc";
 import { ChallengeUtils } from "@/server/utils/challenge/challenge.utils";
 import { getSilentErrorLoggerFor } from "@/server/utils/error/error.utils";
+import { WalletPrivacySetting, WalletStatus } from "@prisma/client";
 
 export const FetchRecoverableAccounts = z.object({
   userId: z.string().uuid(),
@@ -48,6 +49,11 @@ export const fetchRecoverableAccountWallets = publicProcedure
       },
       where: {
         userId: input.userId,
+        walletPrivacySetting: WalletPrivacySetting.PUBLIC,
+        status: {
+          // LOST and READONLY wallets are irrelevant here. DISABLED ones can be used for recovery if they are still PUBLIC:
+          in: [WalletStatus.ENABLED, WalletStatus.DISABLED],
+        },
       },
     });
 
@@ -63,8 +69,6 @@ export const fetchRecoverableAccountWallets = publicProcedure
     )?.publicKey;
 
     if (!publicKey) {
-      console.warn(ErrorMessages.RECOVERY_MISSING_PUBLIC_KEY);
-
       throw new TRPCError({
         code: "NOT_FOUND",
         message: ErrorMessages.RECOVERY_MISSING_PUBLIC_KEY,
