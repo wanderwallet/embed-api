@@ -1,6 +1,7 @@
 export const ErrorMessages = {
   // Wallets:
   WALLET_NOT_FOUND: `Wallet not found.`,
+  WALLET_NOT_ENABLED: `Wallet not enabled.`,
   WALLET_CANNOT_BE_ENABLED: `Wallet cannot be enabled.`,
   WALLET_CANNOT_BE_DISABLED: `Wallet cannot be disabled.`,
   WALLET_NO_PRIVACY_SUPPORT: "Wallet does not support the privacy setting.",

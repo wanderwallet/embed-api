@@ -168,8 +168,8 @@ async function verifyChallenge({
 
 export const ChallengeClientV1: ChallengeClient<JWKInterface> = {
   version: CHALLENGE_CLIENT_VERSION,
-  ttlMs: 120000, // 120 seconds
-  ttlRotationMs: 240000, // 240 seconds - Longer because the shares need to be regenerated, which can take some time.
+  ttlMs: 150_000, // 2.5 min = 150 seconds
+  ttlRotationMs: 300_000, // 5 min = 300 seconds - Longer because the shares need to be regenerated, which can take some time.
   getChallengeRawData,
   solveChallenge,
   verifyChallenge: process.env.BUILD_TYPE === "SDK" ? undefined as any : verifyChallenge,
