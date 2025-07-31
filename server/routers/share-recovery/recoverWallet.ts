@@ -148,9 +148,12 @@ export const recoverWallet = protectedProcedure
     }
 
     if (!userWallet || userWallet.status !== WalletStatus.ENABLED) {
-      throw new TRPCError({
+      throw new TRPCError(userWallet ? {
         code: "NOT_FOUND",
         message: ErrorMessages.WALLET_NOT_FOUND,
+      } : {
+        code: "FORBIDDEN",
+        message: ErrorMessages.WALLET_NOT_ENABLED,
       });
     }
 
