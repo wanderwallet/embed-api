@@ -550,9 +550,6 @@ model Session {
   userProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId      String      @db.Uuid
 
-  /// Note how here we don't include ip and userAgent, as we only want to keep one session per user-device, so if the IP
-  /// or the userAgent change on the same device, we simply update the session info.
-  @@unique([userId, deviceNonce], name: "userSession")
   @@index([updatedAt])
   @@map("Sessions")
 }
