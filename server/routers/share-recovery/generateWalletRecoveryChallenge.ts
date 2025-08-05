@@ -86,7 +86,10 @@ export const generateWalletRecoveryChallenge = protectedProcedure
         });
       }
 
-      throw new TRPCError({
+      throw new TRPCError(userWallet ? {
+        code: "FORBIDDEN",
+        message: ErrorMessages.WALLET_NOT_ENABLED,
+      } : {
         code: "NOT_FOUND",
         message: ErrorMessages.WALLET_NOT_FOUND,
       });
