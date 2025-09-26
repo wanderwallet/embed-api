@@ -76,6 +76,7 @@ function createAnonSession(sessionHeaders) {
 var ErrorMessages = {
   // Wallets:
   WALLET_NOT_FOUND: `Wallet not found.`,
+  WALLET_NOT_ENABLED: `Wallet not enabled.`,
   WALLET_CANNOT_BE_ENABLED: `Wallet cannot be enabled.`,
   WALLET_CANNOT_BE_DISABLED: `Wallet cannot be disabled.`,
   WALLET_NO_PRIVACY_SUPPORT: "Wallet does not support the privacy setting.",
@@ -98,6 +99,9 @@ var ErrorMessages = {
   RECOVERY_ACCOUNTS_NOT_FOUND: `No recoverable accounts found.`,
   RECOVERY_WALLETS_NOT_FOUND: `No recoverable account wallets found.`,
   RECOVERY_MISSING_PUBLIC_KEY: `Missing public key.`,
+  // Cloud Backup:
+  CLOUD_BACKUP_NOT_FOUND: "Cloud backup not found for this wallet.",
+  CLOUD_BACKUP_ALREADY_EXISTS: "Wallet already has a cloud backup. Use update instead.",
   // Generic:
   NO_OP: "This request is a no-op."
 };
@@ -271,10 +275,10 @@ async function solveChallenge({
 }
 var ChallengeClientV1 = {
   version: CHALLENGE_CLIENT_VERSION,
-  ttlMs: 12e4,
-  // 120 seconds
-  ttlRotationMs: 24e4,
-  // 240 seconds - Longer because the shares need to be regenerated, which can take some time.
+  ttlMs: 15e4,
+  // 2.5 min = 150 seconds
+  ttlRotationMs: 3e5,
+  // 5 min = 300 seconds - Longer because the shares need to be regenerated, which can take some time.
   getChallengeRawData,
   solveChallenge,
   verifyChallenge: true ? void 0 : verifyChallenge

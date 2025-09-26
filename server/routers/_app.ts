@@ -22,6 +22,10 @@ import { activateWallet } from "@/server/routers/work-shares/activateWallet";
 import { generateWalletActivationChallenge } from "@/server/routers/work-shares/generateWalletActivationChallenge";
 import { rotateAuthShare } from "@/server/routers/work-shares/rotateAuthShare";
 import { registerWalletExport } from "@/server/routers/backup/registerWalletExport";
+import { createCloudBackup } from "@/server/routers/cloud-backup/createCloudBackup";
+import { updateCloudBackup } from "@/server/routers/cloud-backup/updateCloudBackup";
+import { deleteCloudBackup } from "@/server/routers/cloud-backup/deleteCloudBackup";
+import { fetchCloudBackup } from "@/server/routers/cloud-backup/fetchCloudBackup";
 import { authenticateRouter } from "@/server/routers/authenticate";
 import { validationRouter } from "./validation";
 // import { supabase } from '@/utils/supabaseClient';
@@ -57,6 +61,12 @@ export const appRouter = router({
   // Backup:
   registerRecoveryShare,
   registerWalletExport,
+
+  // Cloud Backup:
+  createCloudBackup,
+  updateCloudBackup,
+  deleteCloudBackup,
+  fetchCloudBackup,
 
   // Share Recovery:
   generateWalletRecoveryChallenge,
