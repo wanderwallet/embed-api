@@ -1,11 +1,11 @@
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider   = "postgresql"
-  url        = env("POSTGRES_PRISMA_URL") // uses connection pooling
-  directUrl  = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL") // uses connection pooling
+  directUrl = env("POSTGRES_URL_NON_POOLING") // uses a direct connection
 }
 
 enum AuthProviderType {
@@ -117,6 +117,11 @@ enum Role {
 enum Plan {
   FREE
   PRO
+}
+
+enum CloudProvider {
+  GOOGLE
+  APPLE
 }
 
 // TODO: Document index usages.
@@ -310,14 +315,16 @@ model Wallet {
   source Json?
 
   // Stats:
-  lastActivatedAt  DateTime? // Can be computed from `WalletActivation`
-  lastBackedUpAt   DateTime? // Can be computed from `RecoveryKeyShare`
-  lastRecoveredAt  DateTime? // Can be computed from `WalletRecovery`
-  lastExportedAt   DateTime? // Can be computed from `WalletExport`
-  totalActivations Int       @default(0) // Can be computed from `WalletActivation`
-  totalBackups     Int       @default(0) // Can be computed from `RecoveryKeyShare`
-  totalRecoveries  Int       @default(0) // Can be computed from `WalletRecovery`
-  totalExports     Int       @default(0) // Can be computed from `WalletExport`
+  lastActivatedAt     DateTime? // Can be computed from `WalletActivation`
+  lastBackedUpAt      DateTime? // Can be computed from `RecoveryKeyShare`
+  lastCloudBackedUpAt DateTime? // Can be computed from `CloudBackup`
+  lastRecoveredAt     DateTime? // Can be computed from `WalletRecovery`
+  lastExportedAt      DateTime? // Can be computed from `WalletExport`
+  totalActivations    Int       @default(0) // Can be computed from `WalletActivation`
+  totalBackups        Int       @default(0) // Can be computed from `RecoveryKeyShare`
+  totalCloudBackups   Int       @default(0) // Can be computed from `CloudBackup`
+  totalRecoveries     Int       @default(0) // Can be computed from `WalletRecovery`
+  totalExports        Int       @default(0) // Can be computed from `WalletExport`
 
   walletActivations WalletActivation[]
   walletRecoveries  WalletRecovery[]
@@ -325,6 +332,7 @@ model Wallet {
   workKeyShares     WorkKeyShare[]
   recoveryKeyShares RecoveryKeyShare[]
   challenges        Challenge[]
+  cloudBackups      CloudBackup[]
 
   userProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId      String      @db.Uuid
@@ -475,7 +483,7 @@ model Challenge {
   version   String           @db.VarChar(50)
   createdAt DateTime         @default(now())
   /// IPv6 or IPv4-mapped address
-  ip          String   @db.Inet
+  ip        String           @db.Inet
 
   userProfile UserProfile @relation(fields: [userId], references: [supId], onDelete: Cascade)
   userId      String      @db.Uuid
@@ -496,7 +504,7 @@ model AnonChallenge {
   version   String   @db.VarChar(50)
   createdAt DateTime @default(now())
   /// IPv6 or IPv4-mapped address
-  ip          String   @db.Inet
+  ip        String   @db.Inet
   chain     Chain
   address   String   @db.VarChar(255)
 
@@ -648,4 +656,29 @@ model Membership {
   @@id([organizationId, teamId, userId])
   @@index([userId])
   @@map("Memberships")
+}
+
+/// CloudBackup stores information about JWK keys backed up to cloud storage providers (Google Cloud, Apple Cloud).
+/// Each wallet can have only one backup at a time.
+model CloudBackup {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  createdAt DateTime @default(now())
+
+  /// The file ID or identifier in the cloud storage service
+  fileId String @db.VarChar(255)
+
+  /// Cloud provider where the backup is stored
+  provider CloudProvider
+
+  /// Email associated with the cloud account (for authentication/identification)
+  email String? @db.VarChar(255)
+
+  wallet   Wallet @relation(fields: [walletId], references: [id], onDelete: Cascade)
+  walletId String @db.Uuid
+
+  /// Ensure only one backup per wallet
+  @@unique([walletId], name: "walletCloudBackup")
+  @@index([walletId])
+  @@index([provider])
+  @@map("CloudBackups")
 }

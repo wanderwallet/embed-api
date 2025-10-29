@@ -28,6 +28,11 @@ export const ErrorMessages = {
   RECOVERY_WALLETS_NOT_FOUND: `No recoverable account wallets found.`,
   RECOVERY_MISSING_PUBLIC_KEY: `Missing public key.`,
 
+  // Cloud Backup:
+  CLOUD_BACKUP_NOT_FOUND: "Cloud backup not found for this wallet.",
+  CLOUD_BACKUP_ALREADY_EXISTS:
+    "Wallet already has a cloud backup. Use update instead.",
+
   // Generic:
   NO_OP: "This request is a no-op.",
 } as const;
