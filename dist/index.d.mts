@@ -70,6 +70,7 @@ declare function createAnonSession(sessionHeaders: SupabaseJwtSessionHeaders): S
 
 declare const ErrorMessages: {
     readonly WALLET_NOT_FOUND: "Wallet not found.";
+    readonly WALLET_NOT_ENABLED: "Wallet not enabled.";
     readonly WALLET_CANNOT_BE_ENABLED: "Wallet cannot be enabled.";
     readonly WALLET_CANNOT_BE_DISABLED: "Wallet cannot be disabled.";
     readonly WALLET_NO_PRIVACY_SUPPORT: "Wallet does not support the privacy setting.";
@@ -89,6 +90,8 @@ declare const ErrorMessages: {
     readonly RECOVERY_ACCOUNTS_NOT_FOUND: "No recoverable accounts found.";
     readonly RECOVERY_WALLETS_NOT_FOUND: "No recoverable account wallets found.";
     readonly RECOVERY_MISSING_PUBLIC_KEY: "Missing public key.";
+    readonly CLOUD_BACKUP_NOT_FOUND: "Cloud backup not found for this wallet.";
+    readonly CLOUD_BACKUP_ALREADY_EXISTS: "Wallet already has a cloud backup. Use update instead.";
     readonly NO_OP: "This request is a no-op.";
 };
 
@@ -223,6 +226,66 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
         };
         output: {
             wallet: DbWallet;
+        };
+    }>;
+    createCloudBackup: _trpc_server.TRPCMutationProcedure<{
+        input: {
+            email: string | null;
+            walletId: string;
+            fileId: string;
+            provider: "GOOGLE" | "APPLE";
+        };
+        output: {
+            cloudBackup: {
+                id: string;
+                createdAt: Date;
+                email: string | null;
+                walletId: string;
+                fileId: string;
+                provider: _prisma_client.$Enums.CloudProvider;
+            };
+            wallet: DbWallet;
+        };
+    }>;
+    updateCloudBackup: _trpc_server.TRPCMutationProcedure<{
+        input: {
+            walletId: string;
+            email?: string | undefined;
+            fileId?: string | undefined;
+            provider?: "GOOGLE" | "APPLE" | undefined;
+        };
+        output: {
+            cloudBackup: {
+                id: string;
+                createdAt: Date;
+                email: string | null;
+                walletId: string;
+                fileId: string;
+                provider: _prisma_client.$Enums.CloudProvider;
+            };
+        };
+    }>;
+    deleteCloudBackup: _trpc_server.TRPCMutationProcedure<{
+        input: {
+            walletId: string;
+        };
+        output: {
+            wallet: DbWallet;
+        };
+    }>;
+    fetchCloudBackup: _trpc_server.TRPCQueryProcedure<{
+        input: {
+            walletId: string;
+        };
+        output: {
+            cloudBackup: {
+                id: string;
+                createdAt: Date;
+                email: string | null;
+                walletId: string;
+                fileId: string;
+                provider: _prisma_client.$Enums.CloudProvider;
+            } | null;
         };
     }>;
     generateWalletRecoveryChallenge: _trpc_server.TRPCMutationProcedure<{
@@ -407,7 +470,7 @@ declare const appRouter: _trpc_server_unstable_core_do_not_import.BuiltRouter<{
             authProviderType: "EMAIL_N_PASSWORD";
             password: string;
         } | {
-            authProviderType: "PASSKEYS" | "GOOGLE" | "FACEBOOK" | "X" | "APPLE";
+            authProviderType: "GOOGLE" | "APPLE" | "PASSKEYS" | "FACEBOOK" | "X";
         };
         output: {
             user: _supabase_supabase_js.AuthUser;
@@ -586,6 +649,66 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
             };
             output: {
                 wallet: DbWallet;
+            };
+        }>;
+        createCloudBackup: _trpc_server.TRPCMutationProcedure<{
+            input: {
+                email: string | null;
+                walletId: string;
+                fileId: string;
+                provider: "GOOGLE" | "APPLE";
+            };
+            output: {
+                cloudBackup: {
+                    id: string;
+                    createdAt: Date;
+                    email: string | null;
+                    walletId: string;
+                    fileId: string;
+                    provider: _prisma_client.$Enums.CloudProvider;
+                };
+                wallet: DbWallet;
+            };
+        }>;
+        updateCloudBackup: _trpc_server.TRPCMutationProcedure<{
+            input: {
+                walletId: string;
+                email?: string | undefined;
+                fileId?: string | undefined;
+                provider?: "GOOGLE" | "APPLE" | undefined;
+            };
+            output: {
+                cloudBackup: {
+                    id: string;
+                    createdAt: Date;
+                    email: string | null;
+                    walletId: string;
+                    fileId: string;
+                    provider: _prisma_client.$Enums.CloudProvider;
+                };
+            };
+        }>;
+        deleteCloudBackup: _trpc_server.TRPCMutationProcedure<{
+            input: {
+                walletId: string;
+            };
+            output: {
+                wallet: DbWallet;
+            };
+        }>;
+        fetchCloudBackup: _trpc_server.TRPCQueryProcedure<{
+            input: {
+                walletId: string;
+            };
+            output: {
+                cloudBackup: {
+                    id: string;
+                    createdAt: Date;
+                    email: string | null;
+                    walletId: string;
+                    fileId: string;
+                    provider: _prisma_client.$Enums.CloudProvider;
+                } | null;
             };
         }>;
         generateWalletRecoveryChallenge: _trpc_server.TRPCMutationProcedure<{
@@ -770,7 +893,7 @@ declare function createTRPCClient({ baseURL, trpcURL, onAuthError, ...params }: 
                 authProviderType: "EMAIL_N_PASSWORD";
                 password: string;
             } | {
-                authProviderType: "PASSKEYS" | "GOOGLE" | "FACEBOOK" | "X" | "APPLE";
+                authProviderType: "GOOGLE" | "APPLE" | "PASSKEYS" | "FACEBOOK" | "X";
             };
             output: {
                 user: _supabase_supabase_js.AuthUser;
